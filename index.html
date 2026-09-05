@@ -12,7 +12,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+    </script>
     <script>
         tailwind.config = {
             theme: {
@@ -161,7 +164,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 16px;
+            padding: 0 12px;
             border-bottom: 1px solid var(--border-subtle);
             background: var(--color-background);
             z-index: 110;
@@ -177,6 +180,37 @@
             cursor: pointer;
             transition: all 0.2s;
             flex-shrink: 0;
+        }
+        .notification-btn {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--darker-bg);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--color-muted);
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .notification-btn:hover {
+            background: rgba(255, 90, 0, 0.08);
+            color: #FF5A00;
+            border-color: #FF5A00;
+        }
+        .notification-btn .notification-dot {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #FF5A00;
+            border: 2px solid var(--card-bg);
         }
         main {
             padding-top: var(--header-height);
@@ -203,13 +237,13 @@
             padding: 6px 8px;
             padding-bottom: max(6px, env(safe-area-inset-bottom, 6px));
             box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+            align-items: center;
+            justify-content: space-around;
+            gap: 4px;
         }
         @media (max-width: 1024px) {
             .bottom-mobile-nav {
                 display: flex;
-                align-items: center;
-                justify-content: space-around;
-                gap: 4px;
             }
         }
         .bottom-nav-item {
@@ -250,6 +284,33 @@
         }
         .bottom-nav-item.active i {
             font-size: 1.5rem;
+        }
+        .bottom-nav-item-center {
+            position: relative;
+            top: -20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.4);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            flex: none;
+            margin: 0 4px;
+        }
+        .bottom-nav-item-center i {
+            font-size: 2rem;
+        }
+        .bottom-nav-item-center span {
+            display: none;
+        }
+        .bottom-nav-item-center.active {
+            background: #e04e00;
+            color: #fff;
         }
         .category-icon {
             width: 70px;
@@ -341,60 +402,6 @@
         .offer-banner:hover {
             transform: translateY(-2px);
             box-shadow: 0 12px 32px rgba(255, 90, 0, 0.3);
-        }
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            z-index: 200;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s, visibility 0.3s;
-        }
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        .modal-content {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 36px 32px;
-            width: 100%;
-            max-width: 500px;
-            max-height: 85vh;
-            overflow-y: auto;
-            position: relative;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
-            text-align: center;
-        }
-        .modal-close {
-            position: absolute;
-            top: 14px;
-            left: 14px;
-            background: rgba(0,0,0,0.04);
-            border: none;
-            color: var(--color-muted);
-            font-size: 1.2rem;
-            cursor: pointer;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
-            z-index: 5;
-        }
-        .modal-close:hover {
-            background: rgba(0,0,0,0.08);
-            color: var(--color-white);
         }
         .badge-offer {
             background: rgba(255, 90, 0, 0.1);
@@ -513,15 +520,181 @@
         .hide-scrollbar::-webkit-scrollbar {
             display: none;
         }
-        .sidebar-logo {
-            max-width: 200px;
-            height: auto;
-            object-fit: contain;
-        }
         .header-logo {
-            height: 50px;
+            height: 45px;
             width: auto;
             object-fit: contain;
+        }
+        .plus-card {
+            background: linear-gradient(135deg, #1A1A1A, #333333);
+            border-radius: 20px;
+            padding: 24px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        .plus-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+        }
+        .plus-card .plus-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(255, 90, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: #FF5A00;
+        }
+        .plus-card .plus-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 16px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .plus-card .plus-features li {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 6px 12px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .plus-card .plus-features li i {
+            color: #FF5A00;
+        }
+        .user-address {
+            font-size: 0.75rem;
+            color: var(--color-muted);
+            max-width: 120px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        @media (max-width: 640px) {
+            .user-address {
+                max-width: 80px;
+                font-size: 0.7rem;
+            }
+        }
+        .store-card {
+            min-width: 200px;
+            max-width: 200px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-card);
+            flex-shrink: 0;
+            position: relative;
+        }
+        .store-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--color-primary);
+            box-shadow: 0 12px 32px rgba(255, 90, 0, 0.12);
+        }
+        .store-card .store-img {
+            height: 140px;
+            background: linear-gradient(135deg, #FF8C38, #FF5A00);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+        .store-card .store-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .store-card .store-img .store-profile-logo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 2;
+        }
+        .store-card .store-img .store-profile-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: static;
+        }
+        .store-card .store-img .store-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.55);
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 1;
+        }
+        .store-card .store-img .store-overlay .store-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .store-card .store-img .store-overlay .store-details {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.7rem;
+            color: #eee;
+        }
+        .store-card .store-img .store-overlay .store-details .status {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .store-card .store-img .store-overlay .store-details .status.open {
+            color: #00B14F;
+        }
+        .store-card .store-img .store-overlay .store-details .status.closed {
+            color: #EF4444;
+        }
+        .store-card .store-img .store-overlay .store-details .delivery-time {
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
     </style>
 </head>
@@ -562,16 +735,20 @@
         </aside>
         <main class="lg:mr-[280px] transition-all">
             <header id="mainHeader">
-                <div class="flex items-center gap-3 flex-1">
+                <div class="flex items-center gap-2 flex-1 min-w-0">
                     <a class="flex w-fit select-none items-center" href="#">
                         <img src="https://i.ibb.co/mrRhHsQh/1788099660805-removebg-preview.png" alt="طلبات" class="header-logo">
                     </a>
-                    <div class="search-bar hidden sm:flex">
-                        <i class="las la-search text-[var(--color-muted)] text-lg"></i>
-                        <input type="text" placeholder="ابحث عن مطعم أو وجبة..." id="searchInput">
+                    <div class="user-address">
+                        <i class="las la-map-marker-alt" style="color: #FF5A00;"></i>
+                        <span class="truncate">الرياض - حي النرجس</span>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2">
+                    <button class="notification-btn" id="notificationBtn">
+                        <i class="las la-bell"></i>
+                        <span class="notification-dot"></span>
+                    </button>
                     <img id="headerAvatar" src="https://i.ibb.co/3mZjjp1T/548212938-1338267831079244-6599431839367735090-n.jpg" class="header-avatar" alt="avatar">
                 </div>
             </header>
@@ -595,36 +772,141 @@
                     </div>
                     <div class="text-7xl sm:text-8xl flex-shrink-0"><i class="las la-utensils"></i></div>
                 </div>
+                <div class="plus-card mb-8" onclick="showPlusAlert()">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="plus-icon"><i class="las la-crown"></i></div>
+                            <div>
+                                <h2 class="text-xl sm:text-2xl font-extrabold">FastOrder+</h2>
+                                <p class="text-white/70 text-sm">عضوية ذهبية بخصومات ودعم أولوية</p>
+                            </div>
+                        </div>
+                        <ul class="plus-features">
+                            <li><i class="las la-check-circle"></i> خصومات حصرية تصل 30%</li>
+                            <li><i class="las la-headset"></i> دعم أولوية 24/7</li>
+                            <li><i class="las la-truck"></i> توصيل مجاني غير محدود</li>
+                            <li><i class="las la-gift"></i> عروض حصرية للأعضاء</li>
+                        </ul>
+                        <button class="bg-[#FF5A00] text-white font-bold px-6 py-2 rounded-full text-sm hover:bg-[#e04e00] transition-all">اشترك الآن</button>
+                    </div>
+                    <div class="hidden md:block text-7xl flex-shrink-0"><i class="las la-crown text-[#FF5A00]"></i></div>
+                </div>
                 <div class="mb-8">
                     <h3 class="section-title"><i class="las la-question-circle"></i> محتاج ايه النهارده؟</h3>
                     <div class="flex gap-6 overflow-x-auto hide-scrollbar pb-2" style="scroll-behavior: smooth;">
-                        <div class="quick-service-item" onclick="showSuccess('المطاعم والوجبات')">
+                        <div class="quick-service-item" onclick="showServiceAlert('المطاعم والوجبات')">
                             <div class="quick-icon"><i class="las la-utensils"></i></div>
                             <span>المطاعم والوجبات</span>
                         </div>
-                        <div class="quick-service-item" onclick="showSuccess('بركه ماركت')">
+                        <div class="quick-service-item" onclick="showServiceAlert('بركه ماركت')">
                             <div class="quick-icon"><i class="las la-shopping-cart"></i></div>
                             <span>بركه ماركت</span>
                         </div>
-                        <div class="quick-service-item" onclick="showSuccess('صيدليه')">
+                        <div class="quick-service-item" onclick="showServiceAlert('صيدليه')">
                             <div class="quick-icon"><i class="las la-prescription-bottle"></i></div>
                             <span>صيدليه</span>
                         </div>
-                        <div class="quick-service-item" onclick="showSuccess('اسرع دليفري')">
+                        <div class="quick-service-item" onclick="showServiceAlert('اسرع دليفري')">
                             <div class="quick-icon"><i class="las la-motorcycle"></i></div>
                             <span>اسرع دليفري</span>
                         </div>
-                        <div class="quick-service-item" onclick="showSuccess('مستلزمات الحيوانات')">
+                        <div class="quick-service-item" onclick="showServiceAlert('مستلزمات الحيوانات')">
                             <div class="quick-icon"><i class="las la-paw"></i></div>
                             <span>مستلزمات الحيوانات</span>
                         </div>
-                        <div class="quick-service-item" onclick="showSuccess('التسالي')">
+                        <div class="quick-service-item" onclick="showServiceAlert('التسالي')">
                             <div class="quick-icon"><i class="las la-cookie"></i></div>
                             <span>التسالي</span>
                         </div>
-                        <div class="quick-service-item" onclick="showSuccess('المشروبات')">
+                        <div class="quick-service-item" onclick="showServiceAlert('المشروبات')">
                             <div class="quick-icon"><i class="las la-coffee"></i></div>
                             <span>المشروبات</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="section-title mb-0"><i class="las la-star"></i> المتاجر المميزة</h3>
+                        <a href="#" class="text-sm font-semibold text-[#FF5A00] hover:underline">عرض الكل</a>
+                    </div>
+                    <div class="flex gap-4 overflow-x-auto hide-scrollbar pb-2" style="scroll-behavior: smooth;">
+                        <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'مأكولات شعبية', 4.8, '25-35 دقيقة', '20 ر.س')">
+                            <div class="store-img">
+                                <img src="https://sys.shadowza.space/logos/1.png" alt="مطعم ابن حميدو">
+                                <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                                <div class="store-overlay">
+                                    <span class="store-name">ابن حميدو</span>
+                                    <div class="store-details">
+                                        <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                        <span class="delivery-time"><i class="las la-clock"></i> 25 - 35 دقيقة</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'حلويات', 4.9, '15-25 دقيقة', '10 ر.س')">
+                            <div class="store-img">
+                                <img src="https://sys.shadowza.space/logos/2.png" alt="مطعم ابن حميدو">
+                                <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                                <div class="store-overlay">
+                                    <span class="store-name">ابن حميدو</span>
+                                    <div class="store-details">
+                                        <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                        <span class="delivery-time"><i class="las la-clock"></i> 15 - 25 دقيقة</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'مشويات', 4.7, '30-40 دقيقة', '18 ر.س')">
+                            <div class="store-img">
+                                <img src="https://sys.shadowza.space/logos/3.png" alt="مطعم ابن حميدو">
+                                <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                                <div class="store-overlay">
+                                    <span class="store-name">ابن حميدو</span>
+                                    <div class="store-details">
+                                        <span class="status closed"><i class="las la-times-circle"></i> مغلق الآن</span>
+                                        <span class="delivery-time"><i class="las la-clock"></i> 30 - 40 دقيقة</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'مشروبات', 4.6, '10-20 دقيقة', '12 ر.س')">
+                            <div class="store-img">
+                                <img src="https://sys.shadowza.space/logos/4.png" alt="مطعم ابن حميدو">
+                                <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                                <div class="store-overlay">
+                                    <span class="store-name">ابن حميدو</span>
+                                    <div class="store-details">
+                                        <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                        <span class="delivery-time"><i class="las la-clock"></i> 10 - 20 دقيقة</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'بيتزا', 4.5, '20-30 دقيقة', '15 ر.س')">
+                            <div class="store-img">
+                                <img src="https://sys.shadowza.space/logos/5.png" alt="مطعم ابن حميدو">
+                                <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                                <div class="store-overlay">
+                                    <span class="store-name">ابن حميدو</span>
+                                    <div class="store-details">
+                                        <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                        <span class="delivery-time"><i class="las la-clock"></i> 20 - 30 دقيقة</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'سوشي', 4.8, '25-35 دقيقة', '22 ر.س')">
+                            <div class="store-img">
+                                <img src="https://sys.shadowza.space/logos/6.png" alt="مطعم ابن حميدو">
+                                <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                                <div class="store-overlay">
+                                    <span class="store-name">ابن حميدو</span>
+                                    <div class="store-details">
+                                        <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                        <span class="delivery-time"><i class="las la-clock"></i> 25 - 35 دقيقة</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -633,172 +915,89 @@
                         <h3 class="section-title mb-0"><i class="las la-fire"></i> الأكثر طلباً</h3>
                         <a href="#" class="text-sm font-semibold text-[#FF5A00] hover:underline">عرض الكل</a>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                        <div class="restaurant-card" onclick="showRestaurantModal('برجر كنج', 'برجر', 4.7, '20-30 دقيقة', '15 ر.س')">
-                            <div class="restaurant-img"><i class="las la-hamburger"></i></div>
-                            <div class="p-4">
-                                <div class="flex justify-between items-start mb-2">
-                                    <h4 class="font-bold text-[var(--color-white)]">برجر كنج</h4>
-                                    <span class="badge-offer"><i class="las la-percent"></i> 20%</span>
-                                </div>
-                                <p class="text-xs text-[var(--color-muted)] mb-3">برجر، وجبات سريعة</p>
-                                <div class="flex items-center gap-2 text-xs text-[var(--color-muted)]">
-                                    <span class="flex items-center gap-1"><i class="las la-star rating-star"></i> 4.7</span>
-                                    <span>•</span>
-                                    <span>20-30 دقيقة</span>
-                                    <span>•</span>
-                                    <span>15 ر.س</span>
+                    <div class="flex gap-4 overflow-x-auto hide-scrollbar pb-2" style="scroll-behavior: smooth;">
+                        <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'برجر', 4.7, '20-30 دقيقة', '15 ر.س')">
+                            <div class="store-img">
+                                <img src="https://sys.shadowza.space/logos/7.png" alt="مطعم ابن حميدو">
+                                <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                                <div class="store-overlay">
+                                    <span class="store-name">ابن حميدو</span>
+                                    <div class="store-details">
+                                        <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                        <span class="delivery-time"><i class="las la-clock"></i> 20 - 30 دقيقة</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="restaurant-card" onclick="showRestaurantModal('بيتزا هت', 'بيتزا', 4.5, '25-35 دقيقة', '10 ر.س')">
-                            <div class="restaurant-img"><i class="las la-pizza-slice"></i></div>
-                            <div class="p-4">
-                                <div class="flex justify-between items-start mb-2">
-                                    <h4 class="font-bold text-[var(--color-white)]">بيتزا هت</h4>
-                                    <span class="badge-free"><i class="las la-truck"></i> توصيل مجاني</span>
-                                </div>
-                                <p class="text-xs text-[var(--color-muted)] mb-3">بيتزا، إيطالي</p>
-                                <div class="flex items-center gap-2 text-xs text-[var(--color-muted)]">
-                                    <span class="flex items-center gap-1"><i class="las la-star rating-star"></i> 4.5</span>
-                                    <span>•</span>
-                                    <span>25-35 دقيقة</span>
-                                    <span>•</span>
-                                    <span>10 ر.س</span>
+                        <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'بيتزا', 4.5, '25-35 دقيقة', '10 ر.س')">
+                            <div class="store-img">
+                                <img src="https://sys.shadowza.space/logos/8.png" alt="مطعم ابن حميدو">
+                                <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                                <div class="store-overlay">
+                                    <span class="store-name">ابن حميدو</span>
+                                    <div class="store-details">
+                                        <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                        <span class="delivery-time"><i class="las la-clock"></i> 25 - 35 دقيقة</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="restaurant-card" onclick="showRestaurantModal('سوشي فاكتوري', 'سوشي', 4.8, '30-40 دقيقة', '20 ر.س')">
-                            <div class="restaurant-img"><i class="las la-fish"></i></div>
-                            <div class="p-4">
-                                <div class="flex justify-between items-start mb-2">
-                                    <h4 class="font-bold text-[var(--color-white)]">سوشي فاكتوري</h4>
-                                    <span class="badge-offer"><i class="las la-percent"></i> 15%</span>
-                                </div>
-                                <p class="text-xs text-[var(--color-muted)] mb-3">سوشي، ياباني</p>
-                                <div class="flex items-center gap-2 text-xs text-[var(--color-muted)]">
-                                    <span class="flex items-center gap-1"><i class="las la-star rating-star"></i> 4.8</span>
-                                    <span>•</span>
-                                    <span>30-40 دقيقة</span>
-                                    <span>•</span>
-                                    <span>20 ر.س</span>
+                        <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'سوشي', 4.8, '30-40 دقيقة', '20 ر.س')">
+                            <div class="store-img">
+                                <img src="https://sys.shadowza.space/logos/9.png" alt="مطعم ابن حميدو">
+                                <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                                <div class="store-overlay">
+                                    <span class="store-name">ابن حميدو</span>
+                                    <div class="store-details">
+                                        <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                        <span class="delivery-time"><i class="las la-clock"></i> 30 - 40 دقيقة</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="restaurant-card" onclick="showRestaurantModal('شاورما الريم', 'شاورما', 4.6, '15-25 دقيقة', '8 ر.س')">
-                            <div class="restaurant-img"><i class="las la-drumstick-bite"></i></div>
-                            <div class="p-4">
-                                <div class="flex justify-between items-start mb-2">
-                                    <h4 class="font-bold text-[var(--color-white)]">شاورما الريم</h4>
-                                    <span class="badge-offer"><i class="las la-percent"></i> 25%</span>
-                                </div>
-                                <p class="text-xs text-[var(--color-muted)] mb-3">شاورما، عربي</p>
-                                <div class="flex items-center gap-2 text-xs text-[var(--color-muted)]">
-                                    <span class="flex items-center gap-1"><i class="las la-star rating-star"></i> 4.6</span>
-                                    <span>•</span>
-                                    <span>15-25 دقيقة</span>
-                                    <span>•</span>
-                                    <span>8 ر.س</span>
+                        <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'شاورما', 4.6, '15-25 دقيقة', '8 ر.س')">
+                            <div class="store-img">
+                                <img src="https://sys.shadowza.space/logos/10.png" alt="مطعم ابن حميدو">
+                                <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                                <div class="store-overlay">
+                                    <span class="store-name">ابن حميدو</span>
+                                    <div class="store-details">
+                                        <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                        <span class="delivery-time"><i class="las la-clock"></i> 15 - 25 دقيقة</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="restaurant-card" onclick="showRestaurantModal('كنتاكي', 'دجاج مقلي', 4.4, '20-35 دقيقة', '12 ر.س')">
-                            <div class="restaurant-img"><i class="las la-drumstick"></i></div>
-                            <div class="p-4">
-                                <div class="flex justify-between items-start mb-2">
-                                    <h4 class="font-bold text-[var(--color-white)]">كنتاكي</h4>
-                                    <span class="badge-free"><i class="las la-truck"></i> توصيل مجاني</span>
-                                </div>
-                                <p class="text-xs text-[var(--color-muted)] mb-3">دجاج، وجبات سريعة</p>
-                                <div class="flex items-center gap-2 text-xs text-[var(--color-muted)]">
-                                    <span class="flex items-center gap-1"><i class="las la-star rating-star"></i> 4.4</span>
-                                    <span>•</span>
-                                    <span>20-35 دقيقة</span>
-                                    <span>•</span>
-                                    <span>12 ر.س</span>
+                        <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'دجاج مقلي', 4.4, '20-35 دقيقة', '12 ر.س')">
+                            <div class="store-img">
+                                <img src="https://sys.shadowza.space/logos/11.png" alt="مطعم ابن حميدو">
+                                <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                                <div class="store-overlay">
+                                    <span class="store-name">ابن حميدو</span>
+                                    <div class="store-details">
+                                        <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                        <span class="delivery-time"><i class="las la-clock"></i> 20 - 35 دقيقة</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="restaurant-card" onclick="showRestaurantModal('ماكدونالدز', 'برجر', 4.3, '15-25 دقيقة', '10 ر.س')">
-                            <div class="restaurant-img"><i class="las la-hamburger"></i></div>
-                            <div class="p-4">
-                                <div class="flex justify-between items-start mb-2">
-                                    <h4 class="font-bold text-[var(--color-white)]">ماكدونالدز</h4>
-                                    <span class="badge-offer"><i class="las la-percent"></i> 10%</span>
-                                </div>
-                                <p class="text-xs text-[var(--color-muted)] mb-3">برجر، وجبات سريعة</p>
-                                <div class="flex items-center gap-2 text-xs text-[var(--color-muted)]">
-                                    <span class="flex items-center gap-1"><i class="las la-star rating-star"></i> 4.3</span>
-                                    <span>•</span>
-                                    <span>15-25 دقيقة</span>
-                                    <span>•</span>
-                                    <span>10 ر.س</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="mb-8">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="section-title mb-0"><i class="las la-clock"></i> وصل حديثاً</h3>
-                        <a href="#" class="text-sm font-semibold text-[#FF5A00] hover:underline">عرض الكل</a>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                        <div class="restaurant-card" onclick="showRestaurantModal('مطعم النافورة', 'مشويات', 4.9, '25-40 دقيقة', '18 ر.س')">
-                            <div class="restaurant-img"><i class="las la-utensils"></i></div>
-                            <div class="p-4">
-                                <div class="flex justify-between items-start mb-2">
-                                    <h4 class="font-bold text-[var(--color-white)]">مطعم النافورة</h4>
-                                    <span class="badge-offer"><i class="las la-star"></i> جديد</span>
-                                </div>
-                                <p class="text-xs text-[var(--color-muted)] mb-3">مشويات، شرقي</p>
-                                <div class="flex items-center gap-2 text-xs text-[var(--color-muted)]">
-                                    <span class="flex items-center gap-1"><i class="las la-star rating-star"></i> 4.9</span>
-                                    <span>•</span>
-                                    <span>25-40 دقيقة</span>
-                                    <span>•</span>
-                                    <span>18 ر.س</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="restaurant-card" onclick="showRestaurantModal('باستا لاونج', 'باستا', 4.6, '20-30 دقيقة', '14 ر.س')">
-                            <div class="restaurant-img"><i class="las la-utensils"></i></div>
-                            <div class="p-4">
-                                <div class="flex justify-between items-start mb-2">
-                                    <h4 class="font-bold text-[var(--color-white)]">باستا لاونج</h4>
-                                    <span class="badge-free"><i class="las la-truck"></i> مجاني</span>
-                                </div>
-                                <p class="text-xs text-[var(--color-muted)] mb-3">باستا، إيطالي</p>
-                                <div class="flex items-center gap-2 text-xs text-[var(--color-muted)]">
-                                    <span class="flex items-center gap-1"><i class="las la-star rating-star"></i> 4.6</span>
-                                    <span>•</span>
-                                    <span>20-30 دقيقة</span>
-                                    <span>•</span>
-                                    <span>14 ر.س</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="restaurant-card" onclick="showRestaurantModal('حلويات الأصيل', 'حلويات', 4.7, '15-25 دقيقة', '10 ر.س')">
-                            <div class="restaurant-img"><i class="las la-birthday-cake"></i></div>
-                            <div class="p-4">
-                                <div class="flex justify-between items-start mb-2">
-                                    <h4 class="font-bold text-[var(--color-white)]">حلويات الأصيل</h4>
-                                    <span class="badge-offer"><i class="las la-percent"></i> 30%</span>
-                                </div>
-                                <p class="text-xs text-[var(--color-muted)] mb-3">حلويات، شرقية</p>
-                                <div class="flex items-center gap-2 text-xs text-[var(--color-muted)]">
-                                    <span class="flex items-center gap-1"><i class="las la-star rating-star"></i> 4.7</span>
-                                    <span>•</span>
-                                    <span>15-25 دقيقة</span>
-                                    <span>•</span>
-                                    <span>10 ر.س</span>
+                        <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'برجر', 4.3, '15-25 دقيقة', '10 ر.س')">
+                            <div class="store-img">
+                                <img src="https://sys.shadowza.space/logos/12.png" alt="مطعم ابن حميدو">
+                                <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                                <div class="store-overlay">
+                                    <span class="store-name">ابن حميدو</span>
+                                    <div class="store-details">
+                                        <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                        <span class="delivery-time"><i class="las la-clock"></i> 15 - 25 دقيقة</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="mb-6">
-                    <div class="offer-banner" style="background: linear-gradient(135deg, #FF8C38, #FFB800);" onclick="showOfferModal()">
+                    <div class="offer-banner" style="background: linear-gradient(135deg, #FF8C38, #FFB800);" onclick="showOfferAlert()">
                         <div class="flex-1">
                             <h2 class="text-xl sm:text-2xl font-extrabold mb-2">عروض اليوم الخاصة</h2>
                             <p class="text-white/85 text-sm mb-3">خصومات تصل إلى 60% على مطاعم مختارة</p>
@@ -813,39 +1012,16 @@
     <div class="bottom-mobile-nav" id="bottomMobileNav">
         <a href="#" class="bottom-nav-item active" data-tab="home"><i class="las la-home"></i><span>الرئيسية</span></a>
         <a href="#" class="bottom-nav-item" data-tab="offers"><i class="las la-percent"></i><span>العروض</span></a>
-        <a href="#" class="bottom-nav-item" data-tab="orders"><i class="las la-shopping-bag"></i><span>الطلبات</span></a>
+        <a href="#" class="bottom-nav-item bottom-nav-item-center" data-tab="orders"><i class="las la-shopping-bag"></i><span>الطلبات</span></a>
         <a href="#" class="bottom-nav-item" data-tab="favorites"><i class="las la-heart"></i><span>المفضلة</span></a>
         <a href="#" class="bottom-nav-item" data-tab="profile"><i class="las la-user"></i><span>حسابي</span></a>
-    </div>
-    <div class="modal-overlay" id="successModal">
-        <div class="modal-content">
-            <button class="modal-close" id="closeSuccessModal"><i class="las la-times"></i></button>
-            <i class="las la-check-circle text-5xl mb-4" style="color: #FF5A00;"></i>
-            <h3 class="text-xl font-bold mb-2 text-[var(--color-white)]">تم بنجاح</h3>
-            <p id="successMessage" class="text-[var(--color-muted)]"></p>
-            <button id="okSuccessBtn" class="mt-6 w-full py-3 rounded-full font-bold text-white text-sm transition-all" style="background: #FF5A00;">حسناً</button>
-        </div>
-    </div>
-    <div class="modal-overlay" id="restaurantModal">
-        <div class="modal-content text-right" style="max-width: 400px;">
-            <button class="modal-close" id="closeRestaurantModal"><i class="las la-times"></i></button>
-            <div class="text-6xl mb-4" id="restaurantEmoji" style="color: #FF5A00;"><i class="las la-utensils"></i></div>
-            <h3 class="text-xl font-bold mb-1 text-[var(--color-white)]" id="restaurantName">اسم المطعم</h3>
-            <p class="text-sm text-[var(--color-muted)] mb-4" id="restaurantCategory">تصنيف</p>
-            <div class="flex items-center gap-4 mb-4 text-sm text-[var(--color-muted)] justify-center" id="restaurantInfo"></div>
-            <button class="w-full py-3 rounded-full font-bold text-white text-sm transition-all hover:opacity-90" style="background: #FF5A00;" onclick="hideRestaurantModal()">عرض القائمة</button>
-        </div>
     </div>
     <script>
         (function() {
             const sidebar = document.getElementById('dashboardSidebar');
             const headerAvatar = document.getElementById('headerAvatar');
-            const successModal = document.getElementById('successModal');
-            const restaurantModal = document.getElementById('restaurantModal');
-            const closeSuccessModal = document.getElementById('closeSuccessModal');
-            const okSuccessBtn = document.getElementById('okSuccessBtn');
-            const successMessageEl = document.getElementById('successMessage');
-            const closeRestaurantModal = document.getElementById('closeRestaurantModal');
+            const notificationBtn = document.getElementById('notificationBtn');
+            const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
 
             function openSidebar() {
                 sidebar.classList.add('mobile-open');
@@ -891,11 +1067,26 @@
             const logoutBtn = document.getElementById('logoutBtn');
             logoutBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-                    showSuccess('تم تسجيل الخروج بنجاح.');
-                }
+                Swal.fire({
+                    title: 'تسجيل الخروج',
+                    text: 'هل أنت متأكد من تسجيل الخروج؟',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#FF5A00',
+                    cancelButtonColor: '#717171',
+                    confirmButtonText: 'نعم، خروج',
+                    cancelButtonText: 'إلغاء'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'تم بنجاح',
+                            text: 'تم تسجيل الخروج بنجاح',
+                            icon: 'success',
+                            confirmButtonColor: '#FF5A00'
+                        });
+                    }
+                });
             });
-            const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
             bottomNavItems.forEach(item => {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -908,52 +1099,78 @@
                     else if (tab === 'orders') msg = 'طلباتك الحالية والسابقة';
                     else if (tab === 'favorites') msg = 'قائمة المفضلة الخاصة بك';
                     else if (tab === 'profile') msg = 'حسابك الشخصي';
-                    if (tab !== 'home') showSuccess(msg);
+                    if (tab !== 'home') {
+                        Swal.fire({
+                            title: msg,
+                            icon: 'info',
+                            confirmButtonColor: '#FF5A00'
+                        });
+                    }
                 });
             });
-
-            function showSuccess(msg) {
-                successMessageEl.textContent = msg;
-                successModal.classList.add('active');
-            }
-
-            function hideSuccess() {
-                successModal.classList.remove('active');
-            }
-            closeSuccessModal.addEventListener('click', hideSuccess);
-            okSuccessBtn.addEventListener('click', hideSuccess);
-            window.addEventListener('click', (e) => {
-                if (e.target === successModal) hideSuccess();
-                if (e.target === restaurantModal) hideRestaurantModal();
+            notificationBtn.addEventListener('click', () => {
+                Swal.fire({
+                    title: 'الإشعارات',
+                    text: 'لديك 3 إشعارات جديدة',
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00'
+                });
             });
-            window.showRestaurantModal = function(name, category, rating, time, fee) {
-                document.getElementById('restaurantName').textContent = name;
-                document.getElementById('restaurantCategory').textContent = category;
-                document.getElementById('restaurantEmoji').innerHTML = '<i class="las la-utensils"></i>';
-                document.getElementById('restaurantInfo').innerHTML = '<span class="flex items-center gap-1"><i class="las la-star rating-star"></i> ' + rating + '</span><span>•</span><span><i class="las la-clock"></i> ' + time + '</span><span>•</span><span><i class="las la-money-bill"></i> ' + fee + '</span>';
-                restaurantModal.classList.add('active');
+            window.showRestaurantAlert = function(name, category, rating, time, fee) {
+                Swal.fire({
+                    title: name,
+                    html: '<p class="text-sm text-gray-500 mb-2">' + category + '</p><div class="flex items-center justify-center gap-4 text-sm text-gray-600"><span><i class="las la-star rating-star" style="color:#FFB800;"></i> ' + rating + '</span><span>•</span><span><i class="las la-clock"></i> ' + time + '</span><span>•</span><span><i class="las la-money-bill"></i> ' + fee + '</span></div>',
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00',
+                    confirmButtonText: 'عرض القائمة'
+                });
             };
-            window.hideRestaurantModal = function() {
-                restaurantModal.classList.remove('active');
+            window.showOfferAlert = function() {
+                Swal.fire({
+                    title: 'كود الخصم',
+                    text: 'تم نسخ كود الخصم: SAVE60',
+                    icon: 'success',
+                    confirmButtonColor: '#FF5A00'
+                });
             };
-            closeRestaurantModal.addEventListener('click', function() {
-                restaurantModal.classList.remove('active');
-            });
-            window.showOfferModal = function() {
-                showSuccess('تم نسخ كود الخصم: SAVE60');
+            window.showServiceAlert = function(service) {
+                Swal.fire({
+                    title: 'تم اختيار: ' + service,
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00'
+                });
+            };
+            window.showPlusAlert = function() {
+                Swal.fire({
+                    title: 'FastOrder+',
+                    text: 'تم اختيار عضوية FastOrder+',
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00',
+                    confirmButtonText: 'اشترك الآن'
+                });
             };
             const mainOfferBanner = document.getElementById('mainOfferBanner');
             if (mainOfferBanner) {
                 mainOfferBanner.addEventListener('click', function(e) {
                     if (e.target.tagName !== 'BUTTON') {
-                        showSuccess('استخدم كود WELCOME50 للحصول على خصم 50%!');
+                        Swal.fire({
+                            title: 'كود الخصم',
+                            text: 'استخدم كود WELCOME50 للحصول على خصم 50%',
+                            icon: 'success',
+                            confirmButtonColor: '#FF5A00'
+                        });
                     }
                 });
                 const offerBtn = mainOfferBanner.querySelector('button');
                 if (offerBtn) {
                     offerBtn.addEventListener('click', function(e) {
                         e.stopPropagation();
-                        showSuccess('تم نسخ كود الخصم: WELCOME50');
+                        Swal.fire({
+                            title: 'كود الخصم',
+                            text: 'تم نسخ كود الخصم: WELCOME50',
+                            icon: 'success',
+                            confirmButtonColor: '#FF5A00'
+                        });
                     });
                 }
             }
@@ -963,41 +1180,51 @@
                     e.stopPropagation();
                     const parent = this.closest('.offer-banner');
                     if (parent && parent !== mainOfferBanner) {
-                        showSuccess('تم نسخ كود الخصم: SAVE60');
+                        Swal.fire({
+                            title: 'كود الخصم',
+                            text: 'تم نسخ كود الخصم: SAVE60',
+                            icon: 'success',
+                            confirmButtonColor: '#FF5A00'
+                        });
                     }
                 });
             });
             const searchInput = document.getElementById('searchInput');
             const mobileSearchInput = document.getElementById('mobileSearchInput');
+
             function handleSearch(e) {
                 if (e.key === 'Enter' && e.target.value.trim()) {
-                    showSuccess('جاري البحث عن: ' + e.target.value.trim());
+                    Swal.fire({
+                        title: 'جاري البحث',
+                        text: 'جاري البحث عن: ' + e.target.value.trim(),
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00'
+                    });
                     e.target.value = '';
                 }
             }
-            searchInput.addEventListener('keydown', handleSearch);
-            mobileSearchInput.addEventListener('keydown', handleSearch);
-            const restaurantCards = document.querySelectorAll('.restaurant-card');
-            restaurantCards.forEach(card => {
-                card.addEventListener('click', function(e) {
-                    const name = this.querySelector('h4')?.textContent || 'مطعم';
-                    const category = this.querySelector('p')?.textContent || 'تصنيف';
-                    const ratingMatch = this.textContent.match(/[\d.]+(?=\s*•)/);
-                    const rating = ratingMatch ? ratingMatch[0] : '4.5';
-                    const timeMatch = this.textContent.match(/\d+-\d+\s*دقيقة/);
-                    const time = timeMatch ? timeMatch[0] : '20-30 دقيقة';
-                    const feeMatch = this.textContent.match(/\d+\s*ر\.س/);
-                    const fee = feeMatch ? feeMatch[0] : '10 ر.س';
-                    showRestaurantModal(name.trim(), category.split(',')[0].trim(), rating, time, fee);
+            if (searchInput) searchInput.addEventListener('keydown', handleSearch);
+            if (mobileSearchInput) mobileSearchInput.addEventListener('keydown', handleSearch);
+            const plusCard = document.querySelector('.plus-card');
+            if (plusCard) {
+                plusCard.addEventListener('click', function(e) {
+                    if (e.target.tagName !== 'BUTTON') {
+                        showPlusAlert();
+                    }
                 });
-            });
-            const quickServiceItems = document.querySelectorAll('.quick-service-item');
-            quickServiceItems.forEach(item => {
-                item.addEventListener('click', function(e) {
-                    const service = this.querySelector('span')?.textContent || 'الخدمة';
-                    showSuccess('تم اختيار: ' + service);
-                });
-            });
+                const plusBtn = plusCard.querySelector('button');
+                if (plusBtn) {
+                    plusBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        Swal.fire({
+                            title: 'FastOrder+',
+                            text: 'تم الاشتراك في عضوية FastOrder+ بنجاح',
+                            icon: 'success',
+                            confirmButtonColor: '#FF5A00'
+                        });
+                    });
+                }
+            }
         })();
     </script>
 </body>
