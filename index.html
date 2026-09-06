@@ -12,13 +12,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-    </script>
-    <script src="https://cdn.tailwindcss.com">
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
-    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -717,34 +712,6 @@
             align-items: center;
             gap: 4px;
         }
-        .leaflet-container {
-            font-family: 'Noto Sans Arabic', system-ui, sans-serif;
-            z-index: 1;
-        }
-        .custom-pin-marker {
-            background: none;
-            border: none;
-        }
-        .custom-pin-marker .pin-shape {
-            width: 36px;
-            height: 36px;
-            background: #FF5A00;
-            border-radius: 50% 50% 50% 0;
-            transform: rotate(-45deg);
-            border: 3px solid #fff;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        .custom-pin-marker .pin-shape .pin-dot {
-            width: 12px;
-            height: 12px;
-            background: #fff;
-            border-radius: 50%;
-            transform: rotate(45deg);
-        }
         .map-modal-container .swal2-html-container {
             padding: 0 !important;
             overflow: hidden !important;
@@ -796,7 +763,21 @@
             background: #e8e8e8;
             border-color: #ccc;
         }
+        .gm-style .gm-style-iw-c {
+            border-radius: 12px;
+        }
     </style>
+    <script>
+        function initGoogleMaps() {
+            window.googleMapsReady = true;
+            if (window.pendingMapInit) {
+                window.pendingMapInit();
+                window.pendingMapInit = null;
+            }
+        }
+    </script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initGoogleMaps&libraries=places&language=ar">
+    </script>
 </head>
 <body>
     <div class="relative min-h-screen">
@@ -1125,6 +1106,7 @@
 
             let mapInstance = null;
             let markerInstance = null;
+            let geocoderInstance = null;
             let selectedLat = 27.9158;
             let selectedLng = 34.3300;
             let isMapModalOpen = false;
@@ -1340,21 +1322,9 @@
                             const lon = position.coords.longitude;
                             selectedLat = lat;
                             selectedLng = lon;
-                            fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lon +
-                                    '&accept-language=ar')
-                                .then(function(response) {
-                                    return response.json();
-                                })
-                                .then(function(data) {
-                                    if (data && data.display_name) {
-                                        userAddressText.textContent = data.display_name;
-                                    } else {
-                                        userAddressText.textContent = 'شرم الشيخ';
-                                    }
-                                })
-                                .catch(function() {
-                                    userAddressText.textContent = 'شرم الشيخ';
-                                });
+                            reverseGeocodeGoogle(lat, lon, function(address) {
+                                userAddressText.textContent = address;
+                            });
                         },
                         function() {
                             userAddressText.textContent = 'شرم الشيخ';
@@ -1366,93 +1336,76 @@
             }
             getLocation();
 
-            function reverseGeocode(lat, lon, callback, errorCallback) {
-                fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lon +
-                        '&accept-language=ar')
-                    .then(function(response) {
-                        return response.json();
-                    })
-                    .then(function(data) {
-                        if (data && data.display_name) {
-                            callback(data.display_name);
-                        } else {
-                            errorCallback('لم يتم العثور على عنوان');
-                        }
-                    })
-                    .catch(function() {
-                        errorCallback('خطأ في الاتصال');
-                    });
-            }
-
-            function searchLocation(query, callback, errorCallback) {
-                fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query) +
-                        '&accept-language=ar&limit=1')
-                    .then(function(response) {
-                        return response.json();
-                    })
-                    .then(function(data) {
-                        if (data && data.length > 0) {
-                            callback(data[0]);
-                        } else {
-                            errorCallback('لم يتم العثور على نتائج');
-                        }
-                    })
-                    .catch(function() {
-                        errorCallback('خطأ في البحث');
-                    });
-            }
-
-            function createCustomMarkerIcon() {
-                return L.divIcon({
-                    className: 'custom-pin-marker',
-                    html: '<div class="pin-shape"><div class="pin-dot"></div></div>',
-                    iconSize: [36, 36],
-                    iconAnchor: [18, 36],
-                    popupAnchor: [0, -36]
+            function reverseGeocodeGoogle(lat, lng, callback) {
+                if (!window.google || !window.google.maps) {
+                    callback('غير متاح');
+                    return;
+                }
+                if (!geocoderInstance) {
+                    geocoderInstance = new google.maps.Geocoder();
+                }
+                const latLng = { lat: lat, lng: lng };
+                geocoderInstance.geocode({ 'location': latLng }, function(results, status) {
+                    if (status === 'OK' && results[0]) {
+                        callback(results[0].formatted_address);
+                    } else {
+                        callback('عنوان غير معروف');
+                    }
                 });
             }
 
-            function initMap(lat, lng, onMarkerDrag) {
+            function searchLocationGoogle(query, callback) {
+                if (!window.google || !window.google.maps) {
+                    callback(null);
+                    return;
+                }
+                if (!geocoderInstance) {
+                    geocoderInstance = new google.maps.Geocoder();
+                }
+                geocoderInstance.geocode({ 'address': query }, function(results, status) {
+                    if (status === 'OK' && results[0]) {
+                        const location = results[0].geometry.location;
+                        callback({ lat: location.lat(), lng: location.lng() });
+                    } else {
+                        callback(null);
+                    }
+                });
+            }
+
+            function initGoogleMap(lat, lng, onMarkerDrag) {
                 if (mapInstance) {
-                    mapInstance.remove();
                     mapInstance = null;
                     markerInstance = null;
                 }
-                const mapContainer = document.getElementById('leafletMapContainer');
+                const mapContainer = document.getElementById('googleMapContainer');
                 if (!mapContainer) return;
-                mapInstance = L.map(mapContainer, {
-                    center: [lat, lng],
+                mapInstance = new google.maps.Map(mapContainer, {
+                    center: { lat: lat, lng: lng },
                     zoom: 13,
-                    zoomControl: true,
-                    attributionControl: true,
-                    scrollWheelZoom: true
+                    mapTypeControl: false,
+                    streetViewControl: false,
+                    fullscreenControl: true
                 });
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                    attribution: '© OpenStreetMap'
-                }).addTo(mapInstance);
-                markerInstance = L.marker([lat, lng], {
+                markerInstance = new google.maps.Marker({
+                    position: { lat: lat, lng: lng },
+                    map: mapInstance,
                     draggable: true,
-                    icon: createCustomMarkerIcon()
-                }).addTo(mapInstance);
-                markerInstance.on('dragend', function() {
-                    const pos = markerInstance.getLatLng();
-                    selectedLat = pos.lat;
-                    selectedLng = pos.lng;
+                    animation: google.maps.Animation.DROP,
+                    title: 'موقعك'
+                });
+                markerInstance.addListener('dragend', function() {
+                    const pos = markerInstance.getPosition();
+                    selectedLat = pos.lat();
+                    selectedLng = pos.lng();
                     if (onMarkerDrag) onMarkerDrag(selectedLat, selectedLng);
                 });
-                mapInstance.on('click', function(e) {
-                    const pos = e.latlng;
-                    selectedLat = pos.lat;
-                    selectedLng = pos.lng;
-                    if (markerInstance) {
-                        markerInstance.setLatLng([selectedLat, selectedLng]);
-                    }
+                mapInstance.addListener('click', function(e) {
+                    const pos = e.latLng;
+                    selectedLat = pos.lat();
+                    selectedLng = pos.lng();
+                    markerInstance.setPosition(pos);
                     if (onMarkerDrag) onMarkerDrag(selectedLat, selectedLng);
                 });
-                setTimeout(function() {
-                    if (mapInstance) mapInstance.invalidateSize();
-                }, 150);
             }
 
             function updateCoordsBar(lat, lng) {
@@ -1472,10 +1425,9 @@
                     html: '<div class="map-search-wrapper">' +
                         '<input type="text" id="mapSearchInput" placeholder="ابحث عن عنوان أو منطقة..." style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid #ddd;font-size:0.85rem;font-family:inherit;">' +
                         '</div>' +
-                        '<div id="leafletMapContainer" style="height:360px;width:100%;position:relative;z-index:1;"></div>' +
+                        '<div id="googleMapContainer" style="height:360px;width:100%;position:relative;z-index:1;"></div>' +
                         '<div class="map-coords-bar">' +
-                        '<span id="mapCoordsDisplay">خط العرض: ' + currentLat.toFixed(6) + ' | خط الطول: ' + currentLng
-                        .toFixed(6) + '</span>' +
+                        '<span id="mapCoordsDisplay">خط العرض: ' + currentLat.toFixed(6) + ' | خط الطول: ' + currentLng.toFixed(6) + '</span>' +
                         '<button type="button" id="mapUseCurrentBtn" class="map-use-current-btn">📍 موقعي الحالي</button>' +
                         '</div>',
                     showCancelButton: true,
@@ -1490,7 +1442,7 @@
                     },
                     didOpen: function() {
                         setTimeout(function() {
-                            initMap(currentLat, currentLng, function(lat, lng) {
+                            initGoogleMap(currentLat, currentLng, function(lat, lng) {
                                 updateCoordsBar(lat, lng);
                             });
                             const searchInput = document.getElementById('mapSearchInput');
@@ -1499,24 +1451,22 @@
                                     if (e.key === 'Enter' && e.target.value.trim()) {
                                         const query = e.target.value.trim();
                                         Swal.showLoading();
-                                        searchLocation(query, function(result) {
+                                        searchLocationGoogle(query, function(result) {
                                             Swal.hideLoading();
-                                            const lat = parseFloat(result.lat);
-                                            const lon = parseFloat(result.lon);
-                                            if (!isNaN(lat) && !isNaN(lon)) {
-                                                currentLat = lat;
-                                                currentLng = lon;
-                                                selectedLat = lat;
-                                                selectedLng = lon;
+                                            if (result) {
+                                                currentLat = result.lat;
+                                                currentLng = result.lng;
+                                                selectedLat = result.lat;
+                                                selectedLng = result.lng;
                                                 if (markerInstance && mapInstance) {
-                                                    markerInstance.setLatLng([lat, lon]);
-                                                    mapInstance.setView([lat, lon], 15);
+                                                    markerInstance.setPosition({ lat: result.lat, lng: result.lng });
+                                                    mapInstance.setCenter({ lat: result.lat, lng: result.lng });
+                                                    mapInstance.setZoom(15);
                                                 }
-                                                updateCoordsBar(lat, lon);
+                                                updateCoordsBar(result.lat, result.lng);
+                                            } else {
+                                                Swal.showValidationMessage('لم يتم العثور على العنوان');
                                             }
-                                        }, function(errMsg) {
-                                            Swal.hideLoading();
-                                            Swal.showValidationMessage(errMsg);
                                         });
                                     }
                                 });
@@ -1535,38 +1485,34 @@
                                             selectedLat = lat;
                                             selectedLng = lon;
                                             if (markerInstance && mapInstance) {
-                                                markerInstance.setLatLng([lat, lon]);
-                                                mapInstance.setView([lat, lon], 15);
+                                                markerInstance.setPosition({ lat: lat, lng: lon });
+                                                mapInstance.setCenter({ lat: lat, lng: lon });
+                                                mapInstance.setZoom(15);
                                             }
                                             updateCoordsBar(lat, lon);
                                         }, function() {
                                             Swal.hideLoading();
-                                            Swal.showValidationMessage(
-                                                'تعذر الحصول على موقعك الحالي');
+                                            Swal.showValidationMessage('تعذر الحصول على موقعك الحالي');
                                         });
                                     } else {
-                                        Swal.showValidationMessage(
-                                        'المتصفح لا يدعم تحديد الموقع');
+                                        Swal.showValidationMessage('المتصفح لا يدعم تحديد الموقع');
                                     }
                                 });
                             }
-                        }, 200);
+                        }, 300);
                     },
                     preConfirm: function() {
                         return new Promise(function(resolve, reject) {
-                            reverseGeocode(selectedLat, selectedLng, function(address) {
-                                resolve(address);
-                            }, function(errMsg) {
-                                reject(errMsg);
+                            reverseGeocodeGoogle(selectedLat, selectedLng, function(address) {
+                                if (address && address !== 'غير متاح' && address !== 'عنوان غير معروف') {
+                                    resolve(address);
+                                } else {
+                                    reject('لم يتم العثور على عنوان');
+                                }
                             });
                         });
                     },
                     willClose: function() {
-                        if (mapInstance) {
-                            mapInstance.remove();
-                            mapInstance = null;
-                            markerInstance = null;
-                        }
                         isMapModalOpen = false;
                     }
                 }).then(function(result) {
@@ -1592,7 +1538,6 @@
                 openMapModal();
             });
             userAddressContainer.style.cursor = 'pointer';
-
             const locationIcon = userAddressContainer.querySelector('i');
             if (locationIcon) {
                 locationIcon.addEventListener('click', function(e) {
