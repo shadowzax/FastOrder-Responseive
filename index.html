@@ -183,29 +183,25 @@
         }
         .notification-btn {
             position: relative;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--darker-bg);
-            border: 1px solid var(--border-color);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--color-muted);
+            font-size: 1.5rem;
+            padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: var(--color-muted);
-            font-size: 1.2rem;
+            transition: color 0.2s;
             flex-shrink: 0;
         }
         .notification-btn:hover {
-            background: rgba(255, 90, 0, 0.08);
             color: #FF5A00;
-            border-color: #FF5A00;
         }
         .notification-btn .notification-dot {
             position: absolute;
-            top: 8px;
-            left: 8px;
+            top: 2px;
+            right: 2px;
             width: 8px;
             height: 8px;
             border-radius: 50%;
@@ -520,11 +516,6 @@
         .hide-scrollbar::-webkit-scrollbar {
             display: none;
         }
-        .header-logo {
-            height: 45px;
-            width: auto;
-            object-fit: contain;
-        }
         .plus-card {
             background: linear-gradient(135deg, #1A1A1A, #333333);
             border-radius: 20px;
@@ -579,18 +570,22 @@
         .user-address {
             font-size: 0.75rem;
             color: var(--color-muted);
-            max-width: 120px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            white-space: normal;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
+            min-width: 0;
+            flex: 1;
+            line-height: 1.4;
+        }
+        .user-address span {
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
         }
         @media (max-width: 640px) {
             .user-address {
-                max-width: 80px;
                 font-size: 0.7rem;
             }
         }
@@ -736,15 +731,12 @@
         <main class="lg:mr-[280px] transition-all">
             <header id="mainHeader">
                 <div class="flex items-center gap-2 flex-1 min-w-0">
-                    <a class="flex w-fit select-none items-center" href="#">
-                        <img src="https://i.ibb.co/mrRhHsQh/1788099660805-removebg-preview.png" alt="طلبات" class="header-logo">
-                    </a>
-                    <div class="user-address">
-                        <i class="las la-map-marker-alt" style="color: #FF5A00;"></i>
-                        <span class="truncate">الهضبه - بركه مول</span>
+                    <div class="user-address" id="userAddressContainer">
+                        <i class="las la-map-marker-alt" style="color: #FF5A00; flex-shrink: 0;"></i>
+                        <span id="userAddressText">شرم الشيخ</span>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-shrink-0">
                     <button class="notification-btn" id="notificationBtn">
                         <i class="las la-bell"></i>
                         <span class="notification-dot"></span>
@@ -759,7 +751,7 @@
                 </div>
                 <div class="ad-placeholder mb-8">
                     <div class="hidden h-10 w-10 items-center justify-center rounded-full bg-[#e4f0ec] sm:flex">
-                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="text-xl text-[#7fc5b2]" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M21 11.0975V16.0909C21 19.1875 21 20.7358 20.2659 21.4123C19.9158 21.735 19.4739 21.9377 19.0031 21.9915C18.016 22.1045 16.8633 21.0849 14.5578 19.0458C13.5388 18.1445 13.0292 17.6938 12.4397 17.5751C12.1494 17.5166 11.8506 17.5166 11.5603 17.5751C10.9708 17.6938 10.4612 18.1445 9.44216 19.0458C7.13673 21.0849 5.98402 22.1045 4.99692 21.9915C4.52615 21.9377 4.08421 21.735 3.73411 21.4123C3 20.7358 3 19.1875 3 16.0909V11.0975C3 6.80891 3 4.6646 4.31802 3.3323C5.63604 2 7.75736 2 12 2C16.2426 2 18.364 2 19.682 3.3323C21 4.6646 21 6.80891 21 11.0975ZM8.25 6C8.25 5.58579 8.58579 5.25 9 5.25H15C15.4142 5.25 15.75 5.58579 15.75 6C15.75 6.41421 15.4142 6.75 15 6.75H9C8.58579 6.75 8.25 6.41421 8.25 6Z" clip-rule="evenodd"></path></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="text-xl text-[#7fc5b2]" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M21 11.0975V16.0909C21 19.1875 21 20.7358 20.2659 21.4123C19.9158 21.735 19.4739 21.9377 19.0031 21.9915C18.016 22.1045 16.8633 21.0849 14.5578 19.0458C13.5388 18.1445 13.0292 17.6938 12.4397 17.5751C12.1494 17.5166 11.8506 17.5166 11.5603 17.5751C10.9708 17.6938 10.4612 18.1445 9.44216 19.0458C7.13673 21.0849 5.98402 22.1045 4.99692 21.9915C4.52615 21.9377 4.08421 21.735 3.73411 21.4123C3 20.7358 3 19.1875 3 16.0909V11.0975C3 6.80891 3 4.6646 4.31802 3.3323C5.63604 2 7.75736 2 12 2C16.2426 2 18.364 2 19.682 3.3323C21 4.6646 21 6.80891 21 11.0975ZM8.25 6C8.25 5.58579 8.58579 5.25 9 5.25H15C15.4142 5.25 15.75 5.58579 15.75 6C15.75 6.41421 15.4142 6.75 15 6.75H9C8.58579 6.75 8.25 6.41421 8.25 6.75Z" clip-rule="evenodd"></path></svg>
                     </div>
                     <p class="text-[10px] font-medium text-[#a5c4ba] sm:text-sm">مساحة إعلانية — FastOrder</p>
                     <p class="hidden text-xs text-[#c8dfd5] sm:block">ستظهر هنا العروض والإعلانات الحصرية</p>
@@ -1022,12 +1014,11 @@
             const headerAvatar = document.getElementById('headerAvatar');
             const notificationBtn = document.getElementById('notificationBtn');
             const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
-
+            const userAddressText = document.getElementById('userAddressText');
             function openSidebar() {
                 sidebar.classList.add('mobile-open');
                 sidebar.classList.remove('mobile-closed');
             }
-
             function closeSidebar() {
                 sidebar.classList.remove('mobile-open');
                 sidebar.classList.add('mobile-closed');
@@ -1189,22 +1180,20 @@
                     }
                 });
             });
-            const searchInput = document.getElementById('searchInput');
             const mobileSearchInput = document.getElementById('mobileSearchInput');
-
-            function handleSearch(e) {
-                if (e.key === 'Enter' && e.target.value.trim()) {
-                    Swal.fire({
-                        title: 'جاري البحث',
-                        text: 'جاري البحث عن: ' + e.target.value.trim(),
-                        icon: 'info',
-                        confirmButtonColor: '#FF5A00'
-                    });
-                    e.target.value = '';
-                }
+            if (mobileSearchInput) {
+                mobileSearchInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && e.target.value.trim()) {
+                        Swal.fire({
+                            title: 'جاري البحث',
+                            text: 'جاري البحث عن: ' + e.target.value.trim(),
+                            icon: 'info',
+                            confirmButtonColor: '#FF5A00'
+                        });
+                        e.target.value = '';
+                    }
+                });
             }
-            if (searchInput) searchInput.addEventListener('keydown', handleSearch);
-            if (mobileSearchInput) mobileSearchInput.addEventListener('keydown', handleSearch);
             const plusCard = document.querySelector('.plus-card');
             if (plusCard) {
                 plusCard.addEventListener('click', function(e) {
@@ -1225,6 +1214,36 @@
                     });
                 }
             }
+            function getLocation() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        function(position) {
+                            const lat = position.coords.latitude;
+                            const lon = position.coords.longitude;
+                            fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lon + '&accept-language=ar')
+                                .then(function(response) {
+                                    return response.json();
+                                })
+                                .then(function(data) {
+                                    if (data && data.display_name) {
+                                        userAddressText.textContent = data.display_name;
+                                    } else {
+                                        userAddressText.textContent = 'شرم الشيخ';
+                                    }
+                                })
+                                .catch(function() {
+                                    userAddressText.textContent = 'شرم الشيخ';
+                                });
+                        },
+                        function() {
+                            userAddressText.textContent = 'شرم الشيخ';
+                        }
+                    );
+                } else {
+                    userAddressText.textContent = 'شرم الشيخ';
+                }
+            }
+            getLocation();
         })();
     </script>
 </body>
