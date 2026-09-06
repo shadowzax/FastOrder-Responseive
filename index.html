@@ -2,18 +2,20 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <meta name="theme-color" content="#FF5A00">
     <title>طلبات - توصيل الطعام</title>
     <meta name="description" content="اطلب طعامك المفضل من أفضل المطاعم حولك">
     <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍔</text></svg>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -55,6 +57,11 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            width: 100%;
+            overscroll-behavior: none;
         }
         body {
             font-family: 'Noto Sans Arabic', 'Alexandria', system-ui, sans-serif;
@@ -716,10 +723,13 @@
             padding: 0 !important;
             overflow: hidden !important;
             margin: 0 !important;
+            height: 100% !important;
+            max-height: 100% !important;
         }
         .map-search-wrapper {
             padding: 12px 16px;
             border-bottom: 1px solid #eee;
+            background: #fff;
         }
         .map-search-wrapper input {
             border-radius: 10px !important;
@@ -744,6 +754,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
         }
         .map-use-current-btn {
             background: #F0F4F3;
@@ -763,57 +775,53 @@
             background: #e8e8e8;
             border-color: #ccc;
         }
-        .gm-style .gm-style-iw-c {
-            border-radius: 12px;
+        #leafletMapContainer {
+            height: 100%;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            background: #f0f0f0;
+            flex: 1;
+            min-height: 300px;
         }
-        .loading-overlay {
+        .swal2-popup.map-fullscreen {
+            width: 100vw !important;
+            height: 100vh !important;
+            height: 100dvh !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+            max-height: 100dvh !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .swal2-popup.map-fullscreen .swal2-title {
+            padding: 10px 16px;
+            font-size: 1rem;
+            background: #fff;
+            border-bottom: 1px solid #eee;
+            margin: 0;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .swal2-popup.map-fullscreen .swal2-actions {
+            margin: 0;
+            padding: 10px 16px;
+            background: #fff;
+            border-top: 1px solid #eee;
+            flex-shrink: 0;
+        }
+        .swal2-popup.map-fullscreen .swal2-content {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 20px;
-            font-size: 0.85rem;
-            color: #666;
-        }
-        .loading-overlay i {
-            animation: spin 1s linear infinite;
-            font-size: 1.5rem;
-            color: #FF5A00;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+            height: calc(100% - 100px);
         }
     </style>
-    <script>
-        // تهيئة خرائط جوجل
-        function initGoogleMaps() {
-            window.googleMapsReady = true;
-            if (window.pendingMapInit) {
-                const callback = window.pendingMapInit;
-                window.pendingMapInit = null;
-                callback();
-            }
-            if (window.onGoogleMapsLoaded) {
-                window.onGoogleMapsLoaded();
-            }
-        }
-
-        // معالجة خطأ تحميل خرائط جوجل
-        function handleGoogleMapsError() {
-            window.googleMapsError = true;
-            console.warn('فشل تحميل خرائط جوجل');
-        }
-    </script>
-    <!-- استبدل YOUR_GOOGLE_MAPS_API_KEY بمفتاحك الفعلي -->
-    <script async defer 
-        src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initGoogleMaps&libraries=places&language=ar"
-        onerror="handleGoogleMapsError()">
-    </script>
 </head>
 <body>
     <div class="relative min-h-screen">
-        <!-- الشريط الجانبي -->
         <aside class="dashboard-sidebar mobile-closed" id="dashboardSidebar">
             <div class="mb-4 px-2 mt-2">
                 <div class="flex items-center gap-3 pb-4 border-b" style="border-color: var(--border-color);">
@@ -849,7 +857,6 @@
         </aside>
 
         <main class="lg:mr-[280px] transition-all">
-            <!-- الهيدر -->
             <header id="mainHeader">
                 <div class="flex items-center gap-2 flex-1 min-w-0">
                     <div class="user-address" id="userAddressContainer" title="اضغط لتغيير موقعك">
@@ -868,13 +875,11 @@
             </header>
 
             <div class="container mx-auto px-4 py-6 max-w-6xl">
-                <!-- البحث في الموبايل -->
                 <div class="search-bar sm:hidden mb-4 w-full">
                     <i class="las la-search text-[var(--color-muted)] text-lg"></i>
                     <input type="text" placeholder="ابحث عن مطعم أو وجبة..." id="mobileSearchInput">
                 </div>
 
-                <!-- مساحة إعلانية -->
                 <div class="ad-placeholder mb-8">
                     <div class="hidden h-10 w-10 items-center justify-center rounded-full bg-[#e4f0ec] sm:flex">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="text-xl text-[#7fc5b2]" width="1em" height="1em"><path fill="currentColor" fill-rule="evenodd" d="M21 11.0975V16.0909C21 19.1875 21 20.7358 20.2659 21.4123C19.9158 21.735 19.4739 21.9377 19.0031 21.9915C18.016 22.1045 16.8633 21.0849 14.5578 19.0458C13.5388 18.1445 13.0292 17.6938 12.4397 17.5751C12.1494 17.5166 11.8506 17.5166 11.5603 17.5751C10.9708 17.6938 10.4612 18.1445 9.44216 19.0458C7.13673 21.0849 5.98402 22.1045 4.99692 21.9915C4.52615 21.9377 4.08421 21.735 3.73411 21.4123C3 20.7358 3 19.1875 3 16.0909V11.0975C3 6.80891 3 4.6646 4.31802 3.3323C5.63604 2 7.75736 2 12 2C16.2426 2 18.364 2 19.682 3.3323C21 4.6646 21 6.80891 21 11.0975ZM8.25 6C8.25 5.58579 8.58579 5.25 9 5.25H15C15.4142 5.25 15.75 5.58579 15.75 6C15.75 6.41421 15.4142 6.75 15 6.75H9C8.58579 6.75 8.25 6.41421 8.25 6Z" clip-rule="evenodd"></path></svg>
@@ -883,7 +888,6 @@
                     <p class="hidden text-xs text-[#c8dfd5] sm:block">ستظهر هنا العروض والإعلانات الحصرية</p>
                 </div>
 
-                <!-- عرض الخصم -->
                 <div class="offer-banner mb-8" id="mainOfferBanner">
                     <div class="flex-1">
                         <h2 class="text-2xl sm:text-3xl font-extrabold mb-2">خصم 50% على أول طلب</h2>
@@ -893,7 +897,6 @@
                     <div class="text-7xl sm:text-8xl flex-shrink-0"><i class="las la-utensils"></i></div>
                 </div>
 
-                <!-- بطاقة العضوية -->
                 <div class="plus-card mb-8" onclick="showPlusAlert()">
                     <div class="flex-1">
                         <div class="flex items-center gap-3 mb-4">
@@ -914,7 +917,6 @@
                     <div class="hidden md:block text-7xl flex-shrink-0"><i class="las la-crown text-[#FF5A00]"></i></div>
                 </div>
 
-                <!-- الخدمات السريعة -->
                 <div class="mb-8">
                     <h3 class="section-title"><i class="las la-question-circle"></i> محتاج ايه النهارده؟</h3>
                     <div class="flex gap-6 overflow-x-auto hide-scrollbar pb-2" style="scroll-behavior: smooth;">
@@ -949,7 +951,6 @@
                     </div>
                 </div>
 
-                <!-- المتاجر المميزة -->
                 <div class="mb-8">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="section-title mb-0"><i class="las la-star"></i> المتاجر المميزة</h3>
@@ -1037,7 +1038,6 @@
                     </div>
                 </div>
 
-                <!-- الأكثر طلباً -->
                 <div class="mb-8">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="section-title mb-0"><i class="las la-fire"></i> الأكثر طلباً</h3>
@@ -1125,7 +1125,6 @@
                     </div>
                 </div>
 
-                <!-- عروض اليوم -->
                 <div class="mb-6">
                     <div class="offer-banner" style="background: linear-gradient(135deg, #FF8C38, #FFB800);" onclick="showOfferAlert()">
                         <div class="flex-1">
@@ -1140,7 +1139,6 @@
         </main>
     </div>
 
-    <!-- شريط التنقل السفلي للموبايل -->
     <div class="bottom-mobile-nav" id="bottomMobileNav">
         <a href="#" class="bottom-nav-item active" data-tab="home"><i class="las la-home"></i><span>الرئيسية</span></a>
         <a href="#" class="bottom-nav-item" data-tab="offers"><i class="las la-percent"></i><span>العروض</span></a>
@@ -1151,9 +1149,6 @@
 
     <script>
         (function() {
-            // ==========================================
-            // عناصر DOM
-            // ==========================================
             const sidebar = document.getElementById('dashboardSidebar');
             const headerAvatar = document.getElementById('headerAvatar');
             const notificationBtn = document.getElementById('notificationBtn');
@@ -1161,20 +1156,14 @@
             const userAddressText = document.getElementById('userAddressText');
             const userAddressContainer = document.getElementById('userAddressContainer');
 
-            // ==========================================
-            // متغيرات الخريطة والموقع
-            // ==========================================
-            let mapInstance = null;
-            let markerInstance = null;
-            let geocoderInstance = null;
-            let selectedLat = 27.9158; // شرم الشيخ كافتراضي
+            let leafletMap = null;
+            let leafletMarker = null;
+            let selectedLat = 27.9158;
             let selectedLng = 34.3300;
             let isMapModalOpen = false;
             let isGeolocationInProgress = false;
+            let locationWatchId = null;
 
-            // ==========================================
-            // إدارة الشريط الجانبي
-            // ==========================================
             function openSidebar() {
                 sidebar.classList.add('mobile-open');
                 sidebar.classList.remove('mobile-closed');
@@ -1218,9 +1207,6 @@
                 }
             });
 
-            // ==========================================
-            // التنقل في الشريط الجانبي
-            // ==========================================
             const sidebarItems = document.querySelectorAll('.sidebar-item');
             sidebarItems.forEach(item => {
                 item.addEventListener('click', function(e) {
@@ -1232,7 +1218,6 @@
                 });
             });
 
-            // تسجيل الخروج
             document.getElementById('logoutBtn').addEventListener('click', (e) => {
                 e.preventDefault();
                 Swal.fire({
@@ -1256,9 +1241,6 @@
                 });
             });
 
-            // ==========================================
-            // شريط التنقل السفلي
-            // ==========================================
             bottomNavItems.forEach(item => {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -1281,9 +1263,6 @@
                 });
             });
 
-            // ==========================================
-            // زر الإشعارات
-            // ==========================================
             notificationBtn.addEventListener('click', () => {
                 Swal.fire({
                     title: 'الإشعارات',
@@ -1293,9 +1272,6 @@
                 });
             });
 
-            // ==========================================
-            // وظائف العرض (Alert)
-            // ==========================================
             window.showRestaurantAlert = function(name, category, rating, time, fee) {
                 Swal.fire({
                     title: name,
@@ -1339,9 +1315,6 @@
                 });
             };
 
-            // ==========================================
-            // عرض الخصم الرئيسي
-            // ==========================================
             const mainOfferBanner = document.getElementById('mainOfferBanner');
             if (mainOfferBanner) {
                 mainOfferBanner.addEventListener('click', function(e) {
@@ -1368,7 +1341,6 @@
                 }
             }
 
-            // أزرار العروض الأخرى
             document.querySelectorAll('.offer-banner button').forEach(btn => {
                 if (btn.closest('.offer-banner') !== mainOfferBanner) {
                     btn.addEventListener('click', function(e) {
@@ -1383,9 +1355,6 @@
                 }
             });
 
-            // ==========================================
-            // البحث في الموبايل
-            // ==========================================
             const mobileSearchInput = document.getElementById('mobileSearchInput');
             if (mobileSearchInput) {
                 mobileSearchInput.addEventListener('keydown', function(e) {
@@ -1401,7 +1370,6 @@
                 });
             }
 
-            // بطاقة العضوية
             const plusCard = document.querySelector('.plus-card');
             if (plusCard) {
                 plusCard.addEventListener('click', function(e) {
@@ -1423,216 +1391,204 @@
                 }
             }
 
-            // ==========================================
-            // تحديد الموقع الجغرافي (إصلاح المشكلة)
-            // ==========================================
-            
-            /**
-             * الحصول على موقع المستخدم الحالي
-             * مع معالجة كاملة لجميع حالات الخطأ
-             */
             function getCurrentLocation() {
                 if (isGeolocationInProgress) return;
                 isGeolocationInProgress = true;
 
-                // التحقق من دعم المتصفح
                 if (!navigator.geolocation) {
                     userAddressText.textContent = 'شرم الشيخ (افتراضي)';
-                    console.warn('المتصفح لا يدعم تحديد الموقع الجغرافي');
                     isGeolocationInProgress = false;
                     return;
                 }
 
-                // عرض حالة الانتظار
-                userAddressText.textContent = 'جاري تحديد موقعك...';
+                userAddressText.textContent = 'جاري تحديد موقعك بدقة...';
+
+                const options = {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 0
+                };
+
+                if (locationWatchId) {
+                    navigator.geolocation.clearWatch(locationWatchId);
+                }
 
                 navigator.geolocation.getCurrentPosition(
-                    // نجاح
                     function(position) {
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
+                        const accuracy = position.coords.accuracy;
                         selectedLat = lat;
                         selectedLng = lng;
                         
-                        console.log('تم تحديد الموقع بنجاح:', lat, lng);
+                        console.log('الموقع الأولي:', lat, lng, 'الدقة:', accuracy + 'م');
                         
-                        // عكس ترميز الإحداثيات للحصول على العنوان
-                        reverseGeocode(lat, lng, function(address) {
-                            if (address && address !== 'غير معروف') {
-                                userAddressText.textContent = address;
-                            } else {
-                                userAddressText.textContent = lat.toFixed(4) + ', ' + lng.toFixed(4);
-                            }
-                            isGeolocationInProgress = false;
+                        if (accuracy <= 50) {
+                            reverseGeocodeNominatim(lat, lng, function(address) {
+                                if (address && address !== 'غير معروف') {
+                                    userAddressText.textContent = address;
+                                } else {
+                                    userAddressText.textContent = lat.toFixed(6) + ', ' + lng.toFixed(6);
+                                }
+                                isGeolocationInProgress = false;
+                            });
+                        } else {
+                            locationWatchId = navigator.geolocation.watchPosition(
+                                function(pos) {
+                                    if (pos.coords.accuracy <= 30) {
+                                        selectedLat = pos.coords.latitude;
+                                        selectedLng = pos.coords.longitude;
+                                        reverseGeocodeNominatim(selectedLat, selectedLng, function(address) {
+                                            if (address && address !== 'غير معروف') {
+                                                userAddressText.textContent = address;
+                                            } else {
+                                                userAddressText.textContent = selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6);
+                                            }
+                                            isGeolocationInProgress = false;
+                                            if (locationWatchId) {
+                                                navigator.geolocation.clearWatch(locationWatchId);
+                                                locationWatchId = null;
+                                            }
+                                        });
+                                    }
+                                },
+                                function(error) {
+                                    reverseGeocodeNominatim(selectedLat, selectedLng, function(address) {
+                                        if (address && address !== 'غير معروف') {
+                                            userAddressText.textContent = address;
+                                        } else {
+                                            userAddressText.textContent = selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6);
+                                        }
+                                        isGeolocationInProgress = false;
+                                    });
+                                },
+                                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+                            );
+                        }
+                    },
+                    function(error) {
+                        let message = '';
+                        switch (error.code) {
+                            case error.PERMISSION_DENIED:
+                                message = 'تم رفض إذن الوصول للموقع. سيتم استخدام الموقع الافتراضي.';
+                                userAddressText.textContent = 'شرم الشيخ (افتراضي)';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                message = 'معلومات الموقع غير متوفرة حالياً.';
+                                userAddressText.textContent = 'شرم الشيخ (افتراضي)';
+                                break;
+                            case error.TIMEOUT:
+                                message = 'انتهت مهلة تحديد الموقع.';
+                                userAddressText.textContent = 'شرم الشيخ (افتراضي)';
+                                break;
+                            default:
+                                message = 'خطأ غير معروف في تحديد الموقع.';
+                                userAddressText.textContent = 'شرم الشيخ (افتراضي)';
+                        }
+                        isGeolocationInProgress = false;
+                        Swal.fire({
+                            title: 'تنبيه',
+                            text: message + ' يمكنك تغيير موقعك يدوياً بالضغط على العنوان.',
+                            icon: 'warning',
+                            confirmButtonColor: '#FF5A00',
+                            timer: 4000,
+                            showConfirmButton: true
                         });
                     },
-                    // خطأ
-                    function(error) {
-                        console.warn('خطأ في تحديد الموقع:', error.message);
-                        handleGeolocationError(error);
-                        isGeolocationInProgress = false;
-                    },
-                    // خيارات
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 300000
-                    }
+                    options
                 );
             }
 
-            /**
-             * معالجة أخطاء تحديد الموقع
-             */
-            function handleGeolocationError(error) {
-                let message = '';
-                switch (error.code) {
-                    case error.PERMISSION_DENIED:
-                        message = 'تم رفض إذن الوصول للموقع. سيتم استخدام الموقع الافتراضي.';
-                        userAddressText.textContent = 'شرم الشيخ (افتراضي)';
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        message = 'معلومات الموقع غير متوفرة حالياً.';
-                        userAddressText.textContent = 'شرم الشيخ (افتراضي)';
-                        break;
-                    case error.TIMEOUT:
-                        message = 'انتهت مهلة تحديد الموقع.';
-                        userAddressText.textContent = 'شرم الشيخ (افتراضي)';
-                        break;
-                    default:
-                        message = 'خطأ غير معروف في تحديد الموقع.';
-                        userAddressText.textContent = 'شرم الشيخ (افتراضي)';
-                }
-                console.warn(message);
-                
-                // إشعار المستخدم بشكل لطيف
-                Swal.fire({
-                    title: 'تنبيه',
-                    text: message + ' يمكنك تغيير موقعك يدوياً بالضغط على العنوان.',
-                    icon: 'warning',
-                    confirmButtonColor: '#FF5A00',
-                    timer: 4000,
-                    showConfirmButton: true
-                });
-            }
-
-            /**
-             * عكس ترميز الإحداثيات إلى عنوان نصي
-             */
-            function reverseGeocode(lat, lng, callback) {
-                // التحقق من توفر خرائط جوجل
-                if (!window.google || !window.google.maps || !window.google.maps.Geocoder) {
-                    console.warn('خرائط جوجل غير متاحة للترميز العكسي');
-                    callback('شرم الشيخ (افتراضي)');
-                    return;
-                }
-                
-                if (!geocoderInstance) {
-                    geocoderInstance = new google.maps.Geocoder();
-                }
-                
-                geocoderInstance.geocode(
-                    { 'location': { lat: lat, lng: lng } },
-                    function(results, status) {
-                        if (status === 'OK' && results && results[0]) {
-                            callback(results[0].formatted_address);
+            function reverseGeocodeNominatim(lat, lng, callback) {
+                const url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng + '&accept-language=ar&zoom=18';
+                fetch(url, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
+                    .then(function(response) {
+                        if (!response.ok) throw new Error('Network error');
+                        return response.json();
+                    })
+                    .then(function(data) {
+                        if (data && data.display_name) {
+                            callback(data.display_name);
                         } else {
-                            console.warn('فشل الترميز العكسي:', status);
                             callback('غير معروف');
                         }
-                    }
-                );
+                    })
+                    .catch(function() {
+                        callback('غير معروف');
+                    });
             }
 
-            /**
-             * البحث عن موقع بالاسم
-             */
-            function searchLocation(query, callback) {
-                if (!window.google || !window.google.maps || !window.google.maps.Geocoder) {
-                    console.warn('خرائط جوجل غير متاحة للبحث');
-                    callback(null);
-                    return;
-                }
-                
-                if (!geocoderInstance) {
-                    geocoderInstance = new google.maps.Geocoder();
-                }
-                
-                geocoderInstance.geocode(
-                    { 'address': query },
-                    function(results, status) {
-                        if (status === 'OK' && results && results[0]) {
-                            const location = results[0].geometry.location;
-                            callback({ lat: location.lat(), lng: location.lng() });
+            function searchLocationNominatim(query, callback) {
+                const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&q=' + encodeURIComponent(query) + '&accept-language=ar&limit=1';
+                fetch(url, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
+                    .then(function(response) {
+                        if (!response.ok) throw new Error('Network error');
+                        return response.json();
+                    })
+                    .then(function(data) {
+                        if (data && data.length > 0) {
+                            callback({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
                         } else {
                             callback(null);
                         }
-                    }
-                );
+                    })
+                    .catch(function() {
+                        callback(null);
+                    });
             }
 
-            // ==========================================
-            // تهيئة الخريطة في النافذة المنبثقة
-            // ==========================================
-            function initMapInModal(lat, lng, onMarkerDrag) {
-                const mapContainer = document.getElementById('googleMapContainer');
+            function initLeafletMap(lat, lng, onMarkerDrag) {
+                const mapContainer = document.getElementById('leafletMapContainer');
                 if (!mapContainer) return;
-                
-                // تنظيف الخريطة السابقة إن وجدت
-                if (mapInstance) {
-                    mapInstance = null;
-                    markerInstance = null;
+
+                if (leafletMap) {
+                    leafletMap.remove();
+                    leafletMap = null;
+                    leafletMarker = null;
                 }
-                
-                // التحقق من توفر خرائط جوجل
-                if (!window.google || !window.google.maps) {
-                    mapContainer.innerHTML = '<div class="loading-overlay"><i class="las la-exclamation-triangle"></i> خرائط جوجل غير متاحة حالياً</div>';
-                    return;
-                }
-                
+
                 try {
-                    mapInstance = new google.maps.Map(mapContainer, {
-                        center: { lat: lat, lng: lng },
-                        zoom: 13,
-                        mapTypeControl: false,
-                        streetViewControl: false,
-                        fullscreenControl: true,
+                    leafletMap = L.map(mapContainer, {
                         zoomControl: true
-                    });
-                    
-                    markerInstance = new google.maps.Marker({
-                        position: { lat: lat, lng: lng },
-                        map: mapInstance,
-                        draggable: true,
-                        animation: google.maps.Animation.DROP,
-                        title: 'موقعك المحدد'
-                    });
-                    
-                    // عند سحب العلامة
-                    markerInstance.addListener('dragend', function() {
-                        const pos = markerInstance.getPosition();
-                        selectedLat = pos.lat();
-                        selectedLng = pos.lng();
+                    }).setView([lat, lng], 16);
+
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '© OpenStreetMap'
+                    }).addTo(leafletMap);
+
+                    leafletMarker = L.marker([lat, lng], { draggable: true }).addTo(leafletMap);
+
+                    leafletMarker.on('dragend', function() {
+                        const pos = leafletMarker.getLatLng();
+                        selectedLat = pos.lat;
+                        selectedLng = pos.lng;
                         if (onMarkerDrag) onMarkerDrag(selectedLat, selectedLng);
                     });
-                    
-                    // عند النقر على الخريطة
-                    mapInstance.addListener('click', function(e) {
-                        const pos = e.latLng;
-                        selectedLat = pos.lat();
-                        selectedLng = pos.lng();
-                        markerInstance.setPosition(pos);
+
+                    leafletMap.on('click', function(e) {
+                        selectedLat = e.latlng.lat;
+                        selectedLng = e.latlng.lng;
+                        leafletMarker.setLatLng([selectedLat, selectedLng]);
                         if (onMarkerDrag) onMarkerDrag(selectedLat, selectedLng);
                     });
+
+                    setTimeout(function() {
+                        leafletMap.invalidateSize();
+                    }, 100);
                 } catch (error) {
-                    console.error('خطأ في تهيئة الخريطة:', error);
-                    mapContainer.innerHTML = '<div class="loading-overlay"><i class="las la-exclamation-triangle"></i> حدث خطأ في تحميل الخريطة</div>';
+                    mapContainer.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;">تعذر تحميل الخريطة</div>';
                 }
             }
 
-            /**
-             * تحديث شريط الإحداثيات
-             */
             function updateCoordsBar(lat, lng) {
                 const coordsEl = document.getElementById('mapCoordsDisplay');
                 if (coordsEl) {
@@ -1640,68 +1596,59 @@
                 }
             }
 
-            /**
-             * فتح نافذة الخريطة لتحديد الموقع
-             */
             function openMapModal() {
                 if (isMapModalOpen) return;
                 isMapModalOpen = true;
-                
+
                 let currentLat = selectedLat;
                 let currentLng = selectedLng;
-                
-                // التحقق من توفر خرائط جوجل
-                const mapsAvailable = window.google && window.google.maps && window.googleMapsReady;
-                
+                const isMobile = window.innerWidth <= 768;
+
                 Swal.fire({
-                    title: '📍 حدد موقعك على الخريطة',
+                    title: 'حدد موقعك على الخريطة',
                     html: '<div class="map-search-wrapper">' +
                         '<input type="text" id="mapSearchInput" placeholder="ابحث عن عنوان أو منطقة..." style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid #ddd;font-size:0.85rem;font-family:inherit;">' +
                         '</div>' +
-                        '<div id="googleMapContainer" style="height:360px;width:100%;position:relative;z-index:1;background:#f0f0f0;">' +
-                        (mapsAvailable ? '' : '<div class="loading-overlay"><i class="las la-exclamation-triangle"></i> خرائط جوجل غير متاحة - يمكنك إدخال الإحداثيات يدوياً</div>') +
-                        '</div>' +
+                        '<div id="leafletMapContainer" style="flex:1;min-height:300px;height:100%;width:100%;position:relative;z-index:1;background:#f0f0f0;"></div>' +
                         '<div class="map-coords-bar">' +
                         '<span id="mapCoordsDisplay">خط العرض: ' + currentLat.toFixed(6) + ' | خط الطول: ' + currentLng.toFixed(6) + '</span>' +
-                        '<button type="button" id="mapUseCurrentBtn" class="map-use-current-btn">📍 موقعي الحالي</button>' +
+                        '<button type="button" id="mapUseCurrentBtn" class="map-use-current-btn">موقعي الحالي</button>' +
                         '</div>',
                     showCancelButton: true,
                     confirmButtonText: 'تأكيد الموقع',
                     cancelButtonText: 'إلغاء',
                     confirmButtonColor: '#FF5A00',
                     cancelButtonColor: '#717171',
-                    width: '95%',
-                    maxWidth: '720px',
                     customClass: {
-                        container: 'map-modal-container'
+                        container: 'map-modal-container',
+                        popup: isMobile ? 'map-fullscreen' : ''
                     },
+                    width: isMobile ? '100vw' : '720px',
+                    heightAuto: false,
+                    grow: isMobile ? 'fullscreen' : false,
+                    padding: '0',
                     didOpen: function() {
-                        // تهيئة الخريطة بعد فتح النافذة
                         setTimeout(function() {
-                            if (mapsAvailable) {
-                                initMapInModal(currentLat, currentLng, function(lat, lng) {
-                                    updateCoordsBar(lat, lng);
-                                });
-                            }
-                            
-                            // البحث في الخريطة
+                            initLeafletMap(currentLat, currentLng, function(lat, lng) {
+                                updateCoordsBar(lat, lng);
+                            });
+
                             const searchInput = document.getElementById('mapSearchInput');
                             if (searchInput) {
                                 searchInput.addEventListener('keydown', function(e) {
                                     if (e.key === 'Enter' && e.target.value.trim()) {
                                         const query = e.target.value.trim();
                                         Swal.showLoading();
-                                        searchLocation(query, function(result) {
+                                        searchLocationNominatim(query, function(result) {
                                             Swal.hideLoading();
                                             if (result) {
                                                 currentLat = result.lat;
                                                 currentLng = result.lng;
                                                 selectedLat = result.lat;
                                                 selectedLng = result.lng;
-                                                if (markerInstance && mapInstance) {
-                                                    markerInstance.setPosition({ lat: result.lat, lng: result.lng });
-                                                    mapInstance.setCenter({ lat: result.lat, lng: result.lng });
-                                                    mapInstance.setZoom(15);
+                                                if (leafletMarker && leafletMap) {
+                                                    leafletMarker.setLatLng([result.lat, result.lng]);
+                                                    leafletMap.setView([result.lat, result.lng], 16);
                                                 }
                                                 updateCoordsBar(result.lat, result.lng);
                                             } else {
@@ -1711,8 +1658,7 @@
                                     }
                                 });
                             }
-                            
-                            // زر استخدام الموقع الحالي
+
                             const useCurrentBtn = document.getElementById('mapUseCurrentBtn');
                             if (useCurrentBtn) {
                                 useCurrentBtn.addEventListener('click', function() {
@@ -1727,10 +1673,9 @@
                                                 currentLng = lng;
                                                 selectedLat = lat;
                                                 selectedLng = lng;
-                                                if (markerInstance && mapInstance) {
-                                                    markerInstance.setPosition({ lat: lat, lng: lng });
-                                                    mapInstance.setCenter({ lat: lat, lng: lng });
-                                                    mapInstance.setZoom(15);
+                                                if (leafletMarker && leafletMap) {
+                                                    leafletMarker.setLatLng([lat, lng]);
+                                                    leafletMap.setView([lat, lng], 16);
                                                 }
                                                 updateCoordsBar(lat, lng);
                                             },
@@ -1738,7 +1683,7 @@
                                                 Swal.hideLoading();
                                                 Swal.showValidationMessage('تعذر الحصول على موقعك الحالي');
                                             },
-                                            { enableHighAccuracy: true, timeout: 10000 }
+                                            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                                         );
                                     } else {
                                         Swal.showValidationMessage('المتصفح لا يدعم تحديد الموقع');
@@ -1748,23 +1693,22 @@
                         }, 300);
                     },
                     preConfirm: function() {
-                        return new Promise(function(resolve, reject) {
-                            reverseGeocode(selectedLat, selectedLng, function(address) {
-                                if (address && address !== 'غير معروف' && address !== 'شرم الشيخ (افتراضي)') {
+                        return new Promise(function(resolve) {
+                            reverseGeocodeNominatim(selectedLat, selectedLng, function(address) {
+                                if (address && address !== 'غير معروف') {
                                     resolve(address);
                                 } else {
-                                    // إذا فشل الترميز العكسي، استخدم الإحداثيات
-                                    resolve(selectedLat.toFixed(4) + ', ' + selectedLng.toFixed(4));
+                                    resolve(selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6));
                                 }
                             });
                         });
                     },
                     willClose: function() {
                         isMapModalOpen = false;
-                        // تنظيف الخريطة
-                        if (mapInstance) {
-                            mapInstance = null;
-                            markerInstance = null;
+                        if (leafletMap) {
+                            leafletMap.remove();
+                            leafletMap = null;
+                            leafletMarker = null;
                         }
                     }
                 }).then(function(result) {
@@ -1784,17 +1728,13 @@
                 });
             }
 
-            // ==========================================
-            // ربط النقر على العنوان بفتح الخريطة
-            // ==========================================
             userAddressContainer.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 openMapModal();
             });
             userAddressContainer.style.cursor = 'pointer';
-            
-            // أيقونة الموقع أيضاً
+
             const locationIcon = userAddressContainer.querySelector('i');
             if (locationIcon) {
                 locationIcon.addEventListener('click', function(e) {
@@ -1804,19 +1744,7 @@
                 });
             }
 
-            // ==========================================
-            // بدء تحديد الموقع تلقائياً عند التحميل
-            // ==========================================
             getCurrentLocation();
-
-            // محاولة إعادة التحديد إذا كانت الخرائط جاهزة لاحقاً
-            if (window.googleMapsReady === undefined) {
-                window.onGoogleMapsLoaded = function() {
-                    if (userAddressText.textContent.includes('افتراضي')) {
-                        getCurrentLocation();
-                    }
-                };
-            }
         })();
     </script>
 </body>
