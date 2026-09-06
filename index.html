@@ -12,6 +12,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
     <script src="https://cdn.tailwindcss.com">
     </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
@@ -578,15 +581,38 @@
             min-width: 0;
             flex: 1;
             line-height: 1.4;
+            padding: 6px 10px;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        .user-address:hover {
+            background: rgba(255, 90, 0, 0.06);
+            border-color: rgba(255, 90, 0, 0.2);
         }
         .user-address span {
             white-space: normal;
             overflow: visible;
             text-overflow: clip;
         }
+        .user-address .change-hint {
+            font-size: 0.6rem;
+            color: #FF5A00;
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .user-address:hover .change-hint {
+            opacity: 1;
+        }
         @media (max-width: 640px) {
             .user-address {
                 font-size: 0.7rem;
+            }
+            .user-address .change-hint {
+                display: none;
             }
         }
         .store-card {
@@ -691,6 +717,85 @@
             align-items: center;
             gap: 4px;
         }
+        .leaflet-container {
+            font-family: 'Noto Sans Arabic', system-ui, sans-serif;
+            z-index: 1;
+        }
+        .custom-pin-marker {
+            background: none;
+            border: none;
+        }
+        .custom-pin-marker .pin-shape {
+            width: 36px;
+            height: 36px;
+            background: #FF5A00;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            border: 3px solid #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .custom-pin-marker .pin-shape .pin-dot {
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border-radius: 50%;
+            transform: rotate(45deg);
+        }
+        .map-modal-container .swal2-html-container {
+            padding: 0 !important;
+            overflow: hidden !important;
+            margin: 0 !important;
+        }
+        .map-search-wrapper {
+            padding: 12px 16px;
+            border-bottom: 1px solid #eee;
+        }
+        .map-search-wrapper input {
+            border-radius: 10px !important;
+            border: 1px solid #ddd !important;
+            padding: 10px 14px !important;
+            font-size: 0.85rem !important;
+            font-family: 'Noto Sans Arabic', system-ui, sans-serif !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            outline: none !important;
+            transition: border-color 0.2s !important;
+        }
+        .map-search-wrapper input:focus {
+            border-color: #FF5A00 !important;
+        }
+        .map-coords-bar {
+            padding: 8px 16px;
+            background: #fafafa;
+            border-top: 1px solid #eee;
+            font-size: 0.75rem;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .map-use-current-btn {
+            background: #F0F4F3;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            color: #333;
+            font-family: 'Noto Sans Arabic', system-ui, sans-serif;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .map-use-current-btn:hover {
+            background: #e8e8e8;
+            border-color: #ccc;
+        }
     </style>
 </head>
 <body>
@@ -731,9 +836,10 @@
         <main class="lg:mr-[280px] transition-all">
             <header id="mainHeader">
                 <div class="flex items-center gap-2 flex-1 min-w-0">
-                    <div class="user-address" id="userAddressContainer">
-                        <i class="las la-map-marker-alt" style="color: #FF5A00; flex-shrink: 0;"></i>
+                    <div class="user-address" id="userAddressContainer" title="اضغط لتغيير موقعك">
+                        <i class="las la-map-marker-alt" style="color: #FF5A00; flex-shrink: 0; font-size: 1.1rem;"></i>
                         <span id="userAddressText">شرم الشيخ</span>
+                        <span class="change-hint"><i class="las la-chevron-down" style="font-size: 0.7rem;"></i> تغيير</span>
                     </div>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
@@ -1015,10 +1121,19 @@
             const notificationBtn = document.getElementById('notificationBtn');
             const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
             const userAddressText = document.getElementById('userAddressText');
+            const userAddressContainer = document.getElementById('userAddressContainer');
+
+            let mapInstance = null;
+            let markerInstance = null;
+            let selectedLat = 27.9158;
+            let selectedLng = 34.3300;
+            let isMapModalOpen = false;
+
             function openSidebar() {
                 sidebar.classList.add('mobile-open');
                 sidebar.classList.remove('mobile-closed');
             }
+
             function closeSidebar() {
                 sidebar.classList.remove('mobile-open');
                 sidebar.classList.add('mobile-closed');
@@ -1110,7 +1225,9 @@
             window.showRestaurantAlert = function(name, category, rating, time, fee) {
                 Swal.fire({
                     title: name,
-                    html: '<p class="text-sm text-gray-500 mb-2">' + category + '</p><div class="flex items-center justify-center gap-4 text-sm text-gray-600"><span><i class="las la-star rating-star" style="color:#FFB800;"></i> ' + rating + '</span><span>•</span><span><i class="las la-clock"></i> ' + time + '</span><span>•</span><span><i class="las la-money-bill"></i> ' + fee + '</span></div>',
+                    html: '<p class="text-sm text-gray-500 mb-2">' + category + '</p><div class="flex items-center justify-center gap-4 text-sm text-gray-600"><span><i class="las la-star rating-star" style="color:#FFB800;"></i> ' +
+                        rating + '</span><span>•</span><span><i class="las la-clock"></i> ' + time +
+                        '</span><span>•</span><span><i class="las la-money-bill"></i> ' + fee + '</span></div>',
                     icon: 'info',
                     confirmButtonColor: '#FF5A00',
                     confirmButtonText: 'عرض القائمة'
@@ -1214,13 +1331,17 @@
                     });
                 }
             }
+
             function getLocation() {
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
                         function(position) {
                             const lat = position.coords.latitude;
                             const lon = position.coords.longitude;
-                            fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lon + '&accept-language=ar')
+                            selectedLat = lat;
+                            selectedLng = lon;
+                            fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lon +
+                                    '&accept-language=ar')
                                 .then(function(response) {
                                     return response.json();
                                 })
@@ -1244,6 +1365,242 @@
                 }
             }
             getLocation();
+
+            function reverseGeocode(lat, lon, callback, errorCallback) {
+                fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lon +
+                        '&accept-language=ar')
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then(function(data) {
+                        if (data && data.display_name) {
+                            callback(data.display_name);
+                        } else {
+                            errorCallback('لم يتم العثور على عنوان');
+                        }
+                    })
+                    .catch(function() {
+                        errorCallback('خطأ في الاتصال');
+                    });
+            }
+
+            function searchLocation(query, callback, errorCallback) {
+                fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query) +
+                        '&accept-language=ar&limit=1')
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then(function(data) {
+                        if (data && data.length > 0) {
+                            callback(data[0]);
+                        } else {
+                            errorCallback('لم يتم العثور على نتائج');
+                        }
+                    })
+                    .catch(function() {
+                        errorCallback('خطأ في البحث');
+                    });
+            }
+
+            function createCustomMarkerIcon() {
+                return L.divIcon({
+                    className: 'custom-pin-marker',
+                    html: '<div class="pin-shape"><div class="pin-dot"></div></div>',
+                    iconSize: [36, 36],
+                    iconAnchor: [18, 36],
+                    popupAnchor: [0, -36]
+                });
+            }
+
+            function initMap(lat, lng, onMarkerDrag) {
+                if (mapInstance) {
+                    mapInstance.remove();
+                    mapInstance = null;
+                    markerInstance = null;
+                }
+                const mapContainer = document.getElementById('leafletMapContainer');
+                if (!mapContainer) return;
+                mapInstance = L.map(mapContainer, {
+                    center: [lat, lng],
+                    zoom: 13,
+                    zoomControl: true,
+                    attributionControl: true,
+                    scrollWheelZoom: true
+                });
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap'
+                }).addTo(mapInstance);
+                markerInstance = L.marker([lat, lng], {
+                    draggable: true,
+                    icon: createCustomMarkerIcon()
+                }).addTo(mapInstance);
+                markerInstance.on('dragend', function() {
+                    const pos = markerInstance.getLatLng();
+                    selectedLat = pos.lat;
+                    selectedLng = pos.lng;
+                    if (onMarkerDrag) onMarkerDrag(selectedLat, selectedLng);
+                });
+                mapInstance.on('click', function(e) {
+                    const pos = e.latlng;
+                    selectedLat = pos.lat;
+                    selectedLng = pos.lng;
+                    if (markerInstance) {
+                        markerInstance.setLatLng([selectedLat, selectedLng]);
+                    }
+                    if (onMarkerDrag) onMarkerDrag(selectedLat, selectedLng);
+                });
+                setTimeout(function() {
+                    if (mapInstance) mapInstance.invalidateSize();
+                }, 150);
+            }
+
+            function updateCoordsBar(lat, lng) {
+                const coordsEl = document.getElementById('mapCoordsDisplay');
+                if (coordsEl) {
+                    coordsEl.textContent = 'خط العرض: ' + lat.toFixed(6) + ' | خط الطول: ' + lng.toFixed(6);
+                }
+            }
+
+            function openMapModal() {
+                if (isMapModalOpen) return;
+                isMapModalOpen = true;
+                let currentLat = selectedLat;
+                let currentLng = selectedLng;
+                Swal.fire({
+                    title: '📍 حدد موقعك على الخريطة',
+                    html: '<div class="map-search-wrapper">' +
+                        '<input type="text" id="mapSearchInput" placeholder="ابحث عن عنوان أو منطقة..." style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid #ddd;font-size:0.85rem;font-family:inherit;">' +
+                        '</div>' +
+                        '<div id="leafletMapContainer" style="height:360px;width:100%;position:relative;z-index:1;"></div>' +
+                        '<div class="map-coords-bar">' +
+                        '<span id="mapCoordsDisplay">خط العرض: ' + currentLat.toFixed(6) + ' | خط الطول: ' + currentLng
+                        .toFixed(6) + '</span>' +
+                        '<button type="button" id="mapUseCurrentBtn" class="map-use-current-btn">📍 موقعي الحالي</button>' +
+                        '</div>',
+                    showCancelButton: true,
+                    confirmButtonText: 'تأكيد الموقع',
+                    cancelButtonText: 'إلغاء',
+                    confirmButtonColor: '#FF5A00',
+                    cancelButtonColor: '#717171',
+                    width: '95%',
+                    maxWidth: '720px',
+                    customClass: {
+                        container: 'map-modal-container'
+                    },
+                    didOpen: function() {
+                        setTimeout(function() {
+                            initMap(currentLat, currentLng, function(lat, lng) {
+                                updateCoordsBar(lat, lng);
+                            });
+                            const searchInput = document.getElementById('mapSearchInput');
+                            if (searchInput) {
+                                searchInput.addEventListener('keydown', function(e) {
+                                    if (e.key === 'Enter' && e.target.value.trim()) {
+                                        const query = e.target.value.trim();
+                                        Swal.showLoading();
+                                        searchLocation(query, function(result) {
+                                            Swal.hideLoading();
+                                            const lat = parseFloat(result.lat);
+                                            const lon = parseFloat(result.lon);
+                                            if (!isNaN(lat) && !isNaN(lon)) {
+                                                currentLat = lat;
+                                                currentLng = lon;
+                                                selectedLat = lat;
+                                                selectedLng = lon;
+                                                if (markerInstance && mapInstance) {
+                                                    markerInstance.setLatLng([lat, lon]);
+                                                    mapInstance.setView([lat, lon], 15);
+                                                }
+                                                updateCoordsBar(lat, lon);
+                                            }
+                                        }, function(errMsg) {
+                                            Swal.hideLoading();
+                                            Swal.showValidationMessage(errMsg);
+                                        });
+                                    }
+                                });
+                            }
+                            const useCurrentBtn = document.getElementById('mapUseCurrentBtn');
+                            if (useCurrentBtn) {
+                                useCurrentBtn.addEventListener('click', function() {
+                                    if (navigator.geolocation) {
+                                        Swal.showLoading();
+                                        navigator.geolocation.getCurrentPosition(function(pos) {
+                                            Swal.hideLoading();
+                                            const lat = pos.coords.latitude;
+                                            const lon = pos.coords.longitude;
+                                            currentLat = lat;
+                                            currentLng = lon;
+                                            selectedLat = lat;
+                                            selectedLng = lon;
+                                            if (markerInstance && mapInstance) {
+                                                markerInstance.setLatLng([lat, lon]);
+                                                mapInstance.setView([lat, lon], 15);
+                                            }
+                                            updateCoordsBar(lat, lon);
+                                        }, function() {
+                                            Swal.hideLoading();
+                                            Swal.showValidationMessage(
+                                                'تعذر الحصول على موقعك الحالي');
+                                        });
+                                    } else {
+                                        Swal.showValidationMessage(
+                                        'المتصفح لا يدعم تحديد الموقع');
+                                    }
+                                });
+                            }
+                        }, 200);
+                    },
+                    preConfirm: function() {
+                        return new Promise(function(resolve, reject) {
+                            reverseGeocode(selectedLat, selectedLng, function(address) {
+                                resolve(address);
+                            }, function(errMsg) {
+                                reject(errMsg);
+                            });
+                        });
+                    },
+                    willClose: function() {
+                        if (mapInstance) {
+                            mapInstance.remove();
+                            mapInstance = null;
+                            markerInstance = null;
+                        }
+                        isMapModalOpen = false;
+                    }
+                }).then(function(result) {
+                    if (result.isConfirmed && result.value) {
+                        userAddressText.textContent = result.value;
+                        Swal.fire({
+                            title: 'تم تحديث العنوان',
+                            text: 'تم تغيير موقعك بنجاح',
+                            icon: 'success',
+                            confirmButtonColor: '#FF5A00',
+                            timer: 2000,
+                            showConfirmButton: true
+                        });
+                    }
+                }).catch(function() {
+                    isMapModalOpen = false;
+                });
+            }
+
+            userAddressContainer.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                openMapModal();
+            });
+            userAddressContainer.style.cursor = 'pointer';
+
+            const locationIcon = userAddressContainer.querySelector('i');
+            if (locationIcon) {
+                locationIcon.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openMapModal();
+                });
+            }
         })();
     </script>
 </body>
