@@ -249,7 +249,7 @@
             border: 1px solid var(--border-color);
             display: flex;
             gap: 14px;
-            transition: transform 0.2s, opacity 0.2s;
+            transition: transform 0.25s ease, opacity 0.25s ease;
             cursor: grab;
             touch-action: pan-y;
             user-select: none;
@@ -268,7 +268,7 @@
             top: 0;
             bottom: 0;
             right: 0;
-            left: 0;
+            left: auto;
             background: #EF4444;
             border-radius: 16px;
             display: flex;
@@ -342,16 +342,22 @@
             justify-content: center;
             color: var(--color-white);
             font-size: 1rem;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.15s;
         }
         .qty-btn:active {
             background: #ddd;
+            transform: scale(0.9);
         }
         .qty-value {
             font-weight: 700;
             font-size: 0.9rem;
             min-width: 20px;
             text-align: center;
+        }
+        .swipe-hint {
+            font-size: 0.7rem;
+            color: var(--color-muted);
+            opacity: 0.7;
         }
         .cart-summary {
             background: var(--card-bg);
@@ -388,11 +394,12 @@
             font-weight: 700;
             font-size: 1rem;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.15s;
             box-shadow: 0 4px 12px rgba(255, 90, 0, 0.25);
         }
         .checkout-btn:active {
             background: #e04e00;
+            transform: scale(0.98);
         }
         @media (max-width: 640px) {
             .cart-item {
@@ -424,18 +431,19 @@
         <div class="container mx-auto px-3 py-4 max-w-3xl" id="cartItemsContainer">
             <div class="cart-container">
                 <div class="delete-indicator">حذف</div>
-                <div class="cart-item" data-price="15">
+                <div class="cart-item" data-price="120">
                     <div class="cart-item-img">
-                        <img src="https://i.ibb.co/hxZpW6Tm/458109350-8047883141947002-8357149268094311983-n.jpg" alt="منتج">
+                        <img src="https://i.ibb.co/hxZpW6Tm/458109350-8047883141947002-8357149268094311983-n.jpg" alt="جمبري">
                     </div>
                     <div class="cart-item-details">
-                        <span class="cart-item-name">برجر لحم</span>
-                        <span class="cart-item-desc">مطعم ابن حميدو</span>
-                        <span class="cart-item-price">15 ج.م</span>
+                        <span class="cart-item-name">جمبري مقلي</span>
+                        <span class="cart-item-desc">مطعم البحر</span>
+                        <span class="cart-item-price">120 ج.م</span>
                         <div class="cart-item-actions">
                             <button class="qty-btn" onclick="changeQty(this, -1)"><i class="las la-minus"></i></button>
                             <span class="qty-value">1</span>
                             <button class="qty-btn" onclick="changeQty(this, 1)"><i class="las la-plus"></i></button>
+                            <span class="swipe-hint">اسحب لليسار للحذف</span>
                         </div>
                     </div>
                 </div>
@@ -443,28 +451,29 @@
 
             <div class="cart-container">
                 <div class="delete-indicator">حذف</div>
-                <div class="cart-item" data-price="10">
+                <div class="cart-item" data-price="150">
                     <div class="cart-item-img">
-                        <img src="https://i.ibb.co/hxZpW6Tm/458109350-8047883141947002-8357149268094311983-n.jpg" alt="منتج">
+                        <img src="https://i.ibb.co/hxZpW6Tm/458109350-8047883141947002-8357149268094311983-n.jpg" alt="سلمون">
                     </div>
                     <div class="cart-item-details">
-                        <span class="cart-item-name">بيتزا خضار</span>
-                        <span class="cart-item-desc">مطعم بيتزا هت</span>
-                        <span class="cart-item-price">10 ج.م</span>
+                        <span class="cart-item-name">سلمون مشوي</span>
+                        <span class="cart-item-desc">مطعم البحر</span>
+                        <span class="cart-item-price">150 ج.م</span>
                         <div class="cart-item-actions">
                             <button class="qty-btn" onclick="changeQty(this, -1)"><i class="las la-minus"></i></button>
                             <span class="qty-value">2</span>
                             <button class="qty-btn" onclick="changeQty(this, 1)"><i class="las la-plus"></i></button>
+                            <span class="swipe-hint">اسحب لليسار للحذف</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="cart-summary">
-                <div class="summary-row"><span>المجموع الفرعي</span><span id="subtotal">25 ج.م</span></div>
-                <div class="summary-row"><span>رسوم التوصيل</span><span>5 ج.م</span></div>
-                <div class="summary-row"><span>الضريبة</span><span>2 ج.م</span></div>
-                <div class="summary-total"><span>الإجمالي</span><span id="total">32 ج.م</span></div>
+                <div class="summary-row"><span>المجموع الفرعي</span><span id="subtotal">270 ج.م</span></div>
+                <div class="summary-row"><span>رسوم التوصيل</span><span>15 ج.م</span></div>
+                <div class="summary-row"><span>الضريبة</span><span>10 ج.م</span></div>
+                <div class="summary-total"><span>الإجمالي</span><span id="total">295 ج.م</span></div>
             </div>
 
             <button class="checkout-btn" onclick="showCheckout()">إتمام الطلب</button>
@@ -525,11 +534,37 @@
             };
 
             window.changeQty = function(btn, delta) {
-                const valueSpan = btn.parentElement.querySelector('.qty-value');
+                const container = btn.closest('.cart-item');
+                const valueSpan = container.querySelector('.qty-value');
+                const minusBtn = container.querySelector('.qty-btn:first-child');
                 let current = parseInt(valueSpan.textContent) || 0;
+                
+                if (delta === -1 && current === 1) {
+                    Swal.fire({
+                        title: 'حذف المنتج',
+                        text: 'هل تريد حذف هذا المنتج من السلة؟',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#EF4444',
+                        cancelButtonColor: '#717171',
+                        confirmButtonText: 'حذف',
+                        cancelButtonText: 'إلغاء'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            deleteItem(container, container.closest('.cart-container'));
+                        }
+                    });
+                    return;
+                }
+                
                 current += delta;
                 if (current < 1) current = 1;
                 valueSpan.textContent = current;
+                if (current === 1) {
+                    minusBtn.innerHTML = '<i class="las la-trash-alt"></i>';
+                } else {
+                    minusBtn.innerHTML = '<i class="las la-minus"></i>';
+                }
                 updateSummary();
             };
 
@@ -563,8 +598,8 @@
                     subtotal += price * qty;
                 });
                 document.getElementById('subtotal').textContent = subtotal + ' ج.م';
-                const delivery = 5;
-                const tax = 2;
+                const delivery = 15;
+                const tax = 10;
                 const total = subtotal + delivery + tax;
                 document.getElementById('total').textContent = total + ' ج.م';
             }
@@ -641,7 +676,7 @@
             }
 
             function deleteItem(item, container) {
-                item.style.transition = 'transform 0.3s, opacity 0.3s';
+                item.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
                 item.style.transform = 'translateX(100%)';
                 item.style.opacity = '0';
                 setTimeout(() => {
