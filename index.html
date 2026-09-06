@@ -1387,6 +1387,29 @@
                 }
             }
 
+            function saveLocationToStorage(lat, lng, address) {
+                localStorage.setItem('userLat', lat);
+                localStorage.setItem('userLng', lng);
+                localStorage.setItem('userAddress', address);
+            }
+
+            function loadLocationFromStorage() {
+                const lat = localStorage.getItem('userLat');
+                const lng = localStorage.getItem('userLng');
+                const address = localStorage.getItem('userAddress');
+                if (lat && lng) {
+                    selectedLat = parseFloat(lat);
+                    selectedLng = parseFloat(lng);
+                    if (address) {
+                        userAddressText.textContent = address;
+                    } else {
+                        userAddressText.textContent = selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6);
+                    }
+                    return true;
+                }
+                return false;
+            }
+
             function getCurrentLocation() {
                 if (isGeolocationInProgress) return;
                 isGeolocationInProgress = true;
@@ -1420,8 +1443,10 @@
                             reverseGeocodeNominatim(lat, lng, function(address) {
                                 if (address && address !== 'غير معروف') {
                                     userAddressText.textContent = address;
+                                    saveLocationToStorage(lat, lng, address);
                                 } else {
                                     userAddressText.textContent = lat.toFixed(6) + ', ' + lng.toFixed(6);
+                                    saveLocationToStorage(lat, lng, userAddressText.textContent);
                                 }
                                 isGeolocationInProgress = false;
                             });
@@ -1434,8 +1459,10 @@
                                         reverseGeocodeNominatim(selectedLat, selectedLng, function(address) {
                                             if (address && address !== 'غير معروف') {
                                                 userAddressText.textContent = address;
+                                                saveLocationToStorage(selectedLat, selectedLng, address);
                                             } else {
                                                 userAddressText.textContent = selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6);
+                                                saveLocationToStorage(selectedLat, selectedLng, userAddressText.textContent);
                                             }
                                             isGeolocationInProgress = false;
                                             if (locationWatchId) {
@@ -1449,8 +1476,10 @@
                                     reverseGeocodeNominatim(selectedLat, selectedLng, function(address) {
                                         if (address && address !== 'غير معروف') {
                                             userAddressText.textContent = address;
+                                            saveLocationToStorage(selectedLat, selectedLng, address);
                                         } else {
                                             userAddressText.textContent = selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6);
+                                            saveLocationToStorage(selectedLat, selectedLng, userAddressText.textContent);
                                         }
                                         isGeolocationInProgress = false;
                                     });
@@ -1525,17 +1554,10 @@
                     leafletMarker = null;
                 }
 
-                const sharmBounds = L.latLngBounds(
-                    L.latLng(27.75, 34.10),
-                    L.latLng(28.05, 34.45)
-                );
-
                 try {
                     leafletMap = L.map(mapContainer, {
                         zoomControl: true,
-                        maxBounds: sharmBounds,
-                        maxBoundsViscosity: 0.8,
-                        minZoom: 11,
+                        minZoom: 2,
                         maxZoom: 19
                     }).setView([lat, lng], 15);
 
@@ -1663,6 +1685,7 @@
                 }).then(function(result) {
                     if (result.isConfirmed && result.value) {
                         userAddressText.textContent = result.value;
+                        saveLocationToStorage(selectedLat, selectedLng, result.value);
                         Swal.fire({
                             title: 'تم تحديث العنوان',
                             text: 'تم تغيير موقعك بنجاح',
@@ -1693,7 +1716,9 @@
                 });
             }
 
-            getCurrentLocation();
+            if (!loadLocationFromStorage()) {
+                getCurrentLocation();
+            }
         })();
     </script>
 </body>
