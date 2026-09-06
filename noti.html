@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#FF5A00">
+    <title>الإشعارات - طلبات</title>
+    <meta name="description" content="الإشعارات">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+    </script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF5A00',
+                        secondary: '#FF8C38',
+                        accent: '#FFB800',
+                        dark: '#1A1A1A',
+                        muted: '#717171',
+                        success: '#00B14F',
+                        lightPrimary: '#FFF1E8',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --color-primary: #FF5A00;
+            --color-secondary: #FF8C38;
+            --color-accent: #FFB800;
+            --color-background: #F7F9F8;
+            --color-card: #FFFFFF;
+            --color-darker: #F0F4F3;
+            --color-paragraph: #333333;
+            --color-white: #1A1A1A;
+            --color-muted: #717171;
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --card-bg: #FFFFFF;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --darker-bg: #F0F4F3;
+            --header-height: 70px;
+            --bottom-nav-height: 68px;
+            --shadow-glow: 0 4px 20px rgba(255, 90, 0, 0.06);
+            --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            overscroll-behavior: none;
+        }
+        body {
+            font-family: 'Noto Sans Arabic', 'Alexandria', system-ui, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-white);
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+            padding-bottom: 0;
+        }
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--color-background);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FF8C38;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FF5A00;
+        }
+        #mainHeader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--color-background);
+            z-index: 110;
+            transition: background-color 0.3s;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+        .header-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--color-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .notification-btn {
+            position: relative;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--color-muted);
+            font-size: 1.5rem;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+            flex-shrink: 0;
+        }
+        .notification-btn:hover {
+            color: #FF5A00;
+        }
+        .notification-btn .notification-dot {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #FF5A00;
+            border: 2px solid var(--card-bg);
+        }
+        main {
+            padding-top: var(--header-height);
+            padding-bottom: 0;
+        }
+        @media (max-width: 1024px) {
+            main {
+                padding-bottom: calc(var(--bottom-nav-height) + 20px);
+            }
+            body {
+                padding-bottom: 0;
+            }
+        }
+        .bottom-mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--bottom-nav-height);
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            z-index: 100;
+            padding: 6px 8px;
+            padding-bottom: max(6px, env(safe-area-inset-bottom, 6px));
+            box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+            align-items: center;
+            justify-content: space-around;
+            gap: 4px;
+        }
+        @media (max-width: 1024px) {
+            .bottom-mobile-nav {
+                display: flex;
+            }
+        }
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            flex: 1;
+            padding: 8px 4px;
+            border-radius: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--color-muted);
+            font-size: 0.68rem;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            position: relative;
+            min-width: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .bottom-nav-item i {
+            font-size: 1.35rem;
+            transition: all 0.25s ease;
+            flex-shrink: 0;
+        }
+        .bottom-nav-item span {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            max-width: 100%;
+            font-size: 0.65rem;
+            letter-spacing: 0.2px;
+        }
+        .bottom-nav-item.active {
+            color: var(--color-primary);
+        }
+        .bottom-nav-item.active i {
+            font-size: 1.5rem;
+        }
+        .bottom-nav-item-center {
+            position: relative;
+            top: -20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.4);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            flex: none;
+            margin: 0 4px;
+        }
+        .bottom-nav-item-center i {
+            font-size: 2rem;
+        }
+        .bottom-nav-item-center span {
+            display: none;
+        }
+        .bottom-nav-item-center.active {
+            background: #e04e00;
+            color: #fff;
+        }
+        .notifications-container {
+            position: relative;
+            margin-bottom: 12px;
+            overflow: hidden;
+            border-radius: 16px;
+        }
+        .notification-item {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-color);
+            display: flex;
+            gap: 14px;
+            transition: transform 0.15s ease, opacity 0.15s ease;
+            cursor: pointer;
+            touch-action: pan-y;
+            user-select: none;
+            position: relative;
+            z-index: 2;
+            will-change: transform;
+            align-items: center;
+        }
+        .notification-item.unread {
+            background: #FFF9F5;
+            border-color: rgba(255, 90, 0, 0.2);
+        }
+        .notification-item:active {
+            cursor: grabbing;
+        }
+        .notification-item.dragging {
+            cursor: grabbing;
+            z-index: 10;
+        }
+        .delete-indicator {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            left: auto;
+            background: #EF4444;
+            border-radius: 16px 0 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding-right: 20px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            pointer-events: none;
+            z-index: 1;
+            gap: 8px;
+        }
+        .delete-indicator.show {
+            opacity: 1;
+        }
+        .delete-indicator i {
+            font-size: 1.2rem;
+        }
+        .notification-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: var(--color-darker);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: var(--color-primary);
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .notification-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .notification-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--color-white);
+        }
+        .notification-message {
+            font-size: 0.8rem;
+            color: var(--color-muted);
+        }
+        .notification-time {
+            font-size: 0.7rem;
+            color: var(--color-muted);
+            opacity: 0.7;
+        }
+        .unread-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            flex-shrink: 0;
+            align-self: flex-start;
+            margin-top: 6px;
+        }
+        .mark-all-read-btn {
+            background: none;
+            border: none;
+            color: var(--color-primary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+        .mark-all-read-btn:hover {
+            background: var(--color-darker);
+        }
+        .empty-notifications-state {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 20px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px dashed var(--border-color);
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-card);
+        }
+        .empty-notifications-state.visible {
+            display: flex;
+        }
+        .empty-notifications-icon {
+            font-size: 5rem;
+            color: #D1D5DB;
+            margin-bottom: 16px;
+            line-height: 1;
+        }
+        .empty-notifications-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--color-white);
+            margin-bottom: 8px;
+        }
+        .empty-notifications-subtitle {
+            font-size: 0.9rem;
+            color: var(--color-muted);
+            margin-bottom: 20px;
+        }
+        .empty-notifications-btn {
+            padding: 12px 28px;
+            background: var(--color-primary);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.25);
+        }
+        .empty-notifications-btn:active {
+            background: #e04e00;
+            transform: scale(0.97);
+        }
+        @media (max-width: 640px) {
+            .notification-item {
+                padding: 12px;
+            }
+            .notification-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.4rem;
+            }
+            .delete-indicator {
+                padding-right: 12px;
+                font-size: 0.8rem;
+            }
+            .delete-indicator i {
+                font-size: 1rem;
+            }
+            .empty-notifications-icon {
+                font-size: 4rem;
+            }
+            .empty-notifications-title {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <header id="mainHeader">
+            <div class="flex items-center gap-2 flex-1 min-w-0">
+                <h1 class="text-lg font-extrabold" style="color: var(--color-white);">الإشعارات</h1>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <button class="notification-btn" id="notificationBtn">
+                    <i class="las la-bell"></i>
+                    <span class="notification-dot"></span>
+                </button>
+                <img id="headerAvatar" src="https://i.ibb.co/3mZjjp1T/548212938-1338267831079244-6599431839367735090-n.jpg" class="header-avatar" alt="avatar">
+            </div>
+        </header>
+
+        <div class="container mx-auto px-3 py-4 max-w-3xl" id="notificationsContainer">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-md font-bold" style="color: var(--color-white);">آخر الإشعارات</h2>
+                <button class="mark-all-read-btn" onclick="markAllAsRead()">تحديد الكل كمقروء</button>
+            </div>
+
+            <div id="emptyNotificationsState" class="empty-notifications-state visible">
+                <div class="empty-notifications-icon">
+                    <i class="las la-bell-slash"></i>
+                </div>
+                <h2 class="empty-notifications-title">لا توجد إشعارات</h2>
+                <p class="empty-notifications-subtitle">أنت على اطلاع دائم، لا توجد إشعارات جديدة</p>
+                <button class="empty-notifications-btn" onclick="browseRestaurants()">تصفح المطاعم</button>
+            </div>
+
+            <div class="notifications-container" id="notification1">
+                <div class="delete-indicator"><i class="las la-trash-alt"></i> حذف</div>
+                <div class="notification-item unread" data-read="false" data-id="1">
+                    <div class="notification-icon" style="background: #FFF1E8; color: #FF5A00;">
+                        <i class="las la-shopping-bag"></i>
+                    </div>
+                    <div class="notification-content">
+                        <span class="notification-title">طلبك قيد التجهيز</span>
+                        <span class="notification-message">طلبك من مطعم ابن حميدو يتم تجهيزه الآن</span>
+                        <span class="notification-time">منذ 5 دقائق</span>
+                    </div>
+                    <div class="unread-dot"></div>
+                </div>
+            </div>
+
+            <div class="notifications-container" id="notification2">
+                <div class="delete-indicator"><i class="las la-trash-alt"></i> حذف</div>
+                <div class="notification-item unread" data-read="false" data-id="2">
+                    <div class="notification-icon" style="background: #E8F5E9; color: #00B14F;">
+                        <i class="las la-check-circle"></i>
+                    </div>
+                    <div class="notification-content">
+                        <span class="notification-title">تم توصيل طلبك</span>
+                        <span class="notification-message">طلبك السابق تم توصيله بنجاح</span>
+                        <span class="notification-time">منذ ساعة</span>
+                    </div>
+                    <div class="unread-dot"></div>
+                </div>
+            </div>
+
+            <div class="notifications-container" id="notification3">
+                <div class="delete-indicator"><i class="las la-trash-alt"></i> حذف</div>
+                <div class="notification-item" data-read="true" data-id="3">
+                    <div class="notification-icon" style="background: #FFF3E0; color: #FFB800;">
+                        <i class="las la-percent"></i>
+                    </div>
+                    <div class="notification-content">
+                        <span class="notification-title">عرض خاص</span>
+                        <span class="notification-message">خصم 20% على جميع المأكولات البحرية اليوم</span>
+                        <span class="notification-time">منذ 3 ساعات</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="notifications-container" id="notification4">
+                <div class="delete-indicator"><i class="las la-trash-alt"></i> حذف</div>
+                <div class="notification-item" data-read="true" data-id="4">
+                    <div class="notification-icon" style="background: #E3F2FD; color: #2196F3;">
+                        <i class="las la-star"></i>
+                    </div>
+                    <div class="notification-content">
+                        <span class="notification-title">تقييم جديد</span>
+                        <span class="notification-message">شكراً لتقييمك مطعم ابن حميدو</span>
+                        <span class="notification-time">منذ يوم</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="bottom-mobile-nav" id="bottomMobileNav">
+        <a href="#" class="bottom-nav-item" data-tab="home"><i class="las la-home"></i><span>الرئيسية</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="orders"><i class="las la-shopping-bag"></i><span>الطلبات</span></a>
+        <a href="#" class="bottom-nav-item bottom-nav-item-center" data-tab="cart"><i class="las la-shopping-cart"></i><span>السلة</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="favorites"><i class="las la-heart"></i><span>المفضلة</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="profile"><i class="las la-user"></i><span>حسابي</span></a>
+    </div>
+
+    <script>
+        (function() {
+            const notificationBtn = document.getElementById('notificationBtn');
+            const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
+            const emptyNotificationsState = document.getElementById('emptyNotificationsState');
+            const notificationsContainer = document.getElementById('notificationsContainer');
+
+            bottomNavItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    bottomNavItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    const tab = this.getAttribute('data-tab');
+                    let msg = '';
+                    if (tab === 'home') msg = 'أنت في الصفحة الرئيسية';
+                    else if (tab === 'orders') msg = 'طلباتك الحالية والسابقة';
+                    else if (tab === 'cart') msg = 'سلة التسوق';
+                    else if (tab === 'favorites') msg = 'قائمة المفضلة الخاصة بك';
+                    else if (tab === 'profile') msg = 'حسابك الشخصي';
+                    Swal.fire({
+                        title: msg,
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00'
+                    });
+                });
+            });
+
+            notificationBtn.addEventListener('click', () => {
+                const unreadCount = document.querySelectorAll('.notification-item.unread').length;
+                if (unreadCount > 0) {
+                    Swal.fire({
+                        title: 'الإشعارات',
+                        text: 'لديك ' + unreadCount + ' إشعارات غير مقروءة',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00'
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'الإشعارات',
+                        text: 'لا توجد إشعارات جديدة',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00'
+                    });
+                }
+            });
+
+            window.browseRestaurants = function() {
+                Swal.fire({
+                    title: 'تصفح المطاعم',
+                    text: 'سيتم توجيهك لصفحة المطاعم',
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00'
+                });
+            };
+
+            window.markAllAsRead = function() {
+                document.querySelectorAll('.notification-item.unread').forEach(item => {
+                    item.classList.remove('unread');
+                    item.dataset.read = 'true';
+                    const dot = item.querySelector('.unread-dot');
+                    if (dot) dot.remove();
+                });
+                Swal.fire({
+                    title: 'تم',
+                    text: 'تم تحديد جميع الإشعارات كمقروءة',
+                    icon: 'success',
+                    confirmButtonColor: '#FF5A00',
+                    timer: 1500
+                });
+                checkEmptyState();
+            };
+
+            window.showNotificationDetails = function(item) {
+                const title = item.querySelector('.notification-title').textContent;
+                const message = item.querySelector('.notification-message').textContent;
+                const time = item.querySelector('.notification-time').textContent;
+                Swal.fire({
+                    title: title,
+                    html: message + '<br><small style="color:#717171">' + time + '</small>',
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00'
+                });
+                if (item.classList.contains('unread')) {
+                    item.classList.remove('unread');
+                    item.dataset.read = 'true';
+                    const dot = item.querySelector('.unread-dot');
+                    if (dot) dot.remove();
+                    checkEmptyState();
+                }
+            };
+
+            function checkEmptyState() {
+                const notificationItems = document.querySelectorAll('.notification-item');
+                if (notificationItems.length === 0) {
+                    emptyNotificationsState.classList.add('visible');
+                } else {
+                    emptyNotificationsState.classList.remove('visible');
+                }
+            }
+
+            function initSwipeToDelete() {
+                document.querySelectorAll('.notification-item').forEach(item => {
+                    let startX = 0;
+                    let currentX = 0;
+                    let isDragging = false;
+                    let indicator = item.parentElement.querySelector('.delete-indicator');
+                    let container = item.parentElement;
+
+                    item.addEventListener('touchstart', (e) => {
+                        startX = e.touches[0].clientX;
+                        currentX = startX;
+                        isDragging = true;
+                        item.classList.add('dragging');
+                    });
+
+                    item.addEventListener('touchmove', (e) => {
+                        if (!isDragging) return;
+                        currentX = e.touches[0].clientX;
+                        const diff = startX - currentX;
+                        if (diff > 0) {
+                            item.style.transform = 'translateX(' + (-diff) + 'px)';
+                            indicator.style.opacity = Math.min(diff / 100, 1);
+                        }
+                    });
+
+                    item.addEventListener('touchend', () => {
+                        if (!isDragging) return;
+                        isDragging = false;
+                        item.classList.remove('dragging');
+                        const diff = startX - currentX;
+                        if (diff > 120) {
+                            deleteNotification(item, container);
+                        } else {
+                            item.style.transform = '';
+                            indicator.style.opacity = 0;
+                        }
+                    });
+
+                    item.addEventListener('mousedown', (e) => {
+                        startX = e.clientX;
+                        currentX = startX;
+                        isDragging = true;
+                        item.classList.add('dragging');
+                        e.preventDefault();
+                    });
+
+                    document.addEventListener('mousemove', (e) => {
+                        if (!isDragging) return;
+                        currentX = e.clientX;
+                        const diff = startX - currentX;
+                        if (diff > 0) {
+                            item.style.transform = 'translateX(' + (-diff) + 'px)';
+                            indicator.style.opacity = Math.min(diff / 100, 1);
+                        }
+                    });
+
+                    document.addEventListener('mouseup', () => {
+                        if (!isDragging) return;
+                        isDragging = false;
+                        item.classList.remove('dragging');
+                        const diff = startX - currentX;
+                        if (diff > 120) {
+                            deleteNotification(item, container);
+                        } else {
+                            item.style.transform = '';
+                            indicator.style.opacity = 0;
+                        }
+                    });
+
+                    item.addEventListener('click', (e) => {
+                        if (isDragging) return;
+                        showNotificationDetails(item);
+                    });
+                });
+            }
+
+            function deleteNotification(item, container) {
+                item.style.transition = 'transform 0.15s ease, opacity 0.15s ease';
+                item.style.transform = 'translateX(100%)';
+                item.style.opacity = '0';
+                setTimeout(() => {
+                    container.remove();
+                    checkEmptyState();
+                }, 150);
+            }
+
+            initSwipeToDelete();
+            checkEmptyState();
+        })();
+    </script>
+</body>
+</html>
