@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#FF5A00">
+    <title>محفظتي - طلبات</title>
+    <meta name="description" content="محفظتي الشخصية">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+    </script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF5A00',
+                        secondary: '#FF8C38',
+                        accent: '#FFB800',
+                        dark: '#1A1A1A',
+                        muted: '#717171',
+                        success: '#00B14F',
+                        lightPrimary: '#FFF1E8',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --color-primary: #FF5A00;
+            --color-secondary: #FF8C38;
+            --color-accent: #FFB800;
+            --color-background: #F7F9F8;
+            --color-card: #FFFFFF;
+            --color-darker: #F0F4F3;
+            --color-paragraph: #333333;
+            --color-white: #1A1A1A;
+            --color-muted: #717171;
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --card-bg: #FFFFFF;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --darker-bg: #F0F4F3;
+            --header-height: 70px;
+            --bottom-nav-height: 68px;
+            --shadow-glow: 0 4px 20px rgba(255, 90, 0, 0.06);
+            --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06);
+            --dropdown-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            overscroll-behavior: none;
+        }
+        body {
+            font-family: 'Noto Sans Arabic', 'Alexandria', system-ui, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-white);
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+            padding-bottom: 0;
+        }
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--color-background);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FF8C38;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FF5A00;
+        }
+        #mainHeader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--color-background);
+            z-index: 110;
+            transition: background-color 0.3s;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+        .header-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--color-primary);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            flex-shrink: 0;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            box-shadow: 0 0 0 3px rgba(255, 90, 0, 0.15);
+        }
+        .header-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 5px rgba(255, 90, 0, 0.2);
+        }
+        .header-avatar:active {
+            transform: scale(0.95);
+        }
+        .header-avatar-wrapper {
+            position: relative;
+            flex-shrink: 0;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .notification-btn {
+            position: relative;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--color-muted);
+            font-size: 1.5rem;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+            flex-shrink: 0;
+            border-radius: 50%;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .notification-btn:hover {
+            color: #FF5A00;
+            background: rgba(255, 90, 0, 0.06);
+        }
+        .notification-btn .notification-dot {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #FF5A00;
+            border: 2px solid var(--card-bg);
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.4);
+                opacity: 0.6;
+            }
+        }
+        .dropdown-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: 115;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        .dropdown-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .profile-dropdown {
+            position: fixed;
+            top: calc(var(--header-height) - 4px);
+            left: 16px;
+            width: 240px;
+            max-width: calc(100vw - 32px);
+            max-height: calc(100vh - var(--header-height) - 24px);
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: var(--dropdown-shadow);
+            border: 1px solid var(--border-color);
+            z-index: 120;
+            overflow-y: auto;
+            overflow-x: hidden;
+            transform-origin: top left;
+            transform: scale(0.92) translateY(-12px);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+            overscroll-behavior: contain;
+            padding: 6px 6px 10px;
+        }
+        .profile-dropdown.active {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        @media (max-width: 480px) {
+            .profile-dropdown {
+                left: 8px;
+                width: calc(100vw - 16px);
+                max-width: none;
+                border-radius: 14px;
+                top: calc(var(--header-height) - 2px);
+            }
+        }
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--color-muted);
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 0.9rem;
+            -webkit-tap-highlight-color: transparent;
+            position: relative;
+        }
+        .dropdown-item i {
+            font-size: 20px;
+            width: 28px;
+            flex-shrink: 0;
+            text-align: center;
+        }
+        .dropdown-item:hover {
+            background: rgba(255, 90, 0, 0.07);
+            color: var(--color-primary);
+        }
+        .dropdown-item:active {
+            background: rgba(255, 90, 0, 0.12);
+            transform: scale(0.98);
+        }
+        .dropdown-item.active {
+            background: rgba(255, 90, 0, 0.12);
+            color: var(--color-primary);
+            font-weight: 700;
+        }
+        .dropdown-item.active::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 24px;
+            border-radius: 4px;
+            background: var(--color-primary);
+        }
+        .dropdown-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 6px 12px;
+            opacity: 0.6;
+        }
+        main {
+            padding-top: var(--header-height);
+            padding-bottom: 0;
+        }
+        @media (max-width: 1024px) {
+            main {
+                padding-bottom: calc(var(--bottom-nav-height) + 20px);
+            }
+            body {
+                padding-bottom: 0;
+            }
+        }
+        .bottom-mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--bottom-nav-height);
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            z-index: 100;
+            padding: 6px 8px;
+            padding-bottom: max(6px, env(safe-area-inset-bottom, 6px));
+            box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+            align-items: center;
+            justify-content: space-around;
+            gap: 4px;
+        }
+        @media (max-width: 1024px) {
+            .bottom-mobile-nav {
+                display: flex;
+            }
+        }
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            flex: 1;
+            padding: 8px 4px;
+            border-radius: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--color-muted);
+            font-size: 0.68rem;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            position: relative;
+            min-width: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .bottom-nav-item i {
+            font-size: 1.35rem;
+            transition: all 0.25s ease;
+            flex-shrink: 0;
+        }
+        .bottom-nav-item span {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            max-width: 100%;
+            font-size: 0.65rem;
+            letter-spacing: 0.2px;
+        }
+        .bottom-nav-item.active {
+            color: var(--color-primary);
+        }
+        .bottom-nav-item.active i {
+            font-size: 1.5rem;
+        }
+        .bottom-nav-item-center {
+            position: relative;
+            top: -20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.4);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            flex: none;
+            margin: 0 4px;
+        }
+        .bottom-nav-item-center i {
+            font-size: 2rem;
+        }
+        .bottom-nav-item-center span {
+            display: none;
+        }
+        .bottom-nav-item-center.active {
+            background: #e04e00;
+            color: #fff;
+        }
+        .wallet-hero {
+            background: linear-gradient(135deg, #FF5A00, #FF8C38);
+            border-radius: 0 0 24px 24px;
+            padding: 24px 20px;
+            margin-bottom: 16px;
+            color: #fff;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(255, 90, 0, 0.2);
+        }
+        .wallet-hero h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .wallet-balance {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 8px 0;
+        }
+        .wallet-hero p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 12px 0;
+            justify-content: center;
+        }
+        .quick-action-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .quick-action-btn:hover {
+            background: rgba(255, 255, 255, 0.35);
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            margin: 0 12px 12px;
+            padding: 16px;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-color);
+        }
+        .section-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--color-muted);
+            padding: 12px 16px 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .table-container {
+            overflow-x: auto;
+            margin: 0 -16px;
+            padding: 0 16px;
+        }
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 500px;
+        }
+        .transactions-table th,
+        .transactions-table td {
+            padding: 12px 8px;
+            text-align: right;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.85rem;
+        }
+        .transactions-table th {
+            font-weight: 700;
+            color: var(--color-muted);
+            background: var(--darker-bg);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .transactions-table td {
+            color: var(--color-white);
+        }
+        .transaction-amount {
+            font-weight: 700;
+        }
+        .transaction-amount.positive {
+            color: var(--success);
+        }
+        .transaction-amount.negative {
+            color: var(--color-primary);
+        }
+        .transaction-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--color-darker);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+        .transaction-icon i {
+            font-size: 1rem;
+            color: var(--color-primary);
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .status-badge.accepted {
+            background: rgba(0, 177, 79, 0.1);
+            color: var(--success);
+        }
+        .status-badge.rejected {
+            background: rgba(239, 68, 68, 0.1);
+            color: #EF4444;
+        }
+        .reject-reason {
+            display: block;
+            font-size: 0.7rem;
+            color: #EF4444;
+            margin-top: 2px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--color-muted);
+            margin-bottom: 6px;
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            background: var(--card-bg);
+            color: var(--color-white);
+            transition: all 0.25s ease;
+            outline: none;
+            direction: rtl;
+        }
+        .form-input:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 4px rgba(255, 90, 0, 0.1);
+        }
+        .form-select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            background: var(--card-bg);
+            color: var(--color-white);
+            transition: all 0.25s ease;
+            outline: none;
+            direction: rtl;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23717171' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: left 14px center;
+            padding-left: 36px;
+            cursor: pointer;
+        }
+        .form-select:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 4px rgba(255, 90, 0, 0.1);
+        }
+        .save-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #FF5A00, #FF8C38);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(255, 90, 0, 0.3);
+            -webkit-tap-highlight-color: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .save-btn:hover {
+            background: linear-gradient(135deg, #e04e00, #FF5A00);
+            box-shadow: 0 6px 20px rgba(255, 90, 0, 0.45);
+            transform: translateY(-2px);
+        }
+        .save-btn:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 8px rgba(255, 90, 0, 0.3);
+        }
+        .save-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .hidden {
+            display: none;
+        }
+        .file-upload-wrapper {
+            position: relative;
+            display: block;
+            width: 100%;
+        }
+        .file-upload-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            background: var(--darker-bg);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        .file-upload-label:hover {
+            border-color: var(--color-primary);
+            background: rgba(255, 90, 0, 0.04);
+        }
+        .file-upload-label i {
+            font-size: 2rem;
+            color: var(--color-primary);
+            margin-bottom: 8px;
+        }
+        .file-upload-label span {
+            font-size: 0.85rem;
+            color: var(--color-muted);
+        }
+        .file-upload-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 0 0;
+            border-top: 1px solid var(--border-color);
+            margin-top: 12px;
+        }
+        .pagination-info {
+            font-size: 0.8rem;
+            color: var(--color-muted);
+        }
+        .pagination-buttons {
+            display: flex;
+            gap: 6px;
+        }
+        .pagination-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--color-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .pagination-btn:hover:not(:disabled) {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+            background: rgba(255, 90, 0, 0.06);
+        }
+        .pagination-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        @media (max-width: 640px) {
+            .wallet-hero {
+                padding: 20px 16px;
+            }
+            .wallet-balance {
+                font-size: 2rem;
+            }
+            .quick-action-btn {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+            .transactions-table th,
+            .transactions-table td {
+                padding: 10px 4px;
+                font-size: 0.75rem;
+            }
+            .table-container {
+                margin: 0 -8px;
+                padding: 0 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dropdown-overlay" id="dropdownOverlay"></div>
+
+    <div class="profile-dropdown" id="profileDropdown" role="menu" aria-label="قائمة المستخدم">
+        <a href="#" class="dropdown-item" data-action="home"><i class="las la-home"></i><span>الرئيسية</span></a>
+        <a href="#" class="dropdown-item" data-action="orders"><i class="las la-shopping-bag"></i><span>الطلبات</span></a>
+        <a href="#" class="dropdown-item" data-action="cart"><i class="las la-shopping-cart"></i><span>السلة</span></a>
+        <a href="#" class="dropdown-item" data-action="favorites"><i class="las la-heart"></i><span>المفضلة</span></a>
+        <a href="#" class="dropdown-item" data-action="profile"><i class="las la-user"></i><span>حسابي</span></a>
+        <a href="#" class="dropdown-item active" data-action="wallet"><i class="las la-wallet"></i><span>محفظتي</span></a>
+    </div>
+
+    <main class="transition-all">
+        <header id="mainHeader">
+            <div class="flex items-center gap-2 flex-1 min-w-0">
+                <h1 class="text-lg font-extrabold" style="color: var(--color-white);">محفظتي</h1>
+            </div>
+            <div class="flex items-center gap-3 flex-shrink-0">
+                <button class="notification-btn" id="notificationBtn" aria-label="الإشعارات">
+                    <i class="las la-bell"></i>
+                    <span class="notification-dot"></span>
+                </button>
+                <div class="header-avatar-wrapper" id="headerAvatarWrapper" title="فتح القائمة">
+                    <img id="headerAvatar" src="https://i.ibb.co/3mZjjp1T/548212938-1338267831079244-6599431839367735090-n.jpg" class="header-avatar" alt="صورة المستخدم">
+                </div>
+            </div>
+        </header>
+
+        <div class="container mx-auto px-0 py-4 max-w-3xl">
+            <div class="wallet-hero mx-3">
+                <h2>رصيد المحفظة</h2>
+                <div class="wallet-balance">45.00 <span style="font-size:1.2rem;">ج.م</span></div>
+                <p>يمكنك استخدام الرصيد لدفع الطلبات القادمة</p>
+                <div class="quick-actions">
+                    <button class="quick-action-btn" onclick="toggleRechargeForm()"><i class="las la-plus"></i> إضافة رصيد</button>
+                    <button class="quick-action-btn" onclick="toggleSendForm()"><i class="las la-paper-plane"></i> إرسال</button>
+                </div>
+            </div>
+
+            <div id="rechargeForm" class="card hidden">
+                <h3 style="font-weight:700;margin-bottom:12px;">إضافة رصيد</h3>
+                <div class="form-group">
+                    <label class="form-label" for="rechargeMethod">طريقة الإضافة</label>
+                    <select id="rechargeMethod" class="form-select" onchange="handleRechargeMethodChange()">
+                        <option value="ewallet">تحويل للمحفظة الإلكترونية</option>
+                        <option value="code">كود شحن</option>
+                    </select>
+                </div>
+
+                <div id="ewalletFields">
+                    <div class="form-group">
+                        <label class="form-label">رقم المحفظة للتحويل</label>
+                        <div style="background:var(--darker-bg);padding:12px;border-radius:12px;font-weight:700;text-align:center;letter-spacing:1px;">01063720595</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="ewalletAmount">المبلغ</label>
+                        <input type="number" id="ewalletAmount" class="form-input" placeholder="ادخل المبلغ" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="proofFile">إثبات التحويل (سكرين شوت)</label>
+                        <div class="file-upload-wrapper">
+                            <label for="proofFile" class="file-upload-label">
+                                <i class="las la-cloud-upload-alt"></i>
+                                <span id="fileNameDisplay">اضغط لرفع صورة إثبات التحويل</span>
+                            </label>
+                            <input type="file" id="proofFile" class="file-upload-input" accept="image/*" onchange="updateFileName(this)">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="codeFields" class="hidden">
+                    <div class="form-group">
+                        <label class="form-label" for="rechargeCode">كود الشحن</label>
+                        <input type="text" id="rechargeCode" class="form-input" placeholder="أدخل الكود">
+                    </div>
+                </div>
+
+                <button class="save-btn" onclick="submitRecharge()">إضافة</button>
+            </div>
+
+            <div id="sendForm" class="card hidden">
+                <h3 style="font-weight:700;margin-bottom:12px;">إرسال رصيد</h3>
+                <div class="form-group">
+                    <label class="form-label" for="recipientId">ايدي المستخدم</label>
+                    <input type="text" id="recipientId" class="form-input" placeholder="أدخل ايدي المستخدم">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="sendAmount">المبلغ</label>
+                    <input type="number" id="sendAmount" class="form-input" placeholder="ادخل المبلغ" min="1">
+                </div>
+                <button class="save-btn" onclick="submitSend()">إرسال</button>
+            </div>
+
+            <div class="section-title">سجل المعاملات</div>
+            <div class="card">
+                <div class="table-container">
+                    <table class="transactions-table" id="transactionsTable">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>الوصف</th>
+                                <th>المبلغ</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <div class="pagination-info" id="paginationInfo">عرض 0-0 من 0</div>
+                    <div class="pagination-buttons">
+                        <button class="pagination-btn" id="prevPage" onclick="changePage(-1)" disabled><i class="las la-chevron-right"></i></button>
+                        <button class="pagination-btn" id="nextPage" onclick="changePage(1)" disabled><i class="las la-chevron-left"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="bottom-mobile-nav" id="bottomMobileNav">
+        <a href="#" class="bottom-nav-item" data-tab="home"><i class="las la-home"></i><span>الرئيسية</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="orders"><i class="las la-shopping-bag"></i><span>الطلبات</span></a>
+        <a href="#" class="bottom-nav-item bottom-nav-item-center" data-tab="cart"><i class="las la-shopping-cart"></i><span>السلة</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="favorites"><i class="las la-heart"></i><span>المفضلة</span></a>
+        <a href="#" class="bottom-nav-item active" data-tab="profile"><i class="las la-user"></i><span>حسابي</span></a>
+    </div>
+
+    <script>
+        (function() {
+            const headerAvatarWrapper = document.getElementById('headerAvatarWrapper');
+            const dropdown = document.getElementById('profileDropdown');
+            const dropdownOverlay = document.getElementById('dropdownOverlay');
+            const notificationBtn = document.getElementById('notificationBtn');
+            const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
+            const dropdownItems = document.querySelectorAll('.dropdown-item');
+            let isDropdownOpen = false;
+
+            function openDropdown() {
+                isDropdownOpen = true;
+                dropdown.classList.add('active');
+                dropdownOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeDropdown() {
+                isDropdownOpen = false;
+                dropdown.classList.remove('active');
+                dropdownOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            function toggleDropdown() {
+                if (isDropdownOpen) {
+                    closeDropdown();
+                } else {
+                    openDropdown();
+                }
+            }
+
+            if (headerAvatarWrapper) {
+                headerAvatarWrapper.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleDropdown();
+                });
+            }
+
+            if (dropdownOverlay) {
+                dropdownOverlay.addEventListener('click', function() {
+                    closeDropdown();
+                });
+            }
+
+            document.addEventListener('click', function(e) {
+                if (isDropdownOpen) {
+                    if (!dropdown.contains(e.target) && !headerAvatarWrapper.contains(e.target)) {
+                        closeDropdown();
+                    }
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && isDropdownOpen) {
+                    closeDropdown();
+                }
+            });
+
+            dropdownItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const action = this.getAttribute('data-action');
+                    dropdownItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    const label = this.querySelector('span') ? this.querySelector('span').textContent : '';
+                    closeDropdown();
+                    if (action && action !== 'wallet') {
+                        setTimeout(() => {
+                            Swal.fire({
+                                title: label || action,
+                                icon: 'info',
+                                confirmButtonColor: '#FF5A00'
+                            });
+                        }, 300);
+                    }
+                });
+            });
+
+            bottomNavItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    bottomNavItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    const tab = this.getAttribute('data-tab');
+                    let msg = '';
+                    if (tab === 'home') msg = 'أنت في الصفحة الرئيسية';
+                    else if (tab === 'orders') msg = 'طلباتك الحالية والسابقة';
+                    else if (tab === 'cart') msg = 'سلة التسوق';
+                    else if (tab === 'favorites') msg = 'قائمة المفضلة الخاصة بك';
+                    else if (tab === 'profile') msg = 'حسابك الشخصي';
+                    if (tab !== 'profile') {
+                        Swal.fire({
+                            title: msg,
+                            icon: 'info',
+                            confirmButtonColor: '#FF5A00'
+                        });
+                    }
+                });
+            });
+
+            notificationBtn.addEventListener('click', () => {
+                Swal.fire({
+                    title: 'الإشعارات',
+                    text: 'لديك 3 إشعارات جديدة',
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00'
+                });
+            });
+
+            window.toggleRechargeForm = function() {
+                const form = document.getElementById('rechargeForm');
+                form.classList.toggle('hidden');
+                document.getElementById('sendForm').classList.add('hidden');
+            };
+
+            window.toggleSendForm = function() {
+                const form = document.getElementById('sendForm');
+                form.classList.toggle('hidden');
+                document.getElementById('rechargeForm').classList.add('hidden');
+            };
+
+            window.handleRechargeMethodChange = function() {
+                const method = document.getElementById('rechargeMethod').value;
+                document.getElementById('ewalletFields').classList.add('hidden');
+                document.getElementById('codeFields').classList.add('hidden');
+                if (method === 'ewallet') {
+                    document.getElementById('ewalletFields').classList.remove('hidden');
+                } else {
+                    document.getElementById('codeFields').classList.remove('hidden');
+                }
+            };
+
+            window.updateFileName = function(input) {
+                const display = document.getElementById('fileNameDisplay');
+                if (input.files && input.files.length > 0) {
+                    display.textContent = input.files[0].name;
+                } else {
+                    display.textContent = 'اضغط لرفع صورة إثبات التحويل';
+                }
+            };
+
+            window.submitRecharge = function() {
+                const method = document.getElementById('rechargeMethod').value;
+                if (method === 'ewallet') {
+                    const amount = document.getElementById('ewalletAmount').value;
+                    const file = document.getElementById('proofFile').files[0];
+                    if (!amount || amount <= 0) {
+                        Swal.fire({
+                            title: 'خطأ',
+                            text: 'ادخل مبلغ صحيح',
+                            icon: 'warning',
+                            confirmButtonColor: '#FF5A00'
+                        });
+                        return;
+                    }
+                    if (!file) {
+                        Swal.fire({
+                            title: 'خطأ',
+                            text: 'ارفع إثبات التحويل',
+                            icon: 'warning',
+                            confirmButtonColor: '#FF5A00'
+                        });
+                        return;
+                    }
+                    Swal.fire({
+                        title: 'تم بنجاح',
+                        text: 'تم إرسال طلب إضافة الرصيد وسيتم مراجعته',
+                        icon: 'success',
+                        confirmButtonColor: '#FF5A00'
+                    });
+                } else {
+                    const code = document.getElementById('rechargeCode').value.trim();
+                    if (!code) {
+                        Swal.fire({
+                            title: 'خطأ',
+                            text: 'ادخل كود الشحن',
+                            icon: 'warning',
+                            confirmButtonColor: '#FF5A00'
+                        });
+                        return;
+                    }
+                    Swal.fire({
+                        title: 'تم بنجاح',
+                        text: 'تم شحن الكود بنجاح وإضافة الرصيد',
+                        icon: 'success',
+                        confirmButtonColor: '#FF5A00'
+                    });
+                }
+                document.getElementById('rechargeForm').classList.add('hidden');
+            };
+
+            window.submitSend = function() {
+                const recipientId = document.getElementById('recipientId').value.trim();
+                const amount = document.getElementById('sendAmount').value;
+                if (!recipientId) {
+                    Swal.fire({
+                        title: 'خطأ',
+                        text: 'ادخل ايدي المستخدم',
+                        icon: 'warning',
+                        confirmButtonColor: '#FF5A00'
+                    });
+                    return;
+                }
+                if (!amount || amount <= 0) {
+                    Swal.fire({
+                        title: 'خطأ',
+                        text: 'ادخل مبلغ صحيح',
+                        icon: 'warning',
+                        confirmButtonColor: '#FF5A00'
+                    });
+                    return;
+                }
+                Swal.fire({
+                    title: 'تم بنجاح',
+                    text: 'تم إرسال الرصيد بنجاح',
+                    icon: 'success',
+                    confirmButtonColor: '#FF5A00'
+                });
+                document.getElementById('sendForm').classList.add('hidden');
+            };
+
+            const transactionsData = [
+                { date: 'اليوم<br><span style="font-size:0.7rem;color:var(--color-muted);">02:45 م</span>', description: 'إيداع بنكي', amount: '+500.00 ج.م', type: 'positive', icon: 'las la-university', status: 'accepted', reason: '' },
+                { date: 'أمس<br><span style="font-size:0.7rem;color:var(--color-muted);">10:20 ص</span>', description: 'شحن كود', amount: '+100.00 ج.م', type: 'positive', icon: 'las la-ticket-alt', status: 'accepted', reason: '' },
+                { date: '2026-09-07', description: 'إيداع عبر تحويل', amount: '+300.00 ج.م', type: 'positive', icon: 'las la-exchange-alt', status: 'rejected', reason: 'لم يتم التحقق من إثبات التحويل' },
+                { date: '2026-09-05', description: 'مكافأة دعوة صديق', amount: '+50.00 ج.م', type: 'positive', icon: 'las la-gift', status: 'accepted', reason: '' },
+                { date: '2026-09-03', description: 'إرسال رصيد لمستخدم 12345', amount: '-200.00 ج.م', type: 'negative', icon: 'las la-paper-plane', status: 'accepted', reason: '' },
+                { date: '2026-09-01', description: 'شحن كود (هدية)', amount: '+150.00 ج.م', type: 'positive', icon: 'las la-gift', status: 'rejected', reason: 'كود غير صالح أو مستخدم مسبقاً' },
+                { date: '2026-08-28', description: 'خصم رسوم إدارية', amount: '-5.00 ج.م', type: 'negative', icon: 'las la-file-invoice', status: 'accepted', reason: '' },
+                { date: '2026-08-25', description: 'إيداع نقدي', amount: '+75.00 ج.م', type: 'positive', icon: 'las la-money-bill', status: 'accepted', reason: '' }
+            ];
+
+            const rowsPerPage = 4;
+            let currentPage = 1;
+            let totalPages = Math.ceil(transactionsData.length / rowsPerPage);
+
+            function renderTable() {
+                const tbody = document.getElementById('transactionsBody');
+                tbody.innerHTML = '';
+                const start = (currentPage - 1) * rowsPerPage;
+                const end = Math.min(start + rowsPerPage, transactionsData.length);
+                for (let i = start; i < end; i++) {
+                    const t = transactionsData[i];
+                    const row = document.createElement('tr');
+                    const statusHtml = t.status === 'accepted'
+                        ? `<span class="status-badge accepted"><i class="las la-check-circle"></i> مقبولة</span>`
+                        : `<span class="status-badge rejected"><i class="las la-times-circle"></i> مرفوضة</span>
+                           <span class="reject-reason">${t.reason}</span>`;
+                    row.innerHTML = `
+                        <td>${t.date}</td>
+                        <td><span class="transaction-icon"><i class="${t.icon}"></i></span> ${t.description}</td>
+                        <td class="transaction-amount ${t.type}">${t.amount}</td>
+                        <td>${statusHtml}</td>
+                    `;
+                    tbody.appendChild(row);
+                }
+                updatePagination();
+            }
+
+            function updatePagination() {
+                const info = document.getElementById('paginationInfo');
+                const total = transactionsData.length;
+                const start = total === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1;
+                const end = Math.min(currentPage * rowsPerPage, total);
+                info.textContent = `عرض ${start}-${end} من ${total}`;
+                document.getElementById('prevPage').disabled = currentPage === 1;
+                document.getElementById('nextPage').disabled = currentPage === totalPages;
+            }
+
+            window.changePage = function(direction) {
+                const newPage = currentPage + direction;
+                if (newPage >= 1 && newPage <= totalPages) {
+                    currentPage = newPage;
+                    renderTable();
+                }
+            };
+
+            renderTable();
+
+            window.showAlert = function(title) {
+                Swal.fire({
+                    title: title,
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00'
+                });
+            };
+        })();
+    </script>
+</body>
+</html>
