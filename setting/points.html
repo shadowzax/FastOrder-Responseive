@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -574,6 +575,78 @@
             background: #FF8C38;
             color: #fff;
         }
+        .redeem-form-container {
+            display: none;
+            margin: 12px 12px 20px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-color);
+        }
+        .redeem-form-container.active {
+            display: block;
+        }
+        .redeem-form-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--color-white);
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        .redeem-form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--color-white);
+        }
+        .redeem-form-select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--color-background);
+            color: var(--color-white);
+            font-family: inherit;
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+        }
+        .redeem-form-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: var(--color-primary);
+            color: #fff;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .redeem-form-btn:hover {
+            background: #e04e00;
+        }
+        .redeem-main-btn {
+            display: block;
+            width: calc(100% - 24px);
+            margin: 16px 12px 0;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: var(--color-primary);
+            color: #fff;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.3);
+        }
+        .redeem-main-btn:hover {
+            background: #e04e00;
+        }
         @media (max-width: 640px) {
             .points-big-number {
                 font-size: 2.5rem;
@@ -601,6 +674,14 @@
             }
             .back-btn {
                 font-size: 1.5rem;
+            }
+            .redeem-form-container {
+                margin: 8px 8px 16px;
+                padding: 16px;
+            }
+            .redeem-main-btn {
+                margin: 12px 8px 0;
+                width: calc(100% - 16px);
             }
         }
     </style>
@@ -649,20 +730,28 @@
                         <span>المستوى التالي: 2,000 نقطة</span>
                     </div>
                 </div>
-                <div class="flex items-center gap-3 mt-4 relative z-10">
-                    <button class="flex-1 bg-white text-primary font-bold py-3 px-4 rounded-xl text-sm hover:bg-orange-50 transition-all shadow-md" onclick="showAlert('استبدال النقاط')">
-                        <i class="las la-gift ml-1"></i> استبدال النقاط
-                    </button>
-                    <button class="flex-1 bg-white/20 border-2 border-white/50 text-white font-bold py-3 px-4 rounded-xl text-sm hover:bg-white/30 transition-all shadow-md" onclick="showAlert('كسب المزيد')">
-                        <i class="las la-plus-circle ml-1"></i> كسب المزيد
-                    </button>
-                </div>
+                <button class="redeem-main-btn" onclick="toggleRedeemForm()">
+                    <i class="las la-gift ml-1"></i> استبدال النقاط
+                </button>
+            </div>
+
+            <div id="redeemFormContainer" class="redeem-form-container">
+                <div class="redeem-form-title">استبدال النقاط</div>
+                <label class="redeem-form-label">اختر المكافأة:</label>
+                <select id="redeemOption" class="redeem-form-select">
+                    <option value="discount10">قسيمة خصم 10% (150 نقطة)</option>
+                    <option value="discount25">قسيمة خصم 25% (350 نقطة)</option>
+                    <option value="coffee">قهوة مجانية (80 نقطة)</option>
+                    <option value="delivery">توصيل مجاني (100 نقطة)</option>
+                    <option value="meal">وجبة مجانية (500 نقطة)</option>
+                    <option value="vip">اشتراك VIP (1,000 نقطة)</option>
+                </select>
+                <button class="redeem-form-btn" onclick="submitRedeemForm()">استبدال</button>
             </div>
 
             <div class="tabs-container mt-4">
                 <button class="tab-btn active" data-tab="history" onclick="switchTab('history')">سجل النقاط</button>
                 <button class="tab-btn" data-tab="earn" onclick="switchTab('earn')">طرق كسب النقاط</button>
-                <button class="tab-btn" data-tab="redeem" onclick="switchTab('redeem')">استبدال النقاط</button>
             </div>
 
             <div id="tab-history" class="tab-content">
@@ -819,72 +908,6 @@
                     </div>
                 </div>
             </div>
-
-            <div id="tab-redeem" class="tab-content" style="display:none;">
-                <div class="section-title">استبدال النقاط</div>
-                <div class="menu-card">
-                    <div class="earn-option-card" onclick="showAlert('قسيمة خصم')">
-                        <div class="earn-option-icon" style="background: rgba(255,90,0,0.1); color: #FF5A00;">
-                            <i class="las la-percentage"></i>
-                        </div>
-                        <div class="earn-option-info">
-                            <p class="earn-option-title">قسيمة خصم 10%</p>
-                            <p class="earn-option-sub">خصم 10% على طلبك التالي</p>
-                        </div>
-                        <span class="earn-option-points">150 نقطة</span>
-                    </div>
-                    <div class="earn-option-card" onclick="showAlert('قسيمة خصم')">
-                        <div class="earn-option-icon" style="background: rgba(255,184,0,0.15); color: #FFB800;">
-                            <i class="las la-percentage"></i>
-                        </div>
-                        <div class="earn-option-info">
-                            <p class="earn-option-title">قسيمة خصم 25%</p>
-                            <p class="earn-option-sub">خصم 25% على طلبك التالي</p>
-                        </div>
-                        <span class="earn-option-points">350 نقطة</span>
-                    </div>
-                    <div class="earn-option-card" onclick="showAlert('قهوة مجانية')">
-                        <div class="earn-option-icon" style="background: rgba(139,69,19,0.12); color: #8B4513;">
-                            <i class="las la-coffee"></i>
-                        </div>
-                        <div class="earn-option-info">
-                            <p class="earn-option-title">قهوة مجانية</p>
-                            <p class="earn-option-sub">احصل على قهوة مجانية من أي مطعم</p>
-                        </div>
-                        <span class="earn-option-points">80 نقطة</span>
-                    </div>
-                    <div class="earn-option-card" onclick="showAlert('توصيل مجاني')">
-                        <div class="earn-option-icon" style="background: rgba(59,130,246,0.1); color: #3B82F6;">
-                            <i class="las la-shipping-fast"></i>
-                        </div>
-                        <div class="earn-option-info">
-                            <p class="earn-option-title">توصيل مجاني</p>
-                            <p class="earn-option-sub">توصيل مجاني على طلبك التالي</p>
-                        </div>
-                        <span class="earn-option-points">100 نقطة</span>
-                    </div>
-                    <div class="earn-option-card" onclick="showAlert('وجبة مجانية')">
-                        <div class="earn-option-icon" style="background: rgba(239,68,68,0.1); color: #EF4444;">
-                            <i class="las la-utensils"></i>
-                        </div>
-                        <div class="earn-option-info">
-                            <p class="earn-option-title">وجبة مجانية</p>
-                            <p class="earn-option-sub">وجبة مجانية من مطاعم مختارة</p>
-                        </div>
-                        <span class="earn-option-points">500 نقطة</span>
-                    </div>
-                    <div class="earn-option-card" onclick="showAlert('اشتراك VIP')">
-                        <div class="earn-option-icon" style="background: rgba(255,90,0,0.1); color: #FF5A00;">
-                            <i class="las la-crown"></i>
-                        </div>
-                        <div class="earn-option-info">
-                            <p class="earn-option-title">اشتراك FastOrder+ VIP</p>
-                            <p class="earn-option-sub">اشتراك VIP لمدة شهر كامل</p>
-                        </div>
-                        <span class="earn-option-points">1,000 نقطة</span>
-                    </div>
-                </div>
-            </div>
         </div>
     </main>
 
@@ -903,10 +926,10 @@
             const tabButtons = document.querySelectorAll('.tab-btn');
             const tabContents = {
                 history: document.getElementById('tab-history'),
-                earn: document.getElementById('tab-earn'),
-                redeem: document.getElementById('tab-redeem')
+                earn: document.getElementById('tab-earn')
             };
             const progressFill = document.getElementById('pointsProgressFill');
+            const redeemContainer = document.getElementById('redeemFormContainer');
 
             function animateProgress() {
                 if (progressFill) {
@@ -933,6 +956,50 @@
                         }
                     }
                 });
+                if (redeemContainer.classList.contains('active')) {
+                    redeemContainer.classList.remove('active');
+                }
+            };
+
+            window.toggleRedeemForm = function() {
+                redeemContainer.classList.toggle('active');
+                if (redeemContainer.classList.contains('active')) {
+                    redeemContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            };
+
+            window.submitRedeemForm = function() {
+                const selected = document.getElementById('redeemOption').value;
+                let msg = '';
+                switch(selected) {
+                    case 'discount10':
+                        msg = 'تم استبدال 150 نقطة بقسيمة خصم 10%';
+                        break;
+                    case 'discount25':
+                        msg = 'تم استبدال 350 نقطة بقسيمة خصم 25%';
+                        break;
+                    case 'coffee':
+                        msg = 'تم استبدال 80 نقطة بقهوة مجانية';
+                        break;
+                    case 'delivery':
+                        msg = 'تم استبدال 100 نقطة بتوصيل مجاني';
+                        break;
+                    case 'meal':
+                        msg = 'تم استبدال 500 نقطة بوجبة مجانية';
+                        break;
+                    case 'vip':
+                        msg = 'تم استبدال 1,000 نقطة باشتراك VIP';
+                        break;
+                    default:
+                        msg = 'تم الاستبدال بنجاح';
+                }
+                Swal.fire({
+                    title: 'تم الاستبدال',
+                    text: msg,
+                    icon: 'success',
+                    confirmButtonColor: '#FF5A00'
+                });
+                redeemContainer.classList.remove('active');
             };
 
             bottomNavItems.forEach(function(item) {
@@ -973,28 +1040,6 @@
                     title: title,
                     icon: 'info',
                     confirmButtonColor: '#FF5A00'
-                });
-            };
-
-            window.showLogoutConfirm = function() {
-                Swal.fire({
-                    title: 'تسجيل الخروج',
-                    text: 'هل أنت متأكد من تسجيل الخروج؟',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#FF5A00',
-                    cancelButtonColor: '#717171',
-                    confirmButtonText: 'نعم، خروج',
-                    cancelButtonText: 'إلغاء'
-                }).then(function(result) {
-                    if (result.isConfirmed) {
-                        Swal.fire({
-                            title: 'تم بنجاح',
-                            text: 'تم تسجيل الخروج بنجاح',
-                            icon: 'success',
-                            confirmButtonColor: '#FF5A00'
-                        });
-                    }
                 });
             };
         })();
