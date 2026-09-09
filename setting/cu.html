@@ -1,0 +1,975 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#FF5A00">
+    <title>كوبونات - طلبات</title>
+    <meta name="description" content="صفحة الكوبونات والعروض">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏷️</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+    </script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF5A00',
+                        secondary: '#FF8C38',
+                        accent: '#FFB800',
+                        dark: '#1A1A1A',
+                        muted: '#717171',
+                        success: '#00B14F',
+                        lightPrimary: '#FFF1E8',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --color-primary: #FF5A00;
+            --color-secondary: #FF8C38;
+            --color-accent: #FFB800;
+            --color-background: #F7F9F8;
+            --color-card: #FFFFFF;
+            --color-darker: #F0F4F3;
+            --color-paragraph: #333333;
+            --color-white: #1A1A1A;
+            --color-muted: #717171;
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --card-bg: #FFFFFF;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --darker-bg: #F0F4F3;
+            --header-height: 70px;
+            --bottom-nav-height: 68px;
+            --shadow-glow: 0 4px 20px rgba(255, 90, 0, 0.06);
+            --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06);
+            --dropdown-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            overscroll-behavior: none;
+        }
+        body {
+            font-family: 'Noto Sans Arabic', 'Alexandria', system-ui, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-white);
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+            padding-bottom: 0;
+        }
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--color-background);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FF8C38;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FF5A00;
+        }
+        #mainHeader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--color-background);
+            z-index: 110;
+            transition: background-color 0.3s;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+        .header-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--color-primary);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            flex-shrink: 0;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            box-shadow: 0 0 0 3px rgba(255, 90, 0, 0.15);
+        }
+        .header-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 5px rgba(255, 90, 0, 0.2);
+        }
+        .header-avatar:active {
+            transform: scale(0.95);
+        }
+        .header-avatar-wrapper {
+            position: relative;
+            flex-shrink: 0;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .notification-btn {
+            position: relative;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--color-muted);
+            font-size: 1.5rem;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+            flex-shrink: 0;
+            border-radius: 50%;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .notification-btn:hover {
+            color: #FF5A00;
+            background: rgba(255, 90, 0, 0.06);
+        }
+        .notification-btn .notification-dot {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #FF5A00;
+            border: 2px solid var(--card-bg);
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.4);
+                opacity: 0.6;
+            }
+        }
+        .dropdown-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: 115;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        .dropdown-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .profile-dropdown {
+            position: fixed;
+            top: calc(var(--header-height) - 4px);
+            left: 16px;
+            width: 240px;
+            max-width: calc(100vw - 32px);
+            max-height: calc(100vh - var(--header-height) - 24px);
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: var(--dropdown-shadow);
+            border: 1px solid var(--border-color);
+            z-index: 120;
+            overflow-y: auto;
+            overflow-x: hidden;
+            transform-origin: top left;
+            transform: scale(0.92) translateY(-12px);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+            overscroll-behavior: contain;
+            padding: 6px 6px 10px;
+        }
+        .profile-dropdown.active {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        @media (max-width: 480px) {
+            .profile-dropdown {
+                left: 8px;
+                width: calc(100vw - 16px);
+                max-width: none;
+                border-radius: 14px;
+                top: calc(var(--header-height) - 2px);
+            }
+        }
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--color-muted);
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 0.9rem;
+            -webkit-tap-highlight-color: transparent;
+            position: relative;
+        }
+        .dropdown-item i {
+            font-size: 20px;
+            width: 28px;
+            flex-shrink: 0;
+            text-align: center;
+        }
+        .dropdown-item:hover {
+            background: rgba(255, 90, 0, 0.07);
+            color: var(--color-primary);
+        }
+        .dropdown-item:active {
+            background: rgba(255, 90, 0, 0.12);
+            transform: scale(0.98);
+        }
+        .dropdown-item.active {
+            background: rgba(255, 90, 0, 0.12);
+            color: var(--color-primary);
+            font-weight: 700;
+        }
+        .dropdown-item.active::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 24px;
+            border-radius: 4px;
+            background: var(--color-primary);
+        }
+        .dropdown-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 6px 12px;
+            opacity: 0.6;
+        }
+        main {
+            padding-top: var(--header-height);
+            padding-bottom: 0;
+        }
+        @media (max-width: 1024px) {
+            main {
+                padding-bottom: calc(var(--bottom-nav-height) + 20px);
+            }
+            body {
+                padding-bottom: 0;
+            }
+        }
+        .bottom-mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--bottom-nav-height);
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            z-index: 100;
+            padding: 6px 8px;
+            padding-bottom: max(6px, env(safe-area-inset-bottom, 6px));
+            box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+            align-items: center;
+            justify-content: space-around;
+            gap: 4px;
+        }
+        @media (max-width: 1024px) {
+            .bottom-mobile-nav {
+                display: flex;
+            }
+        }
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            flex: 1;
+            padding: 8px 4px;
+            border-radius: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--color-muted);
+            font-size: 0.68rem;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            position: relative;
+            min-width: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .bottom-nav-item i {
+            font-size: 1.35rem;
+            transition: all 0.25s ease;
+            flex-shrink: 0;
+        }
+        .bottom-nav-item span {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            max-width: 100%;
+            font-size: 0.65rem;
+            letter-spacing: 0.2px;
+        }
+        .bottom-nav-item.active {
+            color: var(--color-primary);
+        }
+        .bottom-nav-item.active i {
+            font-size: 1.5rem;
+        }
+        .bottom-nav-item-center {
+            position: relative;
+            top: -20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.4);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            flex: none;
+            margin: 0 4px;
+        }
+        .bottom-nav-item-center i {
+            font-size: 2rem;
+        }
+        .bottom-nav-item-center span {
+            display: none;
+        }
+        .bottom-nav-item-center.active {
+            background: #e04e00;
+            color: #fff;
+        }
+        .section-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--color-muted);
+            padding: 12px 16px 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .coupon-hero {
+            background: linear-gradient(135deg, #FF5A00, #FFB800);
+            border-radius: 0 0 24px 24px;
+            padding: 24px 20px;
+            margin-bottom: 16px;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(255, 90, 0, 0.2);
+        }
+        .coupon-hero::after {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .coupon-hero-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            position: relative;
+            z-index: 2;
+        }
+        .coupon-hero-sub {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 4px;
+            position: relative;
+            z-index: 2;
+        }
+        .coupon-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            margin: 0 12px 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+        .coupon-card-body {
+            padding: 16px;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+        .coupon-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.6rem;
+        }
+        .coupon-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .coupon-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--color-white);
+        }
+        .coupon-desc {
+            font-size: 0.85rem;
+            color: var(--color-muted);
+            margin-top: 4px;
+        }
+        .coupon-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .coupon-code {
+            background: var(--color-darker);
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--color-primary);
+            letter-spacing: 1px;
+            border: 1px dashed var(--color-primary);
+        }
+        .coupon-expiry {
+            font-size: 0.75rem;
+            color: var(--color-muted);
+        }
+        .coupon-actions {
+            padding: 12px 16px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--color-background);
+        }
+        .coupon-btn {
+            background: var(--color-primary);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .coupon-btn:hover {
+            background: #e04e00;
+        }
+        .coupon-btn.copied {
+            background: #00B14F;
+        }
+        .coupon-btn.used {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .coupon-status {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+        .coupon-status.active {
+            background: rgba(0, 177, 79, 0.1);
+            color: #00B14F;
+        }
+        .coupon-status.expired {
+            background: rgba(255, 90, 0, 0.1);
+            color: #FF5A00;
+        }
+        .coupon-tabs {
+            display: flex;
+            gap: 8px;
+            padding: 0 12px 12px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .coupon-tabs::-webkit-scrollbar {
+            display: none;
+        }
+        .coupon-tab {
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.8rem;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.25s ease;
+            background: var(--color-darker);
+            color: var(--color-muted);
+            flex-shrink: 0;
+        }
+        .coupon-tab.active {
+            background: var(--color-primary);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(255, 90, 0, 0.3);
+        }
+        .coupon-tab:hover {
+            background: #FF8C38;
+            color: #fff;
+        }
+        @media (max-width: 640px) {
+            .coupon-hero-title {
+                font-size: 1.2rem;
+            }
+            .coupon-card-body {
+                padding: 12px;
+                gap: 10px;
+            }
+            .coupon-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 10px;
+                font-size: 1.3rem;
+            }
+            .coupon-actions {
+                padding: 10px 12px;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .coupon-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dropdown-overlay" id="dropdownOverlay"></div>
+
+    <div class="profile-dropdown" id="profileDropdown" role="menu" aria-label="قائمة المستخدم">
+        <a href="#" class="dropdown-item" data-action="home"><i class="las la-home"></i><span>الرئيسية</span></a>
+        <a href="#" class="dropdown-item" data-action="orders"><i class="las la-shopping-bag"></i><span>الطلبات</span></a>
+        <a href="#" class="dropdown-item" data-action="cart"><i class="las la-shopping-cart"></i><span>السلة</span></a>
+        <a href="#" class="dropdown-item" data-action="favorites"><i class="las la-heart"></i><span>المفضلة</span></a>
+        <a href="#" class="dropdown-item" data-action="profile"><i class="las la-user"></i><span>حسابي</span></a>
+        <a href="#" class="dropdown-item active" data-action="coupon"><i class="las la-ticket-alt"></i><span>كوبون</span></a>
+    </div>
+
+    <main class="transition-all">
+        <header id="mainHeader">
+            <div class="flex items-center gap-2 flex-1 min-w-0">
+                <h1 class="text-lg font-extrabold" style="color: var(--color-white);">كوبونات</h1>
+            </div>
+            <div class="flex items-center gap-3 flex-shrink-0">
+                <button class="notification-btn" id="notificationBtn" aria-label="الإشعارات">
+                    <i class="las la-bell"></i>
+                    <span class="notification-dot"></span>
+                </button>
+                <div class="header-avatar-wrapper" id="headerAvatarWrapper" title="فتح القائمة">
+                    <img id="headerAvatar" src="https://i.ibb.co/3mZjjp1T/548212938-1338267831079244-6599431839367735090-n.jpg" class="header-avatar" alt="صورة المستخدم">
+                </div>
+            </div>
+        </header>
+
+        <div class="container mx-auto px-0 py-4 max-w-3xl">
+            <div class="coupon-hero mx-3">
+                <div class="coupon-hero-title">احصل على خصومات رائعة</div>
+                <div class="coupon-hero-sub">استخدم الكوبونات التالية لتوفير المال على طلباتك</div>
+            </div>
+
+            <div class="coupon-tabs mt-4">
+                <button class="coupon-tab active" data-tab="available" onclick="switchCouponTab('available')">متاحة</button>
+                <button class="coupon-tab" data-tab="my" onclick="switchCouponTab('my')">كوبوناتي</button>
+                <button class="coupon-tab" data-tab="expired" onclick="switchCouponTab('expired')">منتهية</button>
+            </div>
+
+            <div id="coupon-available" class="coupon-tab-content">
+                <div class="section-title">كوبونات متاحة</div>
+                <div class="coupon-card">
+                    <div class="coupon-card-body">
+                        <div class="coupon-icon" style="background: rgba(255,90,0,0.1); color: #FF5A00;">
+                            <i class="las la-percentage"></i>
+                        </div>
+                        <div class="coupon-info">
+                            <div class="coupon-title">خصم 15% على الطلبات فوق 100 جنيه</div>
+                            <div class="coupon-desc">استخدم هذا الكوبون للحصول على خصم 15% على جميع الطلبات التي تزيد قيمتها عن 100 جنيه.</div>
+                            <div class="coupon-meta">
+                                <span class="coupon-code">SAVE15</span>
+                                <span class="coupon-expiry">ينتهي في 30/09/2026</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="coupon-actions">
+                        <span class="coupon-status active">متاح</span>
+                        <button class="coupon-btn" data-code="SAVE15" onclick="copyCoupon(this)"><i class="las la-copy"></i> نسخ الكود</button>
+                    </div>
+                </div>
+
+                <div class="coupon-card">
+                    <div class="coupon-card-body">
+                        <div class="coupon-icon" style="background: rgba(255,184,0,0.15); color: #FFB800;">
+                            <i class="las la-shipping-fast"></i>
+                        </div>
+                        <div class="coupon-info">
+                            <div class="coupon-title">توصيل مجاني</div>
+                            <div class="coupon-desc">استمتع بتوصيل مجاني على أي طلب بدون حد أدنى.</div>
+                            <div class="coupon-meta">
+                                <span class="coupon-code">FREESHIP</span>
+                                <span class="coupon-expiry">ينتهي في 15/10/2026</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="coupon-actions">
+                        <span class="coupon-status active">متاح</span>
+                        <button class="coupon-btn" data-code="FREESHIP" onclick="copyCoupon(this)"><i class="las la-copy"></i> نسخ الكود</button>
+                    </div>
+                </div>
+
+                <div class="coupon-card">
+                    <div class="coupon-card-body">
+                        <div class="coupon-icon" style="background: rgba(0,177,79,0.1); color: #00B14F;">
+                            <i class="las la-utensils"></i>
+                        </div>
+                        <div class="coupon-info">
+                            <div class="coupon-title">وجبة مجانية مع طلبين</div>
+                            <div class="coupon-desc">اطلب وجبتين واحصل على الثالثة مجاناً من مطاعم مختارة.</div>
+                            <div class="coupon-meta">
+                                <span class="coupon-code">3FOR2</span>
+                                <span class="coupon-expiry">ينتهي في 20/09/2026</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="coupon-actions">
+                        <span class="coupon-status active">متاح</span>
+                        <button class="coupon-btn" data-code="3FOR2" onclick="copyCoupon(this)"><i class="las la-copy"></i> نسخ الكود</button>
+                    </div>
+                </div>
+
+                <div class="coupon-card">
+                    <div class="coupon-card-body">
+                        <div class="coupon-icon" style="background: rgba(59,130,246,0.1); color: #3B82F6;">
+                            <i class="las la-coffee"></i>
+                        </div>
+                        <div class="coupon-info">
+                            <div class="coupon-title">قهوة مجانية</div>
+                            <div class="coupon-desc">احصل على قهوة مجانية من أي مقهى شريك عند الطلب.</div>
+                            <div class="coupon-meta">
+                                <span class="coupon-code">FREECOFFEE</span>
+                                <span class="coupon-expiry">ينتهي في 05/10/2026</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="coupon-actions">
+                        <span class="coupon-status active">متاح</span>
+                        <button class="coupon-btn" data-code="FREECOFFEE" onclick="copyCoupon(this)"><i class="las la-copy"></i> نسخ الكود</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="coupon-my" class="coupon-tab-content" style="display:none;">
+                <div class="section-title">كوبوناتي</div>
+                <div class="coupon-card">
+                    <div class="coupon-card-body">
+                        <div class="coupon-icon" style="background: rgba(255,90,0,0.1); color: #FF5A00;">
+                            <i class="las la-percentage"></i>
+                        </div>
+                        <div class="coupon-info">
+                            <div class="coupon-title">خصم 10% على طلبك التالي</div>
+                            <div class="coupon-desc">تم الحصول عليه من نقاط المكافأة.</div>
+                            <div class="coupon-meta">
+                                <span class="coupon-code">MYSAVE10</span>
+                                <span class="coupon-expiry">ينتهي في 30/09/2026</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="coupon-actions">
+                        <span class="coupon-status active">متاح</span>
+                        <button class="coupon-btn" data-code="MYSAVE10" onclick="copyCoupon(this)"><i class="las la-copy"></i> نسخ الكود</button>
+                    </div>
+                </div>
+                <div class="coupon-card">
+                    <div class="coupon-card-body">
+                        <div class="coupon-icon" style="background: rgba(0,177,79,0.1); color: #00B14F;">
+                            <i class="las la-shipping-fast"></i>
+                        </div>
+                        <div class="coupon-info">
+                            <div class="coupon-title">توصيل مجاني</div>
+                            <div class="coupon-desc">تم الحصول عليه من عرض خاص.</div>
+                            <div class="coupon-meta">
+                                <span class="coupon-code">MYFREESHIP</span>
+                                <span class="coupon-expiry">ينتهي في 25/09/2026</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="coupon-actions">
+                        <span class="coupon-status active">متاح</span>
+                        <button class="coupon-btn" data-code="MYFREESHIP" onclick="copyCoupon(this)"><i class="las la-copy"></i> نسخ الكود</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="coupon-expired" class="coupon-tab-content" style="display:none;">
+                <div class="section-title">كوبونات منتهية</div>
+                <div class="coupon-card">
+                    <div class="coupon-card-body">
+                        <div class="coupon-icon" style="background: rgba(255,90,0,0.1); color: #FF5A00;">
+                            <i class="las la-percentage"></i>
+                        </div>
+                        <div class="coupon-info">
+                            <div class="coupon-title">خصم 20% على الطلبات</div>
+                            <div class="coupon-desc">انتهت صلاحية هذا الكوبون.</div>
+                            <div class="coupon-meta">
+                                <span class="coupon-code">EXPIRED20</span>
+                                <span class="coupon-expiry">انتهى في 01/08/2026</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="coupon-actions">
+                        <span class="coupon-status expired">منتهي</span>
+                        <button class="coupon-btn used" disabled><i class="las la-times"></i> غير متاح</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="bottom-mobile-nav" id="bottomMobileNav">
+        <a href="#" class="bottom-nav-item" data-tab="home"><i class="las la-home"></i><span>الرئيسية</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="orders"><i class="las la-shopping-bag"></i><span>الطلبات</span></a>
+        <a href="#" class="bottom-nav-item bottom-nav-item-center" data-tab="cart"><i class="las la-shopping-cart"></i><span>السلة</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="favorites"><i class="las la-heart"></i><span>المفضلة</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="coupon"><i class="las la-ticket-alt"></i><span>كوبون</span></a>
+    </div>
+
+    <script>
+        (function() {
+            const headerAvatarWrapper = document.getElementById('headerAvatarWrapper');
+            const dropdown = document.getElementById('profileDropdown');
+            const dropdownOverlay = document.getElementById('dropdownOverlay');
+            const notificationBtn = document.getElementById('notificationBtn');
+            const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
+            const dropdownItems = document.querySelectorAll('.dropdown-item');
+            const couponTabs = document.querySelectorAll('.coupon-tab');
+            const couponContents = {
+                available: document.getElementById('coupon-available'),
+                my: document.getElementById('coupon-my'),
+                expired: document.getElementById('coupon-expired')
+            };
+            let isDropdownOpen = false;
+
+            function openDropdown() {
+                isDropdownOpen = true;
+                dropdown.classList.add('active');
+                dropdownOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeDropdown() {
+                isDropdownOpen = false;
+                dropdown.classList.remove('active');
+                dropdownOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            function toggleDropdown() {
+                if (isDropdownOpen) {
+                    closeDropdown();
+                } else {
+                    openDropdown();
+                }
+            }
+
+            if (headerAvatarWrapper) {
+                headerAvatarWrapper.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleDropdown();
+                });
+            }
+
+            if (dropdownOverlay) {
+                dropdownOverlay.addEventListener('click', function() {
+                    closeDropdown();
+                });
+            }
+
+            document.addEventListener('click', function(e) {
+                if (isDropdownOpen) {
+                    if (!dropdown.contains(e.target) && !headerAvatarWrapper.contains(e.target)) {
+                        closeDropdown();
+                    }
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && isDropdownOpen) {
+                    closeDropdown();
+                }
+            });
+
+            dropdownItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const action = this.getAttribute('data-action');
+                    dropdownItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    const label = this.querySelector('span') ? this.querySelector('span').textContent : '';
+                    closeDropdown();
+                    if (action && action !== 'coupon') {
+                        setTimeout(() => {
+                            Swal.fire({
+                                title: label || action,
+                                icon: 'info',
+                                confirmButtonColor: '#FF5A00'
+                            });
+                        }, 300);
+                    }
+                });
+            });
+
+            bottomNavItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    bottomNavItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    const tab = this.getAttribute('data-tab');
+                    let msg = '';
+                    if (tab === 'home') msg = 'أنت في الصفحة الرئيسية';
+                    else if (tab === 'orders') msg = 'طلباتك الحالية والسابقة';
+                    else if (tab === 'cart') msg = 'سلة التسوق';
+                    else if (tab === 'favorites') msg = 'قائمة المفضلة الخاصة بك';
+                    else if (tab === 'coupon') msg = 'صفحة الكوبونات';
+                    if (tab !== 'coupon') {
+                        Swal.fire({
+                            title: msg,
+                            icon: 'info',
+                            confirmButtonColor: '#FF5A00'
+                        });
+                    }
+                });
+            });
+
+            notificationBtn.addEventListener('click', () => {
+                Swal.fire({
+                    title: 'الإشعارات',
+                    text: 'لديك 3 إشعارات جديدة',
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00'
+                });
+            });
+
+            window.switchCouponTab = function(tabName) {
+                couponTabs.forEach(tab => {
+                    tab.classList.remove('active');
+                    if (tab.getAttribute('data-tab') === tabName) {
+                        tab.classList.add('active');
+                    }
+                });
+                Object.keys(couponContents).forEach(key => {
+                    if (couponContents[key]) {
+                        if (key === tabName) {
+                            couponContents[key].style.display = 'block';
+                        } else {
+                            couponContents[key].style.display = 'none';
+                        }
+                    }
+                });
+            };
+
+            window.copyCoupon = function(btn) {
+                const code = btn.getAttribute('data-code');
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(code).then(() => {
+                        const originalText = btn.innerHTML;
+                        btn.innerHTML = '<i class="las la-check"></i> تم النسخ';
+                        btn.classList.add('copied');
+                        setTimeout(() => {
+                            btn.innerHTML = originalText;
+                            btn.classList.remove('copied');
+                        }, 2000);
+                        Swal.fire({
+                            title: 'تم النسخ',
+                            text: 'تم نسخ الكود: ' + code,
+                            icon: 'success',
+                            confirmButtonColor: '#FF5A00',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    }).catch(() => {
+                        fallbackCopy(code, btn);
+                    });
+                } else {
+                    fallbackCopy(code, btn);
+                }
+            };
+
+            function fallbackCopy(code, btn) {
+                const textArea = document.createElement('textarea');
+                textArea.value = code;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="las la-check"></i> تم النسخ';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('copied');
+                }, 2000);
+                Swal.fire({
+                    title: 'تم النسخ',
+                    text: 'تم نسخ الكود: ' + code,
+                    icon: 'success',
+                    confirmButtonColor: '#FF5A00',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
