@@ -1,0 +1,1047 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#FF5A00">
+    <title>الدعم والمساعدة - طلبات</title>
+    <meta name="description" content="صفحة الدعم والمساعدة">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🆘</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF5A00',
+                        secondary: '#FF8C38',
+                        accent: '#FFB800',
+                        dark: '#1A1A1A',
+                        muted: '#717171',
+                        success: '#00B14F',
+                        lightPrimary: '#FFF1E8',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --color-primary: #FF5A00;
+            --color-secondary: #FF8C38;
+            --color-accent: #FFB800;
+            --color-background: #F7F9F8;
+            --color-card: #FFFFFF;
+            --color-darker: #F0F4F3;
+            --color-paragraph: #333333;
+            --color-white: #1A1A1A;
+            --color-muted: #717171;
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --card-bg: #FFFFFF;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --darker-bg: #F0F4F3;
+            --header-height: 70px;
+            --shadow-glow: 0 4px 20px rgba(255, 90, 0, 0.06);
+            --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06);
+            --dropdown-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            overscroll-behavior: none;
+        }
+        body {
+            font-family: 'Noto Sans Arabic', 'Alexandria', system-ui, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-white);
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+            padding-bottom: 0;
+        }
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--color-background);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FF8C38;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FF5A00;
+        }
+        #mainHeader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--color-background);
+            z-index: 110;
+            transition: background-color 0.3s;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--color-white);
+            font-size: 1.6rem;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s, background 0.2s;
+            flex-shrink: 0;
+            border-radius: 50%;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .back-btn:hover {
+            color: #FF5A00;
+            background: rgba(255, 90, 0, 0.06);
+        }
+        .header-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--color-primary);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            flex-shrink: 0;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            box-shadow: 0 0 0 3px rgba(255, 90, 0, 0.15);
+        }
+        .header-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 5px rgba(255, 90, 0, 0.2);
+        }
+        .header-avatar:active {
+            transform: scale(0.95);
+        }
+        .header-avatar-wrapper {
+            position: relative;
+            flex-shrink: 0;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .notification-btn {
+            position: relative;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--color-muted);
+            font-size: 1.5rem;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+            flex-shrink: 0;
+            border-radius: 50%;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .notification-btn:hover {
+            color: #FF5A00;
+            background: rgba(255, 90, 0, 0.06);
+        }
+        .notification-btn .notification-dot {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #FF5A00;
+            border: 2px solid var(--card-bg);
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.4);
+                opacity: 0.6;
+            }
+        }
+        .dropdown-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: 115;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        .dropdown-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .profile-dropdown {
+            position: fixed;
+            top: calc(var(--header-height) - 4px);
+            left: 16px;
+            width: 240px;
+            max-width: calc(100vw - 32px);
+            max-height: calc(100vh - var(--header-height) - 24px);
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: var(--dropdown-shadow);
+            border: 1px solid var(--border-color);
+            z-index: 120;
+            overflow-y: auto;
+            overflow-x: hidden;
+            transform-origin: top left;
+            transform: scale(0.92) translateY(-12px);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+            overscroll-behavior: contain;
+            padding: 6px 6px 10px;
+        }
+        .profile-dropdown.active {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        @media (max-width: 480px) {
+            .profile-dropdown {
+                left: 8px;
+                width: calc(100vw - 16px);
+                max-width: none;
+                border-radius: 14px;
+                top: calc(var(--header-height) - 2px);
+            }
+        }
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--color-muted);
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 0.9rem;
+            -webkit-tap-highlight-color: transparent;
+            position: relative;
+        }
+        .dropdown-item i {
+            font-size: 20px;
+            width: 28px;
+            flex-shrink: 0;
+            text-align: center;
+        }
+        .dropdown-item:hover {
+            background: rgba(255, 90, 0, 0.07);
+            color: var(--color-primary);
+        }
+        .dropdown-item:active {
+            background: rgba(255, 90, 0, 0.12);
+            transform: scale(0.98);
+        }
+        .dropdown-item.active {
+            background: rgba(255, 90, 0, 0.12);
+            color: var(--color-primary);
+            font-weight: 700;
+        }
+        .dropdown-item.active::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 24px;
+            border-radius: 4px;
+            background: var(--color-primary);
+        }
+        main {
+            padding-top: var(--header-height);
+            padding-bottom: 24px;
+        }
+        .help-area {
+            max-width: 768px;
+            margin: 0 auto;
+            padding: 16px 12px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .hero-card {
+            background: linear-gradient(135deg, #FF5A00, #FF8C38);
+            border-radius: 20px;
+            padding: 22px 20px;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 28px rgba(255, 90, 0, 0.22);
+        }
+        .hero-card::after {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .hero-card::before {
+            content: '';
+            position: absolute;
+            bottom: -40px;
+            right: -40px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .hero-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+        .hero-icon i {
+            font-size: 1.8rem;
+            color: #fff;
+        }
+        .hero-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            position: relative;
+            z-index: 1;
+        }
+        .hero-subtitle {
+            font-size: 0.85rem;
+            opacity: 0.92;
+            margin-top: 4px;
+            position: relative;
+            z-index: 1;
+            line-height: 1.6;
+        }
+        .search-box {
+            position: relative;
+            z-index: 1;
+            margin-top: 16px;
+        }
+        .search-box input {
+            width: 100%;
+            border: none;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 14px;
+            padding: 13px 44px 13px 16px;
+            font-family: inherit;
+            font-size: 0.88rem;
+            color: var(--color-white);
+            outline: none;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+        }
+        .search-box input::placeholder {
+            color: var(--color-muted);
+        }
+        .search-box i {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-primary);
+            font-size: 1.15rem;
+            pointer-events: none;
+        }
+        .section-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--color-muted);
+            padding: 4px 6px;
+        }
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        @media (min-width: 640px) {
+            .categories-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        .category-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.22s ease;
+            box-shadow: var(--shadow-card);
+            -webkit-tap-highlight-color: transparent;
+            text-align: center;
+        }
+        .category-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 90, 0, 0.35);
+            box-shadow: 0 8px 20px rgba(255, 90, 0, 0.12);
+        }
+        .category-card:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+        .category-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            background: var(--color-darker);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.22s ease;
+        }
+        .category-card:hover .category-icon {
+            background: rgba(255, 90, 0, 0.12);
+        }
+        .category-icon i {
+            font-size: 1.4rem;
+            color: var(--color-primary);
+        }
+        .category-title {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--color-white);
+            line-height: 1.4;
+        }
+        .faq-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: var(--shadow-card);
+        }
+        .faq-item {
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.2s ease;
+        }
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+        .faq-question {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 15px 16px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .faq-question:hover {
+            background: rgba(255, 90, 0, 0.04);
+        }
+        .faq-question-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--color-white);
+            flex: 1;
+            line-height: 1.5;
+        }
+        .faq-icon {
+            color: var(--color-muted);
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.25s ease;
+        }
+        .faq-question:hover .faq-icon {
+            color: var(--color-primary);
+        }
+        .faq-item.open .faq-icon {
+            transform: rotate(180deg);
+            color: var(--color-primary);
+        }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease, padding 0.25s ease;
+            padding: 0 16px;
+        }
+        .faq-item.open .faq-answer {
+            max-height: 400px;
+            padding: 0 16px 16px;
+        }
+        .faq-answer p {
+            font-size: 0.83rem;
+            color: var(--color-muted);
+            line-height: 1.8;
+        }
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+        @media (min-width: 560px) {
+            .contact-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        .contact-card {
+            position: relative;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-right: 4px solid transparent;
+            border-radius: 18px;
+            padding: 18px 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            -webkit-tap-highlight-color: transparent;
+            overflow: hidden;
+        }
+        .contact-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(255, 90, 0, 0.03), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        .contact-card:hover::before {
+            opacity: 1;
+        }
+        .contact-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+            border-color: rgba(255, 90, 0, 0.2);
+        }
+        .contact-card:active {
+            transform: translateY(-1px) scale(0.99);
+        }
+        .contact-card[data-contact="chat"] {
+            border-right-color: #FF5A00;
+        }
+        .contact-card[data-contact="phone"] {
+            border-right-color: #00B14F;
+        }
+        .contact-card[data-contact="email"] {
+            border-right-color: #3B82F6;
+        }
+        .contact-card[data-contact="whatsapp"] {
+            border-right-color: #25D366;
+        }
+        .contact-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: #fff;
+            transition: transform 0.25s ease;
+        }
+        .contact-card:hover .contact-icon {
+            transform: scale(1.05);
+        }
+        .contact-icon.chat {
+            background: linear-gradient(135deg, #FF5A00, #FF8C38);
+            box-shadow: 0 6px 16px rgba(255, 90, 0, 0.3);
+        }
+        .contact-icon.phone {
+            background: linear-gradient(135deg, #00B14F, #22C55E);
+            box-shadow: 0 6px 16px rgba(0, 177, 79, 0.3);
+        }
+        .contact-icon.email {
+            background: linear-gradient(135deg, #3B82F6, #60A5FA);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
+        }
+        .contact-icon.whatsapp {
+            background: linear-gradient(135deg, #25D366, #4ADE80);
+            box-shadow: 0 6px 16px rgba(37, 211, 102, 0.3);
+        }
+        .contact-icon i {
+            font-size: 1.5rem;
+        }
+        .contact-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .contact-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--color-white);
+            line-height: 1.3;
+        }
+        .contact-sub {
+            font-size: 0.78rem;
+            color: var(--color-muted);
+            line-height: 1.4;
+        }
+        .contact-action {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 90, 0, 0.1);
+            border: 1px solid rgba(255, 90, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .contact-action i {
+            color: var(--color-primary);
+            font-size: 1.2rem;
+            display: block;
+            line-height: 1;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+        .contact-card:hover .contact-action {
+            background: var(--color-primary);
+            border-color: var(--color-primary);
+            box-shadow: 0 6px 16px rgba(255, 90, 0, 0.35);
+            transform: scale(1.08);
+        }
+        .contact-card:hover .contact-action i {
+            color: #ffffff;
+            transform: translateX(-2px);
+        }
+        .contact-card[data-contact="phone"] .contact-action {
+            background: rgba(0, 177, 79, 0.1);
+            border-color: rgba(0, 177, 79, 0.15);
+        }
+        .contact-card[data-contact="phone"] .contact-action i {
+            color: #00B14F;
+        }
+        .contact-card[data-contact="phone"]:hover .contact-action {
+            background: #00B14F;
+            border-color: #00B14F;
+            box-shadow: 0 6px 16px rgba(0, 177, 79, 0.35);
+        }
+        .contact-card[data-contact="phone"]:hover .contact-action i {
+            color: #ffffff;
+        }
+        .contact-card[data-contact="email"] .contact-action {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.15);
+        }
+        .contact-card[data-contact="email"] .contact-action i {
+            color: #3B82F6;
+        }
+        .contact-card[data-contact="email"]:hover .contact-action {
+            background: #3B82F6;
+            border-color: #3B82F6;
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
+        }
+        .contact-card[data-contact="email"]:hover .contact-action i {
+            color: #ffffff;
+        }
+        .contact-card[data-contact="whatsapp"] .contact-action {
+            background: rgba(37, 211, 102, 0.1);
+            border-color: rgba(37, 211, 102, 0.15);
+        }
+        .contact-card[data-contact="whatsapp"] .contact-action i {
+            color: #25D366;
+        }
+        .contact-card[data-contact="whatsapp"]:hover .contact-action {
+            background: #25D366;
+            border-color: #25D366;
+            box-shadow: 0 6px 16px rgba(37, 211, 102, 0.35);
+        }
+        .contact-card[data-contact="whatsapp"]:hover .contact-action i {
+            color: #ffffff;
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(0, 177, 79, 0.12);
+            color: #00B14F;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 20px;
+            margin-top: 2px;
+            width: fit-content;
+        }
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #00B14F;
+            animation: pulse-dot 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="dropdown-overlay" id="dropdownOverlay"></div>
+
+    <div class="profile-dropdown" id="profileDropdown" role="menu" aria-label="قائمة المستخدم">
+        <a href="#" class="dropdown-item" data-action="home"><i class="las la-home"></i><span>الرئيسية</span></a>
+        <a href="#" class="dropdown-item" data-action="orders"><i class="las la-shopping-bag"></i><span>الطلبات</span></a>
+        <a href="#" class="dropdown-item" data-action="cart"><i class="las la-shopping-cart"></i><span>السلة</span></a>
+        <a href="#" class="dropdown-item" data-action="favorites"><i class="las la-heart"></i><span>المفضلة</span></a>
+        <a href="#" class="dropdown-item active" data-action="profile"><i class="las la-user"></i><span>حسابي</span></a>
+    </div>
+
+    <main>
+        <header id="mainHeader">
+            <div class="flex items-center gap-1 flex-1 min-w-0">
+                <button class="back-btn" id="backBtn" aria-label="رجوع"><i class="las la-arrow-right"></i></button>
+                <h1 class="text-lg font-extrabold truncate" style="color: var(--color-white);">الدعم والمساعدة</h1>
+            </div>
+            <div class="flex items-center gap-3 flex-shrink-0">
+                <button class="notification-btn" id="notificationBtn" aria-label="الإشعارات">
+                    <i class="las la-bell"></i>
+                    <span class="notification-dot"></span>
+                </button>
+                <div class="header-avatar-wrapper" id="headerAvatarWrapper" title="فتح القائمة">
+                    <img id="headerAvatar" src="https://i.ibb.co/3mZjjp1T/548212938-1338267831079244-6599431839367735090-n.jpg" class="header-avatar" alt="صورة المستخدم">
+                </div>
+            </div>
+        </header>
+
+        <div class="help-area">
+            <div class="hero-card">
+                <div class="hero-icon"><i class="las la-headset"></i></div>
+                <p class="hero-title">كيف يمكننا مساعدتك؟</p>
+                <p class="hero-subtitle">ابحث عن إجابة سريعة أو تواصل مع فريق الدعم مباشرة</p>
+                <div class="search-box">
+                    <input type="text" id="helpSearch" placeholder="ابحث عن مساعدة..." aria-label="بحث">
+                    <i class="las la-search"></i>
+                </div>
+            </div>
+
+            <div>
+                <p class="section-label">فئات المساعدة</p>
+                <div class="categories-grid" style="margin-top:8px;">
+                    <div class="category-card" data-topic="تتبع الطلب">
+                        <div class="category-icon"><i class="las la-shipping-fast"></i></div>
+                        <p class="category-title">تتبع الطلب</p>
+                    </div>
+                    <div class="category-card" data-topic="الدفع والفواتير">
+                        <div class="category-icon"><i class="las la-credit-card"></i></div>
+                        <p class="category-title">الدفع والفواتير</p>
+                    </div>
+                    <div class="category-card" data-topic="الإلغاء والاسترجاع">
+                        <div class="category-icon"><i class="las la-undo-alt"></i></div>
+                        <p class="category-title">الإلغاء والاسترجاع</p>
+                    </div>
+                    <div class="category-card" data-topic="الحساب والأمان">
+                        <div class="category-icon"><i class="las la-user-shield"></i></div>
+                        <p class="category-title">الحساب والأمان</p>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <p class="section-label">الأسئلة الشائعة</p>
+                <div class="faq-card" id="faqCard" style="margin-top:8px;">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span class="faq-question-text">كيف يمكنني تتبع طلبي؟</span>
+                            <i class="las la-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>يمكنك تتبع طلبك من خلال قسم «طلباتي» في صفحة حسابك، حيث ستجد حالة الطلب مباشرة مع تفاصيل الشحنة والوقت المتوقع للتوصيل.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span class="faq-question-text">ما هي طرق الدفع المتاحة؟</span>
+                            <i class="las la-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>نوفر عدة طرق للدفع تشمل البطاقات البنكية، المحفظة الإلكترونية، والدفع عند الاستلام. يمكنك اختيار الطريقة المناسبة لك عند إتمام الطلب.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span class="faq-question-text">كيف ألغي طلباً أو أطلب استرجاعاً؟</span>
+                            <i class="las la-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>يمكنك إلغاء الطلب من صفحة «طلباتي» قبل تجهيزه. أما الاسترجاع فيمكن طلبه خلال 48 ساعة من الاستلام عبر التواصل مع الدعم مع ذكر سبب الاسترجاع.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span class="faq-question-text">هل يمكنني تعديل عنوان التوصيل؟</span>
+                            <i class="las la-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>نعم، يمكنك تعديل عنوان التوصيل من قسم «عنواني» في حسابك، أو التواصل مع الدعم بشكل فوري إذا كان الطلب في مرحلة التجهيز.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span class="faq-question-text">كم يستغرق وصول الطلب؟</span>
+                            <i class="las la-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>عادةً ما يستغرق التوصيل من 30 إلى 60 دقيقة داخل المدينة، وقد يختلف الوقت حسب المنطقة والضغط على الخدمة. يمكنك متابعة الوقت المتوقع من صفحة الطلب.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <p class="section-label">تواصل معنا</p>
+                <div class="contact-grid" style="margin-top:8px;">
+                    <div class="contact-card" data-contact="chat">
+                        <div class="contact-icon chat"><i class="las la-comments"></i></div>
+                        <div class="contact-info">
+                            <p class="contact-title">الدردشة المباشرة</p>
+                            <p class="contact-sub">متاحون الآن</p>
+                            <span class="status-badge"><span class="status-dot"></span>متصل</span>
+                        </div>
+                        <div class="contact-action"><i class="las la-arrow-left"></i></div>
+                    </div>
+                    <div class="contact-card" data-contact="phone">
+                        <div class="contact-icon phone"><i class="las la-phone-volume"></i></div>
+                        <div class="contact-info">
+                            <p class="contact-title">الاتصال الهاتفي</p>
+                            <p class="contact-sub">01063720595</p>
+                        </div>
+                        <div class="contact-action"><i class="las la-arrow-left"></i></div>
+                    </div>
+                    <div class="contact-card" data-contact="email">
+                        <div class="contact-icon email"><i class="las la-envelope"></i></div>
+                        <div class="contact-info">
+                            <p class="contact-title">البريد الإلكتروني</p>
+                            <p class="contact-sub">support@talabat.com</p>
+                        </div>
+                        <div class="contact-action"><i class="las la-arrow-left"></i></div>
+                    </div>
+                    <div class="contact-card" data-contact="whatsapp">
+                        <div class="contact-icon whatsapp"><i class="lab la-whatsapp"></i></div>
+                        <div class="contact-info">
+                            <p class="contact-title">واتساب</p>
+                            <p class="contact-sub">راسلنا مباشرة</p>
+                        </div>
+                        <div class="contact-action"><i class="las la-arrow-left"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        (function() {
+            const headerAvatarWrapper = document.getElementById('headerAvatarWrapper');
+            const dropdown = document.getElementById('profileDropdown');
+            const dropdownOverlay = document.getElementById('dropdownOverlay');
+            const notificationBtn = document.getElementById('notificationBtn');
+            const dropdownItems = document.querySelectorAll('.dropdown-item');
+            const backBtn = document.getElementById('backBtn');
+            const helpSearch = document.getElementById('helpSearch');
+            const faqItems = document.querySelectorAll('.faq-item');
+            const categoryCards = document.querySelectorAll('.category-card');
+            const contactCards = document.querySelectorAll('.contact-card');
+            let isDropdownOpen = false;
+
+            function openDropdown() {
+                isDropdownOpen = true;
+                dropdown.classList.add('active');
+                dropdownOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeDropdown() {
+                isDropdownOpen = false;
+                dropdown.classList.remove('active');
+                dropdownOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            function toggleDropdown() {
+                if (isDropdownOpen) {
+                    closeDropdown();
+                } else {
+                    openDropdown();
+                }
+            }
+
+            if (headerAvatarWrapper) {
+                headerAvatarWrapper.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleDropdown();
+                });
+            }
+
+            if (dropdownOverlay) {
+                dropdownOverlay.addEventListener('click', function() {
+                    closeDropdown();
+                });
+            }
+
+            document.addEventListener('click', function(e) {
+                if (isDropdownOpen) {
+                    if (!dropdown.contains(e.target) && !headerAvatarWrapper.contains(e.target)) {
+                        closeDropdown();
+                    }
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && isDropdownOpen) {
+                    closeDropdown();
+                }
+            });
+
+            dropdownItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const action = this.getAttribute('data-action');
+                    dropdownItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    const label = this.querySelector('span') ? this.querySelector('span').textContent : '';
+                    closeDropdown();
+                    if (action && action !== 'profile') {
+                        setTimeout(() => {
+                            showAlert(label || action);
+                        }, 300);
+                    }
+                });
+            });
+
+            notificationBtn.addEventListener('click', () => {
+                Swal.fire({
+                    title: 'الإشعارات',
+                    text: 'لديك 3 إشعارات جديدة',
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00'
+                });
+            });
+
+            backBtn.addEventListener('click', function() {
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    Swal.fire({
+                        title: 'الصفحة السابقة',
+                        text: 'لا توجد صفحة سابقة للرجوع إليها',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00'
+                    });
+                }
+            });
+
+            window.showAlert = function(title) {
+                Swal.fire({
+                    title: title,
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00'
+                });
+            };
+
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                question.addEventListener('click', function() {
+                    const isOpen = item.classList.contains('open');
+                    faqItems.forEach(i => i.classList.remove('open'));
+                    if (!isOpen) {
+                        item.classList.add('open');
+                    }
+                });
+            });
+
+            categoryCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const topic = this.getAttribute('data-topic');
+                    Swal.fire({
+                        title: topic,
+                        text: 'سيتم عرض المقالات المتعلقة بهذا القسم قريباً',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00'
+                    });
+                });
+            });
+
+            contactCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const type = this.getAttribute('data-contact');
+                    let title = '';
+                    let text = '';
+                    if (type === 'chat') {
+                        title = 'الدردشة المباشرة';
+                        text = 'جاري تحويلك إلى الدردشة مع فريق الدعم...';
+                    } else if (type === 'phone') {
+                        title = 'الاتصال الهاتفي';
+                        text = '01063720595';
+                    } else if (type === 'email') {
+                        title = 'البريد الإلكتروني';
+                        text = 'support@talabat.com';
+                    } else if (type === 'whatsapp') {
+                        title = 'واتساب';
+                        text = 'جاري فتح واتساب...';
+                    }
+                    Swal.fire({
+                        title: title,
+                        text: text,
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00'
+                    });
+                });
+            });
+
+            helpSearch.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const value = this.value.trim();
+                    if (!value) return;
+                    Swal.fire({
+                        title: 'نتائج البحث',
+                        text: 'لا توجد نتائج مطابقة لـ "' + value + '"',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00'
+                    });
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
