@@ -1,0 +1,1990 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#FF5A00">
+    <title>طلبات - توصيل الطعام</title>
+    <meta name="description" content="اطلب طعامك المفضل من أفضل المطاعم حولك">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍔</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF5A00',
+                        secondary: '#FF8C38',
+                        accent: '#FFB800',
+                        dark: '#1A1A1A',
+                        muted: '#717171',
+                        success: '#00B14F',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --color-primary: #FF5A00;
+            --color-secondary: #FF8C38;
+            --color-accent: #FFB800;
+            --color-background: #F7F9F8;
+            --color-card: #FFFFFF;
+            --color-darker: #F0F4F3;
+            --color-paragraph: #333333;
+            --color-white: #1A1A1A;
+            --color-muted: #717171;
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --card-bg: #FFFFFF;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --darker-bg: #F0F4F3;
+            --header-height: 70px;
+            --bottom-nav-height: 68px;
+            --shadow-glow: 0 4px 20px rgba(255, 90, 0, 0.06);
+            --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06);
+            --dropdown-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            --shell-max: 1600px;
+            --shell-pad: 40px;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            width: 100%;
+            overscroll-behavior: none;
+        }
+        body {
+            font-family: 'Noto Sans Arabic', 'Alexandria', system-ui, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-white);
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+            padding-bottom: 0;
+        }
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--color-background);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FF8C38;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FF5A00;
+        }
+        .dropdown-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: 115;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        .dropdown-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .profile-dropdown {
+            position: fixed;
+            top: calc(var(--header-height) - 4px);
+            left: 16px;
+            width: 260px;
+            max-width: calc(100vw - 32px);
+            max-height: calc(100vh - var(--header-height) - 24px);
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: var(--dropdown-shadow);
+            border: 1px solid var(--border-color);
+            z-index: 120;
+            overflow-y: auto;
+            overflow-x: hidden;
+            transform-origin: top left;
+            transform: scale(0.92) translateY(-12px);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+            overscroll-behavior: contain;
+            padding: 8px;
+        }
+        .profile-dropdown.active {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        @media (max-width: 480px) {
+            .profile-dropdown {
+                left: 8px;
+                width: calc(100vw - 16px);
+                max-width: none;
+                border-radius: 14px;
+                top: calc(var(--header-height) - 2px);
+            }
+        }
+        .dropdown-user-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 6px;
+        }
+        .dropdown-user-header img {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--color-primary);
+        }
+        .dropdown-user-header .user-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .dropdown-user-header .user-name {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: var(--color-white);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .dropdown-user-header .user-role {
+            font-size: 0.72rem;
+            color: var(--color-primary);
+            font-weight: 600;
+            margin-top: 2px;
+        }
+        .dropdown-section-title {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--color-muted);
+            padding: 10px 12px 6px;
+            font-weight: 700;
+        }
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--color-muted);
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 0.88rem;
+            -webkit-tap-highlight-color: transparent;
+            position: relative;
+        }
+        .dropdown-item i {
+            font-size: 20px;
+            width: 26px;
+            flex-shrink: 0;
+            text-align: center;
+        }
+        .dropdown-item:hover {
+            background: rgba(255, 90, 0, 0.07);
+            color: var(--color-primary);
+        }
+        .dropdown-item:active {
+            background: rgba(255, 90, 0, 0.12);
+            transform: scale(0.98);
+        }
+        .dropdown-item.active {
+            background: rgba(255, 90, 0, 0.12);
+            color: var(--color-primary);
+            font-weight: 700;
+        }
+        .dropdown-item.active::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 22px;
+            border-radius: 4px;
+            background: var(--color-primary);
+        }
+        .dropdown-item.logout {
+            color: #EF4444;
+        }
+        .dropdown-item.logout:hover {
+            background: rgba(239, 68, 68, 0.08);
+            color: #EF4444;
+        }
+        .dropdown-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 6px 12px;
+            opacity: 0.6;
+        }
+        #mainHeader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--color-background);
+            z-index: 110;
+            transition: background-color 0.3s;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+        .header-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            gap: 12px;
+        }
+        .header-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--color-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .header-avatar:hover {
+            transform: scale(1.05);
+        }
+        .header-avatar:active {
+            transform: scale(0.95);
+        }
+        .header-avatar-wrapper {
+            position: relative;
+            flex-shrink: 0;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .notification-btn {
+            position: relative;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--color-muted);
+            font-size: 1.5rem;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+            flex-shrink: 0;
+            border-radius: 50%;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .notification-btn:hover {
+            color: #FF5A00;
+        }
+        .notification-btn .notification-dot {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #FF5A00;
+            border: 2px solid var(--card-bg);
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.6; }
+        }
+        .desktop-nav {
+            flex-shrink: 0;
+        }
+        .desktop-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--color-muted);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+            white-space: nowrap;
+        }
+        .desktop-nav-item i {
+            font-size: 1.2rem;
+        }
+        .desktop-nav-item:hover {
+            background: rgba(255, 90, 0, 0.08);
+            color: var(--color-primary);
+        }
+        .desktop-nav-item.active {
+            background: rgba(255, 90, 0, 0.12);
+            color: var(--color-primary);
+            font-weight: 700;
+        }
+        main {
+            padding-top: var(--header-height);
+            padding-bottom: 0;
+        }
+        @media (max-width: 1023px) {
+            main {
+                padding-bottom: calc(var(--bottom-nav-height) + 20px);
+            }
+        }
+        .bottom-mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--bottom-nav-height);
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            z-index: 100;
+            padding: 6px 8px;
+            padding-bottom: max(6px, env(safe-area-inset-bottom, 6px));
+            box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+            align-items: center;
+            justify-content: space-around;
+            gap: 4px;
+        }
+        @media (max-width: 1023px) {
+            .bottom-mobile-nav {
+                display: flex;
+            }
+        }
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            flex: 1;
+            padding: 8px 4px;
+            border-radius: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--color-muted);
+            font-size: 0.68rem;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            position: relative;
+            min-width: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .bottom-nav-item i {
+            font-size: 1.35rem;
+            transition: all 0.25s ease;
+            flex-shrink: 0;
+        }
+        .bottom-nav-item span {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            max-width: 100%;
+            font-size: 0.65rem;
+            letter-spacing: 0.2px;
+        }
+        .bottom-nav-item.active {
+            color: var(--color-primary);
+        }
+        .bottom-nav-item.active i {
+            font-size: 1.5rem;
+        }
+        .bottom-nav-item-center {
+            position: relative;
+            top: -20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.4);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            flex: none;
+            margin: 0 4px;
+        }
+        .bottom-nav-item-center i {
+            font-size: 2rem;
+        }
+        .bottom-nav-item-center span {
+            display: none;
+        }
+        .bottom-nav-item-center.active {
+            background: #e04e00;
+            color: #fff;
+        }
+        .category-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            background: var(--darker-bg);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+            color: #65655c;
+        }
+        .category-icon:hover {
+            border-color: var(--color-primary);
+            transform: scale(1.06);
+            box-shadow: 0 6px 20px rgba(255, 90, 0, 0.15);
+            color: #FF5A00;
+        }
+        .restaurant-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-card);
+        }
+        .restaurant-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(255, 90, 0, 0.12);
+            border-color: var(--color-primary);
+        }
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--darker-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px 16px;
+            flex: 1;
+            max-width: 500px;
+            transition: border-color 0.2s;
+        }
+        .search-bar:focus-within {
+            border-color: var(--color-primary);
+        }
+        .search-bar input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--color-white);
+            font-family: inherit;
+            width: 100%;
+            font-size: 0.9rem;
+        }
+        .search-bar input::placeholder {
+            color: var(--color-muted);
+        }
+        .offer-banner {
+            background: linear-gradient(135deg, #FF5A00, #FF8C38);
+            border-radius: 20px;
+            padding: 24px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(255, 90, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .offer-banner:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(255, 90, 0, 0.3);
+        }
+        .badge-offer {
+            background: rgba(255, 90, 0, 0.1);
+            border: 1px solid rgba(255, 90, 0, 0.3);
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #FF5A00;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .badge-free {
+            background: rgba(0, 177, 79, 0.1);
+            border: 1px solid rgba(0, 177, 79, 0.3);
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #00B14F;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .rating-star {
+            color: #FFB800;
+            font-size: 0.85rem;
+        }
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--color-white);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title i {
+            color: #FF5A00;
+        }
+        @media (max-width: 640px) {
+            .section-title {
+                font-size: 1.1rem;
+            }
+            .category-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.6rem;
+            }
+            .offer-banner {
+                padding: 18px;
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+        .ad-placeholder {
+            background: #f0f8f5;
+            border: 2px dashed #c8dfd5;
+            border-radius: 22px;
+            aspect-ratio: 2400 / 400;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            user-select: none;
+            width: 100%;
+            overflow: hidden;
+        }
+        .quick-service-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+            padding: 8px 4px;
+        }
+        .quick-service-item .quick-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: #FF5A00;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-card);
+        }
+        .quick-service-item:hover .quick-icon {
+            border-color: var(--color-primary);
+            transform: scale(1.08);
+            box-shadow: 0 6px 20px rgba(255, 90, 0, 0.15);
+        }
+        .quick-service-item span {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--color-muted);
+            text-align: center;
+            white-space: nowrap;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .plus-card {
+            background: linear-gradient(135deg, #1A1A1A, #333333);
+            border-radius: 20px;
+            padding: 24px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        .plus-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+        }
+        .plus-card .plus-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(255, 90, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: #FF5A00;
+            flex-shrink: 0;
+        }
+        .plus-card .plus-features {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 16px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .plus-card .plus-features li {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 6px 12px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .plus-card .plus-features li i {
+            color: #FF5A00;
+        }
+        .user-address {
+            font-size: 0.75rem;
+            color: var(--color-muted);
+            white-space: normal;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+            flex: 1;
+            line-height: 1.4;
+            padding: 6px 10px;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        .user-address:hover {
+            background: rgba(255, 90, 0, 0.06);
+            border-color: rgba(255, 90, 0, 0.2);
+        }
+        .user-address span {
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
+        }
+        .user-address .change-hint {
+            font-size: 0.6rem;
+            color: #FF5A00;
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .user-address:hover .change-hint {
+            opacity: 1;
+        }
+        @media (max-width: 640px) {
+            .user-address {
+                font-size: 0.7rem;
+            }
+            .user-address .change-hint {
+                display: none;
+            }
+        }
+        .store-card {
+            min-width: 200px;
+            max-width: 200px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-card);
+            flex-shrink: 0;
+            position: relative;
+        }
+        .store-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--color-primary);
+            box-shadow: 0 12px 32px rgba(255, 90, 0, 0.12);
+        }
+        .store-card .store-img {
+            height: 140px;
+            background: linear-gradient(135deg, #FF8C38, #FF5A00);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+        .store-card .store-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .store-card .store-img .store-profile-logo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 2;
+        }
+        .store-card .store-img .store-profile-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: static;
+        }
+        .store-card .store-img .store-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.55);
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 1;
+        }
+        .store-card .store-img .store-overlay .store-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .store-card .store-img .store-overlay .store-details {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.7rem;
+            color: #eee;
+        }
+        .store-card .store-img .store-overlay .store-details .status {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .store-card .store-img .store-overlay .store-details .status.open {
+            color: #00B14F;
+        }
+        .store-card .store-img .store-overlay .store-details .status.closed {
+            color: #EF4444;
+        }
+        .store-card .store-img .store-overlay .store-details .delivery-time {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .map-modal-container .swal2-html-container {
+            padding: 0 !important;
+            overflow: hidden !important;
+            margin: 0 !important;
+            height: 100% !important;
+            max-height: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        .map-coords-bar {
+            padding: 10px 16px;
+            background: #fafafa;
+            border-top: 1px solid #eee;
+            font-size: 0.75rem;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .map-use-current-btn {
+            background: #FF5A00;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 18px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            color: #fff;
+            font-family: 'Noto Sans Arabic', system-ui, sans-serif;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(255, 90, 0, 0.3);
+        }
+        .map-use-current-btn:hover {
+            background: #e04e00;
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.4);
+        }
+        #leafletMapContainer {
+            height: 100%;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            background: #f0f0f0;
+            flex: 1;
+            min-height: 0;
+        }
+        .swal2-popup.map-fullscreen {
+            width: 100vw !important;
+            height: 100vh !important;
+            height: 100dvh !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+            max-height: 100dvh !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+        .swal2-popup.map-fullscreen .swal2-title {
+            padding: 12px 16px;
+            font-size: 1rem;
+            background: #fff;
+            border-bottom: 1px solid #eee;
+            margin: 0;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .swal2-popup.map-fullscreen .swal2-actions {
+            margin: 0;
+            padding: 12px 16px;
+            background: #fff;
+            border-top: 1px solid #eee;
+            flex-shrink: 0;
+        }
+        .swal2-popup.map-fullscreen .swal2-content {
+            display: flex !important;
+            flex-direction: column !important;
+            flex: 1 !important;
+            overflow: hidden !important;
+            height: auto !important;
+            min-height: 0 !important;
+        }
+        .swal2-popup.map-fullscreen .swal2-html-container {
+            display: flex !important;
+            flex-direction: column !important;
+            flex: 1 !important;
+            overflow: hidden !important;
+            min-height: 0 !important;
+        }
+
+        @media (min-width: 1024px) {
+            :root {
+                --header-height: 76px;
+            }
+            #mainHeader {
+                padding: 0 24px;
+            }
+            .header-inner {
+                max-width: calc(var(--shell-max) - (var(--shell-pad) * 2));
+                margin: 0 auto;
+                gap: 20px;
+            }
+            .app-shell {
+                max-width: var(--shell-max);
+                padding-left: var(--shell-pad);
+                padding-right: var(--shell-pad);
+            }
+            .scroll-row.scroll-row {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 20px;
+                overflow: visible;
+                padding-bottom: 0;
+                margin-bottom: 0;
+            }
+            .quick-row.quick-row {
+                display: grid;
+                grid-template-columns: repeat(7, minmax(0, 1fr));
+                gap: 20px;
+                overflow: visible;
+                padding-bottom: 0;
+            }
+            .quick-row.quick-row .quick-service-item {
+                padding: 14px 6px;
+                border-radius: 18px;
+            }
+            .quick-row.quick-row .quick-service-item .quick-icon {
+                width: 76px;
+                height: 76px;
+                font-size: 2rem;
+            }
+            .quick-row.quick-row .quick-service-item span {
+                font-size: 0.8rem;
+                white-space: normal;
+            }
+            .store-card.store-card {
+                min-width: 0;
+                max-width: none;
+                width: 100%;
+            }
+            .store-card.store-card .store-img {
+                height: 168px;
+            }
+            .store-card.store-card .store-img .store-overlay {
+                padding: 10px;
+            }
+            .store-card.store-card .store-img .store-overlay .store-name {
+                font-size: 0.92rem;
+            }
+            .store-card.store-card .store-img .store-overlay .store-details {
+                font-size: 0.72rem;
+                flex-wrap: wrap;
+            }
+            .section-title {
+                font-size: 1.45rem;
+            }
+            .offer-banner {
+                padding: 32px;
+            }
+            .plus-card {
+                padding: 32px;
+            }
+            .ad-placeholder {
+                border-radius: 26px;
+            }
+            .desktop-search-bar {
+                max-width: 720px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+        @media (min-width: 1280px) {
+            .scroll-row.scroll-row {
+                grid-template-columns: repeat(6, minmax(0, 1fr));
+            }
+        }
+        @media (min-width: 1024px) and (max-width: 1279px) {
+            .desktop-feature-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dropdown-overlay" id="dropdownOverlay"></div>
+
+    <div class="profile-dropdown" id="profileDropdown" role="menu" aria-label="قائمة المستخدم">
+        <div class="dropdown-user-header">
+            <img id="dropdownUserAvatar" src="https://i.ibb.co/3mZjjp1T/548212938-1338267831079244-6599431839367735090-n.jpg" alt="avatar">
+            <div class="user-info">
+                <p class="user-name">أحمد محمد</p>
+                <p class="user-role">عضو ذهبي</p>
+            </div>
+        </div>
+        <div class="dropdown-section-title">القائمة</div>
+        <a href="#" class="dropdown-item active" data-action="home"><i class="las la-home"></i><span>الرئيسية</span></a>
+        <a href="#" class="dropdown-item" data-action="offers"><i class="las la-percent"></i><span>العروض</span></a>
+        <a href="#" class="dropdown-item" data-action="orders"><i class="las la-shopping-bag"></i><span>طلباتي</span></a>
+        <a href="#" class="dropdown-item" data-action="favorites"><i class="las la-heart"></i><span>المفضلة</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section-title">الحساب</div>
+        <a href="#" class="dropdown-item" data-action="profile"><i class="las la-user-circle"></i><span>الملف الشخصي</span></a>
+        <a href="#" class="dropdown-item" data-action="addresses"><i class="las la-map-marker-alt"></i><span>العناوين</span></a>
+        <a href="#" class="dropdown-item" data-action="payments"><i class="las la-credit-card"></i><span>طرق الدفع</span></a>
+        <a href="#" class="dropdown-item" data-action="settings"><i class="las la-cog"></i><span>الإعدادات</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section-title">الدعم</div>
+        <a href="#" class="dropdown-item" data-action="help"><i class="las la-headset"></i><span>مركز المساعدة</span></a>
+        <a href="#" class="dropdown-item" data-action="about"><i class="las la-info-circle"></i><span>من نحن</span></a>
+        <div class="dropdown-divider"></div>
+        <a href="#" class="dropdown-item logout" id="logoutBtn"><i class="las la-sign-out-alt"></i><span>تسجيل الخروج</span></a>
+    </div>
+
+    <main>
+        <header id="mainHeader">
+            <div class="header-inner">
+                <div class="flex items-center gap-2 flex-1 min-w-0">
+                    <div class="user-address" id="userAddressContainer" title="اضغط لتغيير موقعك">
+                        <i class="las la-map-marker-alt" style="color: #FF5A00; flex-shrink: 0; font-size: 1.1rem;"></i>
+                        <span id="userAddressText">جاري تحديد موقعك...</span>
+                        <span class="change-hint"><i class="las la-chevron-down" style="font-size: 0.7rem;"></i> تغيير</span>
+                    </div>
+                </div>
+
+                <nav class="desktop-nav hidden lg:flex items-center gap-1">
+                    <a href="#" class="desktop-nav-item active" data-nav="home"><i class="las la-home"></i><span>الرئيسية</span></a>
+                    <a href="#" class="desktop-nav-item" data-nav="offers"><i class="las la-percent"></i><span>العروض</span></a>
+                    <a href="#" class="desktop-nav-item" data-nav="orders"><i class="las la-shopping-bag"></i><span>طلباتي</span></a>
+                    <a href="#" class="desktop-nav-item" data-nav="favorites"><i class="las la-heart"></i><span>المفضلة</span></a>
+                </nav>
+
+                <div class="flex items-center gap-3 flex-shrink-0 lg:flex-1 lg:justify-end">
+                    <button class="notification-btn" id="notificationBtn" aria-label="الإشعارات">
+                        <i class="las la-bell"></i>
+                        <span class="notification-dot"></span>
+                    </button>
+                    <div class="header-avatar-wrapper" id="headerAvatarWrapper" title="فتح القائمة">
+                        <img id="headerAvatar" src="https://i.ibb.co/3mZjjp1T/548212938-1338267831079244-6599431839367735090-n.jpg" class="header-avatar" alt="avatar">
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="container app-shell mx-auto px-4 py-6 max-w-6xl">
+            <div class="search-bar sm:hidden mb-4 w-full">
+                <i class="las la-search text-[var(--color-muted)] text-lg"></i>
+                <input type="text" class="search-input" placeholder="ابحث عن مطعم أو وجبة..." id="mobileSearchInput">
+            </div>
+
+            <div class="search-bar hidden sm:flex desktop-search-bar mb-6 w-full max-w-2xl mx-auto">
+                <i class="las la-search text-[var(--color-muted)] text-lg"></i>
+                <input type="text" class="search-input" placeholder="ابحث عن مطعم أو وجبة..." id="desktopSearchInput">
+            </div>
+
+            <div class="ad-placeholder mb-8">
+                <div class="hidden h-10 w-10 items-center justify-center rounded-full bg-[#e4f0ec] sm:flex">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="text-xl text-[#7fc5b2]" width="1em" height="1em"><path fill="currentColor" fill-rule="evenodd" d="M21 11.0975V16.0909C21 19.1875 21 20.7358 20.2659 21.4123C19.9158 21.735 19.4739 21.9377 19.0031 21.9915C18.016 22.1045 16.8633 21.0849 14.5578 19.0458C13.5388 18.1445 13.0292 17.6938 12.4397 17.5751C12.1494 17.5166 11.8506 17.5166 11.5603 17.5751C10.9708 17.6938 10.4612 18.1445 9.44216 19.0458C7.13673 21.0849 5.98402 22.1045 4.99692 21.9915C4.52615 21.9377 4.08421 21.735 3.73411 21.4123C3 20.7358 3 19.1875 3 16.0909V11.0975C3 6.80891 3 4.6646 4.31802 3.3323C5.63604 2 7.75736 2 12 2C16.2426 2 18.364 2 19.682 3.3323C21 4.6646 21 6.80891 21 11.0975ZM8.25 6C8.25 5.58579 8.58579 5.25 9 5.25H15C15.4142 5.25 15.75 5.58579 15.75 6C15.75 6.41421 15.4142 6.75 15 6.75H9C8.58579 6.75 8.25 6.41421 8.25 6Z" clip-rule="evenodd"></path></svg>
+                </div>
+                <p class="text-[10px] font-medium text-[#a5c4ba] sm:text-sm">مساحة إعلانية — FastOrder</p>
+                <p class="hidden text-xs text-[#c8dfd5] sm:block">ستظهر هنا العروض والإعلانات الحصرية</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-8 desktop-feature-grid">
+                <div class="offer-banner" id="mainOfferBanner">
+                    <div class="flex-1">
+                        <h2 class="text-2xl sm:text-3xl font-extrabold mb-2">خصم 50% على أول طلب</h2>
+                        <p class="text-white/80 text-sm sm:text-base mb-3">استخدم كود <strong>WELCOME50</strong> عند الدفع</p>
+                        <button class="bg-white text-[#FF5A00] font-bold px-6 py-2 rounded-full text-sm hover:bg-gray-100 transition-all">اطلب الآن</button>
+                    </div>
+                    <div class="text-7xl sm:text-8xl flex-shrink-0"><i class="las la-utensils"></i></div>
+                </div>
+
+                <div class="plus-card" onclick="showPlusAlert()">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="plus-icon"><i class="las la-crown"></i></div>
+                            <div>
+                                <h2 class="text-xl sm:text-2xl font-extrabold">FastOrder+</h2>
+                                <p class="text-white/70 text-sm">عضوية ذهبية بخصومات ودعم أولوية</p>
+                            </div>
+                        </div>
+                        <ul class="plus-features">
+                            <li><i class="las la-check-circle"></i> خصومات حصرية تصل 30%</li>
+                            <li><i class="las la-headset"></i> دعم أولوية 24/7</li>
+                            <li><i class="las la-truck"></i> توصيل مجاني غير محدود</li>
+                            <li><i class="las la-gift"></i> عروض حصرية للأعضاء</li>
+                        </ul>
+                        <button class="bg-[#FF5A00] text-white font-bold px-6 py-2 rounded-full text-sm hover:bg-[#e04e00] transition-all">اشترك الآن</button>
+                    </div>
+                    <div class="hidden md:block text-7xl flex-shrink-0"><i class="las la-crown text-[#FF5A00]"></i></div>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h3 class="section-title"><i class="las la-question-circle"></i> محتاج ايه النهارده؟</h3>
+                <div class="quick-row flex gap-6 overflow-x-auto hide-scrollbar pb-2" style="scroll-behavior: smooth;">
+                    <div class="quick-service-item" onclick="showServiceAlert('المطاعم والوجبات')">
+                        <div class="quick-icon"><i class="las la-utensils"></i></div>
+                        <span>المطاعم والوجبات</span>
+                    </div>
+                    <div class="quick-service-item" onclick="showServiceAlert('بركه ماركت')">
+                        <div class="quick-icon"><i class="las la-shopping-cart"></i></div>
+                        <span>بركه ماركت</span>
+                    </div>
+                    <div class="quick-service-item" onclick="showServiceAlert('صيدليه')">
+                        <div class="quick-icon"><i class="las la-prescription-bottle"></i></div>
+                        <span>صيدليه</span>
+                    </div>
+                    <div class="quick-service-item" onclick="showServiceAlert('اسرع دليفري')">
+                        <div class="quick-icon"><i class="las la-motorcycle"></i></div>
+                        <span>اسرع دليفري</span>
+                    </div>
+                    <div class="quick-service-item" onclick="showServiceAlert('مستلزمات الحيوانات')">
+                        <div class="quick-icon"><i class="las la-paw"></i></div>
+                        <span>مستلزمات الحيوانات</span>
+                    </div>
+                    <div class="quick-service-item" onclick="showServiceAlert('التسالي')">
+                        <div class="quick-icon"><i class="las la-cookie"></i></div>
+                        <span>التسالي</span>
+                    </div>
+                    <div class="quick-service-item" onclick="showServiceAlert('المشروبات')">
+                        <div class="quick-icon"><i class="las la-coffee"></i></div>
+                        <span>المشروبات</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="section-title mb-0"><i class="las la-star"></i> المتاجر المميزة</h3>
+                    <a href="#" class="text-sm font-semibold text-[#FF5A00] hover:underline">عرض الكل</a>
+                </div>
+                <div class="scroll-row flex gap-4 overflow-x-auto hide-scrollbar pb-2" style="scroll-behavior: smooth;">
+                    <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'مأكولات شعبية', 4.8, '25-35 دقيقة', '20 ر.س')">
+                        <div class="store-img">
+                            <img src="https://sys.shadowza.space/logos/1.png" alt="مطعم ابن حميدو">
+                            <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                            <div class="store-overlay">
+                                <span class="store-name">ابن حميدو</span>
+                                <div class="store-details">
+                                    <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                    <span class="delivery-time"><i class="las la-clock"></i> 25 - 35 دقيقة</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'حلويات', 4.9, '15-25 دقيقة', '10 ر.س')">
+                        <div class="store-img">
+                            <img src="https://sys.shadowza.space/logos/2.png" alt="مطعم ابن حميدو">
+                            <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                            <div class="store-overlay">
+                                <span class="store-name">ابن حميدو</span>
+                                <div class="store-details">
+                                    <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                    <span class="delivery-time"><i class="las la-clock"></i> 15 - 25 دقيقة</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'مشويات', 4.7, '30-40 دقيقة', '18 ر.س')">
+                        <div class="store-img">
+                            <img src="https://sys.shadowza.space/logos/3.png" alt="مطعم ابن حميدو">
+                            <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                            <div class="store-overlay">
+                                <span class="store-name">ابن حميدو</span>
+                                <div class="store-details">
+                                    <span class="status closed"><i class="las la-times-circle"></i> مغلق الآن</span>
+                                    <span class="delivery-time"><i class="las la-clock"></i> 30 - 40 دقيقة</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'مشروبات', 4.6, '10-20 دقيقة', '12 ر.س')">
+                        <div class="store-img">
+                            <img src="https://sys.shadowza.space/logos/4.png" alt="مطعم ابن حميدو">
+                            <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                            <div class="store-overlay">
+                                <span class="store-name">ابن حميدو</span>
+                                <div class="store-details">
+                                    <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                    <span class="delivery-time"><i class="las la-clock"></i> 10 - 20 دقيقة</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'بيتزا', 4.5, '20-30 دقيقة', '15 ر.س')">
+                        <div class="store-img">
+                            <img src="https://sys.shadowza.space/logos/5.png" alt="مطعم ابن حميدو">
+                            <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                            <div class="store-overlay">
+                                <span class="store-name">ابن حميدو</span>
+                                <div class="store-details">
+                                    <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                    <span class="delivery-time"><i class="las la-clock"></i> 20 - 30 دقيقة</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'سوشي', 4.8, '25-35 دقيقة', '22 ر.س')">
+                        <div class="store-img">
+                            <img src="https://sys.shadowza.space/logos/6.png" alt="مطعم ابن حميدو">
+                            <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                            <div class="store-overlay">
+                                <span class="store-name">ابن حميدو</span>
+                                <div class="store-details">
+                                    <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                    <span class="delivery-time"><i class="las la-clock"></i> 25 - 35 دقيقة</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="section-title mb-0"><i class="las la-fire"></i> الأكثر طلباً</h3>
+                    <a href="#" class="text-sm font-semibold text-[#FF5A00] hover:underline">عرض الكل</a>
+                </div>
+                <div class="scroll-row flex gap-4 overflow-x-auto hide-scrollbar pb-2" style="scroll-behavior: smooth;">
+                    <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'برجر', 4.7, '20-30 دقيقة', '15 ر.س')">
+                        <div class="store-img">
+                            <img src="https://sys.shadowza.space/logos/7.png" alt="مطعم ابن حميدو">
+                            <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                            <div class="store-overlay">
+                                <span class="store-name">ابن حميدو</span>
+                                <div class="store-details">
+                                    <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                    <span class="delivery-time"><i class="las la-clock"></i> 20 - 30 دقيقة</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'بيتزا', 4.5, '25-35 دقيقة', '10 ر.س')">
+                        <div class="store-img">
+                            <img src="https://sys.shadowza.space/logos/8.png" alt="مطعم ابن حميدو">
+                            <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                            <div class="store-overlay">
+                                <span class="store-name">ابن حميدو</span>
+                                <div class="store-details">
+                                    <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                    <span class="delivery-time"><i class="las la-clock"></i> 25 - 35 دقيقة</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'سوشي', 4.8, '30-40 دقيقة', '20 ر.س')">
+                        <div class="store-img">
+                            <img src="https://sys.shadowza.space/logos/9.png" alt="مطعم ابن حميدو">
+                            <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                            <div class="store-overlay">
+                                <span class="store-name">ابن حميدو</span>
+                                <div class="store-details">
+                                    <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                    <span class="delivery-time"><i class="las la-clock"></i> 30 - 40 دقيقة</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'شاورما', 4.6, '15-25 دقيقة', '8 ر.س')">
+                        <div class="store-img">
+                            <img src="https://sys.shadowza.space/logos/10.png" alt="مطعم ابن حميدو">
+                            <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                            <div class="store-overlay">
+                                <span class="store-name">ابن حميدو</span>
+                                <div class="store-details">
+                                    <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                    <span class="delivery-time"><i class="las la-clock"></i> 15 - 25 دقيقة</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'دجاج مقلي', 4.4, '20-35 دقيقة', '12 ر.س')">
+                        <div class="store-img">
+                            <img src="https://sys.shadowza.space/logos/11.png" alt="مطعم ابن حميدو">
+                            <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                            <div class="store-overlay">
+                                <span class="store-name">ابن حميدو</span>
+                                <div class="store-details">
+                                    <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                    <span class="delivery-time"><i class="las la-clock"></i> 20 - 35 دقيقة</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="store-card" onclick="showRestaurantAlert('ابن حميدو', 'برجر', 4.3, '15-25 دقيقة', '10 ر.س')">
+                        <div class="store-img">
+                            <img src="https://sys.shadowza.space/logos/12.png" alt="مطعم ابن حميدو">
+                            <div class="store-profile-logo"><img src="https://sys.shadowza.space/logos/1.png" alt="logo"></div>
+                            <div class="store-overlay">
+                                <span class="store-name">ابن حميدو</span>
+                                <div class="store-details">
+                                    <span class="status open"><i class="las la-check-circle"></i> يعمل الآن</span>
+                                    <span class="delivery-time"><i class="las la-clock"></i> 15 - 25 دقيقة</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <div class="offer-banner" style="background: linear-gradient(135deg, #FF8C38, #FFB800);" onclick="showOfferAlert()">
+                    <div class="flex-1">
+                        <h2 class="text-xl sm:text-2xl font-extrabold mb-2">عروض اليوم الخاصة</h2>
+                        <p class="text-white/85 text-sm mb-3">خصومات تصل إلى 60% على مطاعم مختارة</p>
+                        <button class="bg-white text-[#FF8C38] font-bold px-5 py-2 rounded-full text-sm hover:bg-gray-100 transition-all">اكتشف العروض</button>
+                    </div>
+                    <div class="text-6xl sm:text-7xl flex-shrink-0"><i class="las la-percent"></i></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="bottom-mobile-nav" id="bottomMobileNav">
+        <a href="#" class="bottom-nav-item active" data-tab="home"><i class="las la-home"></i><span>الرئيسية</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="offers"><i class="las la-percent"></i><span>العروض</span></a>
+        <a href="#" class="bottom-nav-item bottom-nav-item-center" data-tab="orders"><i class="las la-shopping-bag"></i><span>الطلبات</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="favorites"><i class="las la-heart"></i><span>المفضلة</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="profile"><i class="las la-user"></i><span>حسابي</span></a>
+    </div>
+
+    <script>
+        (function() {
+            const headerAvatarWrapper = document.getElementById('headerAvatarWrapper');
+            const dropdown = document.getElementById('profileDropdown');
+            const dropdownOverlay = document.getElementById('dropdownOverlay');
+            const notificationBtn = document.getElementById('notificationBtn');
+            const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
+            const desktopNavItems = document.querySelectorAll('.desktop-nav-item');
+            const dropdownItems = document.querySelectorAll('.dropdown-item[data-action]');
+            const userAddressText = document.getElementById('userAddressText');
+            const userAddressContainer = document.getElementById('userAddressContainer');
+            const logoutBtn = document.getElementById('logoutBtn');
+            let isDropdownOpen = false;
+
+            let leafletMap = null;
+            let leafletMarker = null;
+            let selectedLat = 27.9158;
+            let selectedLng = 34.3300;
+            let isMapModalOpen = false;
+            let isGeolocationInProgress = false;
+            let locationWatchId = null;
+
+            const tabMessages = {
+                home: 'أنت في الصفحة الرئيسية',
+                offers: 'عروض اليوم الخاصة بك',
+                orders: 'طلباتك الحالية والسابقة',
+                favorites: 'قائمة المفضلة الخاصة بك',
+                profile: 'حسابك الشخصي'
+            };
+
+            function activateTab(tab) {
+                bottomNavItems.forEach(function(i) {
+                    i.classList.toggle('active', i.getAttribute('data-tab') === tab);
+                });
+                desktopNavItems.forEach(function(i) {
+                    i.classList.toggle('active', i.getAttribute('data-nav') === tab);
+                });
+            }
+
+            function showTabMessage(tab) {
+                if (tab !== 'home') {
+                    Swal.fire({
+                        title: tabMessages[tab] || '',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00'
+                    });
+                }
+            }
+
+            function openDropdown() {
+                isDropdownOpen = true;
+                dropdown.classList.add('active');
+                dropdownOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeDropdown() {
+                isDropdownOpen = false;
+                dropdown.classList.remove('active');
+                dropdownOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            function toggleDropdown() {
+                if (isDropdownOpen) {
+                    closeDropdown();
+                } else {
+                    openDropdown();
+                }
+            }
+
+            if (headerAvatarWrapper) {
+                headerAvatarWrapper.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleDropdown();
+                });
+            }
+
+            if (dropdownOverlay) {
+                dropdownOverlay.addEventListener('click', function() {
+                    closeDropdown();
+                });
+            }
+
+            document.addEventListener('click', function(e) {
+                if (isDropdownOpen) {
+                    if (!dropdown.contains(e.target) && !headerAvatarWrapper.contains(e.target)) {
+                        closeDropdown();
+                    }
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && isDropdownOpen) {
+                    closeDropdown();
+                }
+            });
+
+            dropdownItems.forEach(function(item) {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const action = this.getAttribute('data-action');
+                    dropdownItems.forEach(function(i) { i.classList.remove('active'); });
+                    this.classList.add('active');
+                    const label = this.querySelector('span') ? this.querySelector('span').textContent : '';
+                    closeDropdown();
+                    if (action && action !== 'home') {
+                        setTimeout(function() {
+                            Swal.fire({
+                                title: label || action,
+                                icon: 'info',
+                                confirmButtonColor: '#FF5A00'
+                            });
+                        }, 300);
+                    }
+                });
+            });
+
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    closeDropdown();
+                    setTimeout(function() {
+                        Swal.fire({
+                            title: 'تسجيل الخروج',
+                            text: 'هل أنت متأكد من تسجيل الخروج؟',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#FF5A00',
+                            cancelButtonColor: '#717171',
+                            confirmButtonText: 'نعم، خروج',
+                            cancelButtonText: 'إلغاء'
+                        }).then(function(result) {
+                            if (result.isConfirmed) {
+                                Swal.fire({
+                                    title: 'تم بنجاح',
+                                    text: 'تم تسجيل الخروج بنجاح',
+                                    icon: 'success',
+                                    confirmButtonColor: '#FF5A00'
+                                });
+                            }
+                        });
+                    }, 250);
+                });
+            }
+
+            bottomNavItems.forEach(function(item) {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const tab = this.getAttribute('data-tab');
+                    activateTab(tab);
+                    showTabMessage(tab);
+                });
+            });
+
+            desktopNavItems.forEach(function(item) {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const tab = this.getAttribute('data-nav');
+                    activateTab(tab);
+                    showTabMessage(tab);
+                });
+            });
+
+            notificationBtn.addEventListener('click', function() {
+                Swal.fire({
+                    title: 'الإشعارات',
+                    text: 'لديك 3 إشعارات جديدة',
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00'
+                });
+            });
+
+            window.showRestaurantAlert = function(name, category, rating, time, fee) {
+                Swal.fire({
+                    title: name,
+                    html: '<p class="text-sm text-gray-500 mb-2">' + category + '</p>' +
+                        '<div class="flex items-center justify-center gap-4 text-sm text-gray-600">' +
+                        '<span><i class="las la-star" style="color:#FFB800;"></i> ' + rating + '</span>' +
+                        '<span>•</span>' +
+                        '<span><i class="las la-clock"></i> ' + time + '</span>' +
+                        '<span>•</span>' +
+                        '<span><i class="las la-money-bill"></i> ' + fee + '</span></div>',
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00',
+                    confirmButtonText: 'عرض القائمة'
+                });
+            };
+
+            window.showOfferAlert = function() {
+                Swal.fire({
+                    title: 'كود الخصم',
+                    text: 'تم نسخ كود الخصم: SAVE60',
+                    icon: 'success',
+                    confirmButtonColor: '#FF5A00'
+                });
+            };
+
+            window.showServiceAlert = function(service) {
+                Swal.fire({
+                    title: 'تم اختيار: ' + service,
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00'
+                });
+            };
+
+            window.showPlusAlert = function() {
+                Swal.fire({
+                    title: 'FastOrder+',
+                    text: 'تم اختيار عضوية FastOrder+',
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00',
+                    confirmButtonText: 'اشترك الآن'
+                });
+            };
+
+            const mainOfferBanner = document.getElementById('mainOfferBanner');
+            if (mainOfferBanner) {
+                mainOfferBanner.addEventListener('click', function(e) {
+                    if (e.target.tagName !== 'BUTTON') {
+                        Swal.fire({
+                            title: 'كود الخصم',
+                            text: 'استخدم كود WELCOME50 للحصول على خصم 50%',
+                            icon: 'success',
+                            confirmButtonColor: '#FF5A00'
+                        });
+                    }
+                });
+                const offerBtn = mainOfferBanner.querySelector('button');
+                if (offerBtn) {
+                    offerBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        Swal.fire({
+                            title: 'كود الخصم',
+                            text: 'تم نسخ كود الخصم: WELCOME50',
+                            icon: 'success',
+                            confirmButtonColor: '#FF5A00'
+                        });
+                    });
+                }
+            }
+
+            document.querySelectorAll('.offer-banner button').forEach(function(btn) {
+                if (btn.closest('.offer-banner') !== mainOfferBanner) {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        Swal.fire({
+                            title: 'كود الخصم',
+                            text: 'تم نسخ كود الخصم: SAVE60',
+                            icon: 'success',
+                            confirmButtonColor: '#FF5A00'
+                        });
+                    });
+                }
+            });
+
+            document.querySelectorAll('.search-input').forEach(function(input) {
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && e.target.value.trim()) {
+                        Swal.fire({
+                            title: 'جاري البحث',
+                            text: 'جاري البحث عن: ' + e.target.value.trim(),
+                            icon: 'info',
+                            confirmButtonColor: '#FF5A00'
+                        });
+                        e.target.value = '';
+                    }
+                });
+            });
+
+            const plusCard = document.querySelector('.plus-card');
+            if (plusCard) {
+                plusCard.addEventListener('click', function(e) {
+                    if (e.target.tagName !== 'BUTTON') {
+                        showPlusAlert();
+                    }
+                });
+                const plusBtn = plusCard.querySelector('button');
+                if (plusBtn) {
+                    plusBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        Swal.fire({
+                            title: 'FastOrder+',
+                            text: 'تم الاشتراك في عضوية FastOrder+ بنجاح',
+                            icon: 'success',
+                            confirmButtonColor: '#FF5A00'
+                        });
+                    });
+                }
+            }
+
+            function saveLocationToStorage(lat, lng, address) {
+                localStorage.setItem('userLat', lat);
+                localStorage.setItem('userLng', lng);
+                localStorage.setItem('userAddress', address);
+            }
+
+            function loadLocationFromStorage() {
+                const lat = localStorage.getItem('userLat');
+                const lng = localStorage.getItem('userLng');
+                const address = localStorage.getItem('userAddress');
+                if (lat && lng) {
+                    selectedLat = parseFloat(lat);
+                    selectedLng = parseFloat(lng);
+                    if (address) {
+                        userAddressText.textContent = address;
+                    } else {
+                        userAddressText.textContent = selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6);
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            function getCurrentLocation() {
+                if (isGeolocationInProgress) return;
+                isGeolocationInProgress = true;
+
+                if (!navigator.geolocation) {
+                    userAddressText.textContent = 'شرم الشيخ (افتراضي)';
+                    isGeolocationInProgress = false;
+                    return;
+                }
+
+                userAddressText.textContent = 'جاري تحديد موقعك بدقة...';
+
+                const options = {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 0
+                };
+
+                if (locationWatchId) {
+                    navigator.geolocation.clearWatch(locationWatchId);
+                }
+
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        const accuracy = position.coords.accuracy;
+                        selectedLat = lat;
+                        selectedLng = lng;
+                        if (accuracy <= 50) {
+                            reverseGeocodeNominatim(lat, lng, function(address) {
+                                if (address && address !== 'غير معروف') {
+                                    userAddressText.textContent = address;
+                                    saveLocationToStorage(lat, lng, address);
+                                } else {
+                                    userAddressText.textContent = lat.toFixed(6) + ', ' + lng.toFixed(6);
+                                    saveLocationToStorage(lat, lng, userAddressText.textContent);
+                                }
+                                isGeolocationInProgress = false;
+                            });
+                        } else {
+                            locationWatchId = navigator.geolocation.watchPosition(
+                                function(pos) {
+                                    if (pos.coords.accuracy <= 30) {
+                                        selectedLat = pos.coords.latitude;
+                                        selectedLng = pos.coords.longitude;
+                                        reverseGeocodeNominatim(selectedLat, selectedLng, function(address) {
+                                            if (address && address !== 'غير معروف') {
+                                                userAddressText.textContent = address;
+                                                saveLocationToStorage(selectedLat, selectedLng, address);
+                                            } else {
+                                                userAddressText.textContent = selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6);
+                                                saveLocationToStorage(selectedLat, selectedLng, userAddressText.textContent);
+                                            }
+                                            isGeolocationInProgress = false;
+                                            if (locationWatchId) {
+                                                navigator.geolocation.clearWatch(locationWatchId);
+                                                locationWatchId = null;
+                                            }
+                                        });
+                                    }
+                                },
+                                function() {
+                                    reverseGeocodeNominatim(selectedLat, selectedLng, function(address) {
+                                        if (address && address !== 'غير معروف') {
+                                            userAddressText.textContent = address;
+                                            saveLocationToStorage(selectedLat, selectedLng, address);
+                                        } else {
+                                            userAddressText.textContent = selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6);
+                                            saveLocationToStorage(selectedLat, selectedLng, userAddressText.textContent);
+                                        }
+                                        isGeolocationInProgress = false;
+                                    });
+                                },
+                                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+                            );
+                        }
+                    },
+                    function(error) {
+                        let message = '';
+                        switch (error.code) {
+                            case error.PERMISSION_DENIED:
+                                message = 'تم رفض إذن الوصول للموقع. سيتم استخدام الموقع الافتراضي.';
+                                userAddressText.textContent = 'شرم الشيخ (افتراضي)';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                message = 'معلومات الموقع غير متوفرة حالياً.';
+                                userAddressText.textContent = 'شرم الشيخ (افتراضي)';
+                                break;
+                            case error.TIMEOUT:
+                                message = 'انتهت مهلة تحديد الموقع.';
+                                userAddressText.textContent = 'شرم الشيخ (افتراضي)';
+                                break;
+                            default:
+                                message = 'خطأ غير معروف في تحديد الموقع.';
+                                userAddressText.textContent = 'شرم الشيخ (افتراضي)';
+                        }
+                        isGeolocationInProgress = false;
+                        Swal.fire({
+                            title: 'تنبيه',
+                            text: message + ' يمكنك تغيير موقعك يدوياً بالضغط على العنوان.',
+                            icon: 'warning',
+                            confirmButtonColor: '#FF5A00',
+                            timer: 4000,
+                            showConfirmButton: true
+                        });
+                    },
+                    options
+                );
+            }
+
+            function reverseGeocodeNominatim(lat, lng, callback) {
+                const url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng + '&accept-language=ar&zoom=18';
+                fetch(url, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
+                    .then(function(response) {
+                        if (!response.ok) throw new Error('Network error');
+                        return response.json();
+                    })
+                    .then(function(data) {
+                        if (data && data.display_name) {
+                            callback(data.display_name);
+                        } else {
+                            callback('غير معروف');
+                        }
+                    })
+                    .catch(function() {
+                        callback('غير معروف');
+                    });
+            }
+
+            function initLeafletMap(lat, lng, onMarkerDrag) {
+                const mapContainer = document.getElementById('leafletMapContainer');
+                if (!mapContainer) return;
+
+                if (leafletMap) {
+                    leafletMap.remove();
+                    leafletMap = null;
+                    leafletMarker = null;
+                }
+
+                try {
+                    leafletMap = L.map(mapContainer, {
+                        zoomControl: true,
+                        minZoom: 2,
+                        maxZoom: 19
+                    }).setView([lat, lng], 15);
+
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '© OpenStreetMap'
+                    }).addTo(leafletMap);
+
+                    leafletMarker = L.marker([lat, lng], { draggable: true }).addTo(leafletMap);
+
+                    leafletMarker.on('dragend', function() {
+                        const pos = leafletMarker.getLatLng();
+                        selectedLat = pos.lat;
+                        selectedLng = pos.lng;
+                        if (onMarkerDrag) onMarkerDrag(selectedLat, selectedLng);
+                    });
+
+                    leafletMap.on('click', function(e) {
+                        selectedLat = e.latlng.lat;
+                        selectedLng = e.latlng.lng;
+                        leafletMarker.setLatLng([selectedLat, selectedLng]);
+                        if (onMarkerDrag) onMarkerDrag(selectedLat, selectedLng);
+                    });
+
+                    setTimeout(function() {
+                        leafletMap.invalidateSize();
+                    }, 150);
+                } catch (error) {
+                    mapContainer.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;">تعذر تحميل الخريطة</div>';
+                }
+            }
+
+            function updateCoordsBar(lat, lng) {
+                const coordsEl = document.getElementById('mapCoordsDisplay');
+                if (coordsEl) {
+                    coordsEl.textContent = 'خط العرض: ' + lat.toFixed(6) + ' | خط الطول: ' + lng.toFixed(6);
+                }
+            }
+
+            function openMapModal() {
+                if (isMapModalOpen) return;
+                isMapModalOpen = true;
+
+                const currentLat = selectedLat;
+                const currentLng = selectedLng;
+                const isMobile = window.innerWidth <= 768;
+
+                Swal.fire({
+                    title: 'حدد موقعك على الخريطة',
+                    html: '<div id="leafletMapContainer" style="flex:1;min-height:0;height:100%;width:100%;position:relative;z-index:1;background:#f0f0f0;"></div>' +
+                        '<div class="map-coords-bar">' +
+                        '<span id="mapCoordsDisplay">خط العرض: ' + currentLat.toFixed(6) + ' | خط الطول: ' + currentLng.toFixed(6) + '</span>' +
+                        '<button type="button" id="mapUseCurrentBtn" class="map-use-current-btn"><i class="las la-location-arrow"></i> تحديد موقعي</button>' +
+                        '</div>',
+                    showCancelButton: true,
+                    confirmButtonText: 'تأكيد الموقع',
+                    cancelButtonText: 'إلغاء',
+                    confirmButtonColor: '#FF5A00',
+                    cancelButtonColor: '#717171',
+                    customClass: {
+                        container: 'map-modal-container',
+                        popup: isMobile ? 'map-fullscreen' : ''
+                    },
+                    width: isMobile ? '100vw' : '720px',
+                    heightAuto: false,
+                    padding: '0',
+                    didOpen: function() {
+                        setTimeout(function() {
+                            initLeafletMap(currentLat, currentLng, function(lat, lng) {
+                                updateCoordsBar(lat, lng);
+                            });
+
+                            const useCurrentBtn = document.getElementById('mapUseCurrentBtn');
+                            if (useCurrentBtn) {
+                                useCurrentBtn.addEventListener('click', function() {
+                                    if (navigator.geolocation) {
+                                        Swal.showLoading();
+                                        navigator.geolocation.getCurrentPosition(
+                                            function(pos) {
+                                                Swal.hideLoading();
+                                                const lat = pos.coords.latitude;
+                                                const lng = pos.coords.longitude;
+                                                selectedLat = lat;
+                                                selectedLng = lng;
+                                                if (leafletMarker && leafletMap) {
+                                                    leafletMarker.setLatLng([lat, lng]);
+                                                    leafletMap.setView([lat, lng], 16);
+                                                }
+                                                updateCoordsBar(lat, lng);
+                                            },
+                                            function() {
+                                                Swal.hideLoading();
+                                                Swal.showValidationMessage('تعذر الحصول على موقعك الحالي');
+                                            },
+                                            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                                        );
+                                    } else {
+                                        Swal.showValidationMessage('المتصفح لا يدعم تحديد الموقع');
+                                    }
+                                });
+                            }
+                        }, 300);
+                    },
+                    preConfirm: function() {
+                        return new Promise(function(resolve) {
+                            reverseGeocodeNominatim(selectedLat, selectedLng, function(address) {
+                                if (address && address !== 'غير معروف') {
+                                    resolve(address);
+                                } else {
+                                    resolve(selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6));
+                                }
+                            });
+                        });
+                    },
+                    willClose: function() {
+                        isMapModalOpen = false;
+                        if (leafletMap) {
+                            leafletMap.remove();
+                            leafletMap = null;
+                            leafletMarker = null;
+                        }
+                    }
+                }).then(function(result) {
+                    if (result.isConfirmed && result.value) {
+                        userAddressText.textContent = result.value;
+                        saveLocationToStorage(selectedLat, selectedLng, result.value);
+                        Swal.fire({
+                            title: 'تم تحديث العنوان',
+                            text: 'تم تغيير موقعك بنجاح',
+                            icon: 'success',
+                            confirmButtonColor: '#FF5A00',
+                            timer: 2000,
+                            showConfirmButton: true
+                        });
+                    }
+                }).catch(function() {
+                    isMapModalOpen = false;
+                });
+            }
+
+            userAddressContainer.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                openMapModal();
+            });
+            userAddressContainer.style.cursor = 'pointer';
+
+            const locationIcon = userAddressContainer.querySelector('i');
+            if (locationIcon) {
+                locationIcon.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openMapModal();
+                });
+            }
+
+            if (!loadLocationFromStorage()) {
+                getCurrentLocation();
+            }
+        })();
+    </script>
+</body>
+</html>
