@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+<meta name="theme-color" content="#FF5A00">
+<title>إتقان | منصة تعليمية احترافية</title>
+<meta name="description" content="منصة إتقان التعليمية - دورات تدريبية احترافية في البرمجة والتصميم والتسويق واللغات">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        primary: '#FF5A00',
+        secondary: '#FF8C38',
+        accent: '#FFB800',
+        dark: '#1A1A1A',
+        muted: '#717171',
+        success: '#00B14F',
+        lightPrimary: '#FFF1E8'
+      }
+    }
+  }
+}
+</script>
+<style>
+:root{
+  --color-primary:#FF5A00;
+  --color-secondary:#FF8C38;
+  --color-accent:#FFB800;
+  --color-background:#F7F9F8;
+  --color-card:#FFFFFF;
+  --color-darker:#F0F4F3;
+  --color-text:#1A1A1A;
+  --color-muted:#717171;
+  --border-color:rgba(0,0,0,0.08);
+  --header-height:70px;
+  --bottom-nav-height:68px;
+  --shadow-card:0 2px 12px rgba(0,0,0,0.06);
+  --shadow-soft:0 8px 24px rgba(255,90,0,0.2);
+  --dropdown-shadow:0 12px 40px rgba(0,0,0,0.15);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;width:100%;overscroll-behavior:none}
+body{
+  font-family:'Noto Sans Arabic',system-ui,-apple-system,sans-serif;
+  background-color:var(--color-background);
+  color:var(--color-text);
+  transition:background-color .3s,color .3s;
+  overflow-x:hidden;
+}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--color-background);border-radius:4px}
+::-webkit-scrollbar-thumb{background:#FF8C38;border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#FF5A00}
+
+#mainHeader{
+  position:fixed;top:0;left:0;right:0;
+  height:var(--header-height);
+  display:flex;align-items:center;gap:14px;
+  padding:0 16px;
+  background:rgba(255,255,255,.92);
+  -webkit-backdrop-filter:blur(14px);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border-color);
+  z-index:110;
+  box-shadow:0 1px 4px rgba(0,0,0,.04);
+}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+.brand-logo{
+  width:42px;height:42px;border-radius:13px;
+  background:linear-gradient(135deg,#FF5A00,#FF8C38);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:1.45rem;
+  box-shadow:0 4px 12px rgba(255,90,0,.32);
+}
+.brand-text{font-weight:800;font-size:1.15rem;color:var(--color-text);letter-spacing:.2px}
+.brand-text span{color:var(--color-primary)}
+.header-search{flex:1;max-width:520px;margin:0 auto;position:relative;display:flex;align-items:center}
+.header-search i{position:absolute;right:14px;color:var(--color-muted);font-size:1.15rem;pointer-events:none}
+.header-search input{
+  width:100%;height:44px;border-radius:14px;
+  border:1px solid var(--border-color);
+  background:var(--color-darker);
+  padding:0 44px 0 16px;
+  font-family:inherit;font-size:.88rem;color:var(--color-text);
+  outline:none;transition:all .25s ease;
+}
+.header-search input::placeholder{color:#9a9a9a}
+.header-search input:focus{
+  border-color:var(--color-primary);
+  background:#fff;
+  box-shadow:0 0 0 4px rgba(255,90,0,.1);
+}
+.header-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.notification-btn{
+  position:relative;background:none;border:none;cursor:pointer;
+  color:var(--color-muted);font-size:1.5rem;padding:8px;
+  display:flex;align-items:center;justify-content:center;
+  transition:color .2s,background .2s;border-radius:50%;
+  -webkit-tap-highlight-color:transparent;
+}
+.notification-btn:hover{color:var(--color-primary);background:rgba(255,90,0,.08)}
+.notification-dot{
+  position:absolute;top:9px;left:9px;width:9px;height:9px;border-radius:50%;
+  background:var(--color-primary);border:2px solid #fff;
+  animation:pulse-dot 2s infinite;
+}
+@keyframes pulse-dot{
+  0%,100%{transform:scale(1);opacity:1}
+  50%{transform:scale(1.4);opacity:.6}
+}
+.header-avatar-wrapper{position:relative;flex-shrink:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.header-avatar{
+  width:44px;height:44px;border-radius:50%;object-fit:cover;
+  border:2px solid var(--color-primary);
+  transition:all .25s ease;display:block;
+  box-shadow:0 0 0 3px rgba(255,90,0,.15);
+  user-select:none;-webkit-user-select:none;
+}
+.header-avatar:hover{transform:scale(1.05);box-shadow:0 0 0 5px rgba(255,90,0,.2)}
+.header-avatar:active{transform:scale(.95)}
+
+.dropdown-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.35);
+  z-index:115;opacity:0;pointer-events:none;
+  transition:opacity .3s ease;
+  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+}
+.dropdown-overlay.active{opacity:1;pointer-events:auto}
+.profile-dropdown{
+  position:fixed;top:calc(var(--header-height) - 4px);left:16px;
+  width:250px;max-width:calc(100vw - 32px);
+  max-height:calc(100vh - var(--header-height) - 24px);
+  background:var(--color-card);
+  border-radius:16px;
+  box-shadow:var(--dropdown-shadow);
+  border:1px solid var(--border-color);
+  z-index:120;overflow-y:auto;overflow-x:hidden;
+  transform-origin:top left;
+  transform:scale(.92) translateY(-12px);
+  opacity:0;pointer-events:none;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .25s ease;
+  overscroll-behavior:contain;
+  padding:8px 6px 10px;
+}
+.profile-dropdown.active{transform:scale(1) translateY(0);opacity:1;pointer-events:auto}
+.dropdown-header{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px 12px;
+  border-bottom:1px solid var(--border-color);
+  margin-bottom:6px;
+}
+.dropdown-header img{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid var(--color-primary)}
+.dropdown-header strong{display:block;font-size:.85rem;font-weight:700;color:var(--color-text)}
+.dropdown-header small{display:block;font-size:.72rem;color:var(--color-muted);margin-top:2px}
+.dropdown-item{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 12px;border-radius:10px;cursor:pointer;
+  transition:all .2s ease;color:var(--color-muted);
+  font-weight:500;text-decoration:none;font-size:.9rem;
+  -webkit-tap-highlight-color:transparent;position:relative;
+}
+.dropdown-item i{font-size:20px;width:28px;flex-shrink:0;text-align:center}
+.dropdown-item:hover{background:rgba(255,90,0,.07);color:var(--color-primary)}
+.dropdown-item:active{background:rgba(255,90,0,.12);transform:scale(.98)}
+.dropdown-item.active{background:rgba(255,90,0,.12);color:var(--color-primary);font-weight:700}
+.dropdown-item.active::before{
+  content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);
+  width:3px;height:24px;border-radius:4px;background:var(--color-primary);
+}
+.dropdown-item.danger{color:#EF4444}
+.dropdown-item.danger:hover{background:rgba(239,68,68,.08);color:#EF4444}
+.dropdown-divider{height:1px;background:var(--border-color);margin:6px 12px;opacity:.6}
+
+main{padding-top:var(--header-height);padding-bottom:0}
+.container-page{max-width:1120px;margin:0 auto;padding:0 12px}
+
+.hero{
+  margin:16px 12px 0;
+  border-radius:26px;
+  padding:38px 26px;
+  background:linear-gradient(135deg,#FF5A00 0%,#FF8C38 55%,#FFB800 100%);
+  color:#fff;position:relative;overflow:hidden;
+  box-shadow:0 12px 34px rgba(255,90,0,.28);
+}
+.hero::before{
+  content:'';position:absolute;top:-70px;left:-50px;width:220px;height:220px;
+  border-radius:50%;background:rgba(255,255,255,.12);
+}
+.hero::after{
+  content:'';position:absolute;bottom:-90px;right:-40px;width:260px;height:260px;
+  border-radius:50%;background:rgba(255,255,255,.08);
+}
+.hero-inner{position:relative;z-index:2}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(255,255,255,.2);
+  border:1px solid rgba(255,255,255,.35);
+  border-radius:30px;padding:6px 15px;
+  font-size:.78rem;font-weight:700;
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+}
+.hero h1{
+  font-size:clamp(1.45rem,4.2vw,2.4rem);
+  font-weight:800;line-height:1.45;
+  margin-top:16px;max-width:700px;
+}
+.hero p{
+  margin-top:12px;font-size:.95rem;line-height:1.9;
+  opacity:.92;max-width:600px;font-weight:400;
+}
+.hero-search{
+  margin-top:24px;max-width:600px;
+  display:flex;align-items:center;gap:8px;
+  background:#fff;border-radius:18px;padding:7px;
+  box-shadow:0 10px 26px rgba(0,0,0,.12);
+}
+.hero-search i{color:var(--color-muted);font-size:1.15rem;margin-right:10px}
+.hero-search input{
+  flex:1;border:none;outline:none;background:transparent;
+  height:46px;font-family:inherit;font-size:.88rem;
+  color:var(--color-text);min-width:0;
+}
+.hero-search input::placeholder{color:#9a9a9a}
+.hero-search button{
+  border:none;cursor:pointer;
+  background:linear-gradient(135deg,#FF5A00,#FF8C38);
+  color:#fff;font-family:inherit;font-weight:700;font-size:.85rem;
+  padding:0 22px;height:46px;border-radius:13px;
+  transition:all .25s ease;white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;
+}
+.hero-search button:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(255,90,0,.35)}
+.hero-search button:active{transform:translateY(0)}
+.hero-stats{
+  display:flex;flex-wrap:wrap;gap:14px 34px;
+  margin-top:28px;position:relative;z-index:2;
+}
+.hero-stat strong{display:block;font-size:1.3rem;font-weight:800;line-height:1.3}
+.hero-stat span{font-size:.76rem;opacity:.85;font-weight:500}
+
+.section-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:28px 16px 14px;gap:12px;
+}
+.section-head h2{font-size:1.1rem;font-weight:800;display:flex;align-items:center;gap:9px}
+.section-head h2 i{color:var(--color-primary);font-size:1.3rem}
+.section-head a{
+  font-size:.8rem;font-weight:700;color:var(--color-primary);
+  text-decoration:none;display:flex;align-items:center;gap:4px;
+  transition:gap .2s ease;white-space:nowrap;
+}
+.section-head a:hover{gap:8px}
+
+.categories-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(104px,1fr));
+  gap:12px;padding:0 12px;
+}
+.category-card{
+  background:var(--color-card);
+  border:1px solid var(--border-color);
+  border-radius:18px;
+  padding:18px 10px;
+  text-align:center;cursor:pointer;
+  transition:all .25s ease;
+  -webkit-tap-highlight-color:transparent;
+  box-shadow:var(--shadow-card);
+}
+.category-card:hover{
+  transform:translateY(-5px);
+  border-color:rgba(255,90,0,.35);
+  box-shadow:0 10px 24px rgba(255,90,0,.14);
+}
+.category-card:active{transform:translateY(-2px) scale(.98)}
+.category-icon{
+  width:52px;height:52px;border-radius:16px;margin:0 auto 10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.6rem;color:#fff;
+  transition:transform .25s ease;
+}
+.category-card:hover .category-icon{transform:scale(1.08) rotate(-4deg)}
+.category-card span{display:block;font-size:.8rem;font-weight:700;color:var(--color-text)}
+
+.courses-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(268px,1fr));
+  gap:16px;padding:0 12px;
+}
+.course-card{
+  background:var(--color-card);
+  border:1px solid var(--border-color);
+  border-radius:20px;overflow:hidden;
+  box-shadow:var(--shadow-card);
+  cursor:pointer;transition:all .3s ease;
+  display:flex;flex-direction:column;
+  -webkit-tap-highlight-color:transparent;
+}
+.course-card:hover{
+  transform:translateY(-6px);
+  box-shadow:0 16px 34px rgba(0,0,0,.1);
+  border-color:rgba(255,90,0,.25);
+}
+.course-thumb{
+  height:150px;position:relative;
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.95);font-size:3.1rem;
+  overflow:hidden;
+}
+.course-thumb::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 20% 15%,rgba(255,255,255,.25),transparent 55%);
+}
+.course-tag{
+  position:absolute;top:12px;right:12px;z-index:2;
+  background:rgba(255,255,255,.95);
+  color:var(--color-primary);
+  font-size:.68rem;font-weight:800;
+  padding:5px 12px;border-radius:20px;
+  box-shadow:0 4px 10px rgba(0,0,0,.12);
+}
+.course-level{
+  position:absolute;bottom:12px;left:12px;z-index:2;
+  background:rgba(0,0,0,.4);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  color:#fff;font-size:.68rem;font-weight:700;
+  padding:4px 11px;border-radius:20px;
+}
+.course-body{padding:15px;display:flex;flex-direction:column;flex:1;gap:11px}
+.course-title{
+  font-size:.95rem;font-weight:700;line-height:1.6;
+  color:var(--color-text);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.course-author{display:flex;align-items:center;gap:8px}
+.course-author-avatar{
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:800;color:#fff;
+  background:linear-gradient(135deg,#FF5A00,#FF8C38);
+}
+.course-author span{font-size:.76rem;color:var(--color-muted);font-weight:600}
+.course-meta{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  font-size:.73rem;color:var(--color-muted);font-weight:600;
+}
+.course-meta i{color:var(--color-accent);margin-left:3px}
+.course-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;margin-top:auto;
+  padding-top:11px;border-top:1px solid var(--border-color);
+}
+.course-price{display:flex;align-items:baseline;gap:8px}
+.course-price strong{font-size:1.02rem;font-weight:800;color:var(--color-primary)}
+.course-price del{font-size:.75rem;color:#b0b0b0;font-weight:600}
+.course-cta{
+  border:none;cursor:pointer;
+  background:rgba(255,90,0,.1);color:var(--color-primary);
+  font-family:inherit;font-weight:700;font-size:.75rem;
+  padding:8px 15px;border-radius:11px;
+  transition:all .22s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+.course-cta:hover{background:var(--color-primary);color:#fff}
+
+.instructors-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
+  gap:14px;padding:0 12px;
+}
+.instructor-card{
+  background:var(--color-card);
+  border:1px solid var(--border-color);
+  border-radius:20px;padding:20px 14px;
+  text-align:center;cursor:pointer;
+  box-shadow:var(--shadow-card);
+  transition:all .28s ease;
+  -webkit-tap-highlight-color:transparent;
+}
+.instructor-card:hover{transform:translateY(-6px);box-shadow:0 14px 30px rgba(0,0,0,.1);border-color:rgba(255,90,0,.25)}
+.instructor-avatar{
+  width:66px;height:66px;border-radius:50%;margin:0 auto 12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;font-weight:800;color:#fff;
+  border:3px solid #fff;
+  box-shadow:0 0 0 3px rgba(255,90,0,.18);
+}
+.instructor-card strong{display:block;font-size:.88rem;font-weight:700;color:var(--color-text)}
+.instructor-card span{display:block;font-size:.74rem;color:var(--color-muted);margin-top:4px;font-weight:600}
+.instructor-rating{
+  display:inline-flex;align-items:center;gap:4px;
+  margin-top:9px;font-size:.74rem;font-weight:700;color:var(--color-text);
+  background:var(--color-darker);padding:4px 11px;border-radius:20px;
+}
+.instructor-rating i{color:var(--color-accent)}
+
+.features-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:14px;padding:0 12px;
+}
+.feature-card{
+  background:var(--color-card);
+  border:1px solid var(--border-color);
+  border-radius:18px;padding:20px;
+  display:flex;gap:14px;align-items:flex-start;
+  box-shadow:var(--shadow-card);
+  transition:all .28s ease;
+}
+.feature-card:hover{transform:translateY(-4px);border-color:rgba(255,90,0,.3);box-shadow:0 12px 26px rgba(255,90,0,.1)}
+.feature-icon{
+  width:46px;height:46px;border-radius:14px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.35rem;color:var(--color-primary);
+  background:rgba(255,90,0,.1);
+}
+.feature-card h3{font-size:.9rem;font-weight:700;margin-bottom:5px}
+.feature-card p{font-size:.78rem;color:var(--color-muted);line-height:1.8}
+
+.cta-banner{
+  margin:28px 12px 0;
+  border-radius:24px;
+  padding:36px 24px;
+  background:linear-gradient(135deg,#1A1A1A,#2b2b2b);
+  color:#fff;text-align:center;
+  position:relative;overflow:hidden;
+  box-shadow:0 14px 34px rgba(0,0,0,.2);
+}
+.cta-banner::before{
+  content:'';position:absolute;top:-60px;right:-40px;
+  width:200px;height:200px;border-radius:50%;
+  background:rgba(255,90,0,.25);
+}
+.cta-banner::after{
+  content:'';position:absolute;bottom:-80px;left:-30px;
+  width:220px;height:220px;border-radius:50%;
+  background:rgba(255,184,0,.14);
+}
+.cta-banner h2{font-size:clamp(1.15rem,3.4vw,1.7rem);font-weight:800;position:relative;z-index:2}
+.cta-banner p{margin-top:10px;font-size:.88rem;opacity:.75;position:relative;z-index:2;line-height:1.9}
+.cta-btn{
+  display:inline-flex;align-items:center;gap:9px;
+  margin-top:22px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#FF5A00,#FF8C38);
+  color:#fff;font-family:inherit;font-weight:800;font-size:.9rem;
+  padding:14px 34px;border-radius:15px;
+  transition:all .28s ease;position:relative;z-index:2;
+  box-shadow:0 10px 24px rgba(255,90,0,.35);
+  -webkit-tap-highlight-color:transparent;
+}
+.cta-btn:hover{transform:translateY(-3px);box-shadow:0 16px 32px rgba(255,90,0,.45)}
+.cta-btn:active{transform:translateY(0)}
+
+.site-footer{
+  margin-top:36px;
+  background:#1A1A1A;color:#fff;
+  padding:38px 20px 26px;
+  border-radius:28px 28px 0 0;
+}
+.footer-grid{
+  max-width:1120px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:28px;
+}
+.footer-brand{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.footer-brand .brand-logo{width:38px;height:38px;font-size:1.25rem}
+.footer-brand strong{font-size:1.05rem;font-weight:800}
+.footer-col p{font-size:.8rem;color:rgba(255,255,255,.6);line-height:1.9}
+.footer-col h4{font-size:.9rem;font-weight:700;margin-bottom:14px;color:#fff}
+.footer-col ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+.footer-col ul li a{
+  color:rgba(255,255,255,.6);text-decoration:none;
+  font-size:.8rem;transition:color .2s ease;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.footer-col ul li a:hover{color:var(--color-secondary)}
+.footer-social{display:flex;gap:10px;margin-top:14px}
+.footer-social a{
+  width:38px;height:38px;border-radius:12px;
+  background:rgba(255,255,255,.08);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:1.05rem;text-decoration:none;
+  transition:all .25s ease;
+}
+.footer-social a:hover{background:var(--color-primary);transform:translateY(-3px)}
+.footer-bottom{
+  max-width:1120px;margin:28px auto 0;
+  padding-top:20px;
+  border-top:1px solid rgba(255,255,255,.1);
+  text-align:center;font-size:.76rem;color:rgba(255,255,255,.45);
+}
+
+.bottom-mobile-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;
+  height:var(--bottom-nav-height);
+  background:var(--color-card);
+  border-top:1px solid var(--border-color);
+  z-index:100;padding:6px 8px;
+  padding-bottom:max(6px,env(safe-area-inset-bottom,6px));
+  box-shadow:0 -2px 12px rgba(0,0,0,.08);
+  align-items:center;justify-content:space-around;gap:4px;
+}
+.bottom-nav-item{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;flex:1;padding:8px 4px;border-radius:12px;
+  cursor:pointer;text-decoration:none;color:var(--color-muted);
+  font-size:.68rem;font-weight:600;
+  transition:all .25s ease;position:relative;min-width:0;
+  -webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;
+}
+.bottom-nav-item i{font-size:1.35rem;transition:all .25s ease;flex-shrink:0}
+.bottom-nav-item span{
+  white-space:nowrap;text-overflow:ellipsis;overflow:hidden;
+  max-width:100%;font-size:.65rem;letter-spacing:.2px;
+}
+.bottom-nav-item.active{color:var(--color-primary)}
+.bottom-nav-item.active i{font-size:1.5rem}
+.bottom-nav-item-center{
+  position:relative;top:-20px;
+  width:60px;height:60px;border-radius:50%;
+  background:linear-gradient(135deg,#FF5A00,#FF8C38);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 16px rgba(255,90,0,.4);
+  transition:all .3s ease;flex-shrink:0;flex:none;margin:0 4px;
+}
+.bottom-nav-item-center i{font-size:1.8rem;color:#fff}
+.bottom-nav-item-center span{display:none}
+.bottom-nav-item-center.active{background:linear-gradient(135deg,#e04e00,#FF5A00)}
+
+@media (max-width:1024px){
+  .bottom-mobile-nav{display:flex}
+  main{padding-bottom:calc(var(--bottom-nav-height) + 24px)}
+}
+@media (max-width:900px){
+  .header-search{display:none}
+}
+@media (max-width:640px){
+  .hero{padding:30px 20px;border-radius:22px;margin:14px 10px 0}
+  .hero-search{flex-wrap:wrap;padding:8px}
+  .hero-search input{width:100%;flex:1 1 100%;padding-right:34px}
+  .hero-search i{top:22px;position:absolute}
+  .hero-search{position:relative}
+  .hero-search button{width:100%}
+  .hero-stats{gap:12px 22px;margin-top:22px}
+  .hero-stat strong{font-size:1.1rem}
+  .profile-dropdown{left:8px;width:calc(100vw - 16px);max-width:none;border-radius:14px;top:calc(var(--header-height) - 2px)}
+  .courses-grid{grid-template-columns:1fr}
+  .section-head{padding:24px 12px 12px}
+  .cta-banner{padding:30px 18px;margin:26px 10px 0}
+  .site-footer{padding:32px 16px 22px;border-radius:24px 24px 0 0}
+}
+</style>
+</head>
+<body>
+
+<div class="dropdown-overlay" id="dropdownOverlay"></div>
+
+<div class="profile-dropdown" id="profileDropdown" role="menu" aria-label="قائمة المستخدم">
+  <div class="dropdown-header">
+    <img src="https://i.ibb.co/3mZjjp1T/548212938-1338267831079244-6599431839367735090-n.jpg" alt="صورة المستخدم">
+    <div>
+      <strong>عبدالرحمن محمد</strong>
+      <small>طالب متميز</small>
+    </div>
+  </div>
+  <a href="#" class="dropdown-item active" data-action="home"><i class="las la-home"></i><span>الرئيسية</span></a>
+  <a href="#" class="dropdown-item" data-action="courses"><i class="las la-book-open"></i><span>الدورات</span></a>
+  <a href="#" class="dropdown-item" data-action="library"><i class="las la-layer-group"></i><span>مكتبتي</span></a>
+  <a href="#" class="dropdown-item" data-action="favorites"><i class="las la-heart"></i><span>المفضلة</span></a>
+  <a href="#" class="dropdown-item" data-action="profile"><i class="las la-user"></i><span>حسابي</span></a>
+  <div class="dropdown-divider"></div>
+  <a href="#" class="dropdown-item danger" data-action="logout"><i class="las la-sign-out-alt"></i><span>تسجيل الخروج</span></a>
+</div>
+
+<main class="transition-all">
+
+  <header id="mainHeader">
+    <a href="#" class="brand" id="brandLink">
+      <span class="brand-logo"><i class="las la-graduation-cap"></i></span>
+      <span class="brand-text">إتـقـان<span>+</span></span>
+    </a>
+
+    <form class="header-search search-form">
+      <i class="las la-search"></i>
+      <input type="text" class="search-input" placeholder="ابحث عن دورة، مدرب، أو مهارة...">
+    </form>
+
+    <div class="header-actions">
+      <button class="notification-btn" id="notificationBtn" aria-label="الإشعارات">
+        <i class="las la-bell"></i>
+        <span class="notification-dot"></span>
+      </button>
+      <div class="header-avatar-wrapper" id="headerAvatarWrapper" title="فتح القائمة">
+        <img id="headerAvatar" src="https://i.ibb.co/3mZjjp1T/548212938-1338267831079244-6599431839367735090-n.jpg" class="header-avatar" alt="صورة المستخدم">
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-inner">
+      <span class="hero-badge"><i class="las la-certificate"></i> منصة تعليمية معتمدة</span>
+      <h1>طوّر مهاراتك وابدأ رحلتك التعليمية مع أفضل المدربين العرب</h1>
+      <p>أكثر من 1200 دورة تدريبية احترافية في البرمجة والتصميم والتسويق واللغات، مع شهادات معتمدة ومشاريع عملية ووصول مدى الحياة.</p>
+
+      <form class="hero-search search-form">
+        <i class="las la-search"></i>
+        <input type="text" class="search-input" placeholder="ما الذي تريد تعلمه اليوم؟">
+        <button type="submit">ابحث الآن</button>
+      </form>
+
+      <div class="hero-stats">
+        <div class="hero-stat"><strong>+1200</strong><span>دورة تدريبية</span></div>
+        <div class="hero-stat"><strong>+350</strong><span>مدرب خبير</span></div>
+        <div class="hero-stat"><strong>+45K</strong><span>طالب مسجل</span></div>
+        <div class="hero-stat"><strong>4.9</strong><span>تقييم المنصة</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container-page">
+    <div class="section-head">
+      <h2><i class="las la-th-large"></i> تصفح التصنيفات</h2>
+      <a href="#" id="allCategoriesLink">عرض الكل <i class="las la-angle-left"></i></a>
+    </div>
+  </div>
+
+  <div class="categories-grid" id="categoriesGrid">
+    <div class="category-card" data-category="البرمجة وتطوير الويب">
+      <div class="category-icon" style="background:linear-gradient(135deg,#FF5A00,#FF8C38)"><i class="las la-code"></i></div>
+      <span>البرمجة</span>
+    </div>
+    <div class="category-card" data-category="التصميم الجرافيكي">
+      <div class="category-icon" style="background:linear-gradient(135deg,#7C3AED,#A855F7)"><i class="las la-paint-brush"></i></div>
+      <span>التصميم</span>
+    </div>
+    <div class="category-card" data-category="التسويق الرقمي">
+      <div class="category-icon" style="background:linear-gradient(135deg,#00B14F,#34D399)"><i class="las la-bullhorn"></i></div>
+      <span>التسويق</span>
+    </div>
+    <div class="category-card" data-category="إدارة الأعمال">
+      <div class="category-icon" style="background:linear-gradient(135deg,#0EA5E9,#38BDF8)"><i class="las la-chart-line"></i></div>
+      <span>إدارة الأعمال</span>
+    </div>
+    <div class="category-card" data-category="تعلم اللغات">
+      <div class="category-icon" style="background:linear-gradient(135deg,#F59E0B,#FBBF24)"><i class="las la-language"></i></div>
+      <span>اللغات</span>
+    </div>
+    <div class="category-card" data-category="الذكاء الاصطناعي">
+      <div class="category-icon" style="background:linear-gradient(135deg,#EF4444,#F87171)"><i class="las la-robot"></i></div>
+      <span>الذكاء الاصطناعي</span>
+    </div>
+    <div class="category-card" data-category="التصوير الفوتوغرافي">
+      <div class="category-icon" style="background:linear-gradient(135deg,#6366F1,#818CF8)"><i class="las la-camera"></i></div>
+      <span>التصوير</span>
+    </div>
+    <div class="category-card" data-category="الصحة واللياقة">
+      <div class="category-icon" style="background:linear-gradient(135deg,#14B8A6,#2DD4BF)"><i class="las la-heartbeat"></i></div>
+      <span>الصحة</span>
+    </div>
+  </div>
+
+  <div class="container-page">
+    <div class="section-head">
+      <h2><i class="las la-fire"></i> الدورات الأكثر رواجاً</h2>
+      <a href="#" id="allCoursesLink">عرض الكل <i class="las la-angle-left"></i></a>
+    </div>
+  </div>
+
+  <div class="courses-grid" id="coursesGrid"></div>
+
+  <div class="container-page">
+    <div class="section-head">
+      <h2><i class="las la-user-tie"></i> مدربون متميزون</h2>
+      <a href="#" id="allInstructorsLink">عرض الكل <i class="las la-angle-left"></i></a>
+    </div>
+  </div>
+
+  <div class="instructors-grid" id="instructorsGrid"></div>
+
+  <div class="container-page">
+    <div class="section-head">
+      <h2><i class="las la-shield-alt"></i> لماذا إتقان؟</h2>
+    </div>
+  </div>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon"><i class="las la-certificate"></i></div>
+      <div>
+        <h3>شهادات معتمدة</h3>
+        <p>احصل على شهادة إتمام معتمدة بعد إنهاء كل دورة بنجاح.</p>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon"><i class="las la-chalkboard-teacher"></i></div>
+      <div>
+        <h3>مدربون خبراء</h3>
+        <p>نخبة من المحترفين في مجالاتهم بخبرة عملية حقيقية في السوق.</p>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon"><i class="las la-infinity"></i></div>
+      <div>
+        <h3>وصول مدى الحياة</h3>
+        <p>شاهد الدروس في أي وقت ومن أي جهاز دون أي قيود زمنية.</p>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon"><i class="las la-laptop-code"></i></div>
+      <div>
+        <h3>مشاريع عملية</h3>
+        <p>تطبيق حقيقي لكل ما تتعلمه لبناء معرض أعمال قوي واحترافي.</p>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon"><i class="las la-headset"></i></div>
+      <div>
+        <h3>دعم فني 24/7</h3>
+        <p>فريق دعم متاح على مدار الساعة لمساعدتك في أي وقت.</p>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon"><i class="las la-users"></i></div>
+      <div>
+        <h3>مجتمع تفاعلي</h3>
+        <p>انضم لمجتمع من المتعلمين وتبادل الخبرات والأسئلة.</p>
+      </div>
+    </div>
+  </div>
+
+  <section class="cta-banner">
+    <h2>ابدأ رحلتك التعليمية اليوم</h2>
+    <p>انضم لأكثر من 45 ألف طالب وطوّر مهاراتك مع نخبة من أفضل المدربين العرب.</p>
+    <button class="cta-btn" id="ctaBtn"><i class="las la-rocket"></i> تصفح الدورات الآن</button>
+  </section>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <div class="footer-brand">
+          <span class="brand-logo"><i class="las la-graduation-cap"></i></span>
+          <strong>إتـقـان+</strong>
+        </div>
+        <p>منصة تعليمية عربية احترافية تهدف إلى تمكين المتعلمين من اكتساب المهارات المطلوبة في سوق العمل عبر دورات عملية ومعتمدة.</p>
+        <div class="footer-social">
+          <a href="#" aria-label="فيسبوك"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" aria-label="تويتر"><i class="fab fa-x-twitter"></i></a>
+          <a href="#" aria-label="انستغرام"><i class="fab fa-instagram"></i></a>
+          <a href="#" aria-label="يوتيوب"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>روابط سريعة</h4>
+        <ul>
+          <li><a href="#"><i class="las la-angle-left"></i> الرئيسية</a></li>
+          <li><a href="#"><i class="las la-angle-left"></i> الدورات</a></li>
+          <li><a href="#"><i class="las la-angle-left"></i> المدربون</a></li>
+          <li><a href="#"><i class="las la-angle-left"></i> المدونة</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>المساعدة</h4>
+        <ul>
+          <li><a href="#"><i class="las la-angle-left"></i> مركز الدعم</a></li>
+          <li><a href="#"><i class="las la-angle-left"></i> الأسئلة الشائعة</a></li>
+          <li><a href="#"><i class="las la-angle-left"></i> سياسة الخصوصية</a></li>
+          <li><a href="#"><i class="las la-angle-left"></i> الشروط والأحكام</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>تواصل معنا</h4>
+        <ul>
+          <li><a href="tel:01063720595"><i class="las la-phone"></i> 01063720595</a></li>
+          <li><a href="mailto:info@itqan.com"><i class="las la-envelope"></i> info@itqan.com</a></li>
+          <li><a href="#"><i class="las la-map-marker-alt"></i> القاهرة، مصر</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">© 2026 إتقان+. جميع الحقوق محفوظة.</div>
+  </footer>
+
+</main>
+
+<div class="bottom-mobile-nav" id="bottomMobileNav">
+  <a href="#" class="bottom-nav-item active" data-tab="home"><i class="las la-home"></i><span>الرئيسية</span></a>
+  <a href="#" class="bottom-nav-item" data-tab="courses"><i class="las la-book-open"></i><span>الدورات</span></a>
+  <a href="#" class="bottom-nav-item bottom-nav-item-center" data-tab="search"><i class="las la-search"></i><span>بحث</span></a>
+  <a href="#" class="bottom-nav-item" data-tab="library"><i class="las la-layer-group"></i><span>مكتبتي</span></a>
+  <a href="#" class="bottom-nav-item" data-tab="profile"><i class="las la-user"></i><span>حسابي</span></a>
+</div>
+
+<script>
+(function () {
+  const headerAvatarWrapper = document.getElementById('headerAvatarWrapper');
+  const dropdown = document.getElementById('profileDropdown');
+  const dropdownOverlay = document.getElementById('dropdownOverlay');
+  const notificationBtn = document.getElementById('notificationBtn');
+  const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
+  const dropdownItems = document.querySelectorAll('.dropdown-item');
+  const searchForms = document.querySelectorAll('.search-form');
+  const categoriesGrid = document.getElementById('categoriesGrid');
+  const coursesGrid = document.getElementById('coursesGrid');
+  const instructorsGrid = document.getElementById('instructorsGrid');
+  const ctaBtn = document.getElementById('ctaBtn');
+  let isDropdownOpen = false;
+
+  const courses = [
+    {
+      title: 'أساسيات البرمجة بلغة بايثون من الصفر',
+      author: 'م. أحمد سامي',
+      rating: '4.9',
+      students: '1,240',
+      hours: '18 ساعة',
+      level: 'مبتدئ',
+      tag: 'الأكثر مبيعاً',
+      price: '450 ج.م',
+      oldPrice: '700 ج.م',
+      icon: 'la-code',
+      gradient: 'linear-gradient(135deg,#FF5A00,#FF8C38)'
+    },
+    {
+      title: 'تصميم واجهات المستخدم UI/UX الاحترافي',
+      author: 'أ. سارة خالد',
+      rating: '4.8',
+      students: '980',
+      hours: '22 ساعة',
+      level: 'متوسط',
+      tag: 'جديد',
+      price: '520 ج.م',
+      oldPrice: '800 ج.م',
+      icon: 'la-paint-brush',
+      gradient: 'linear-gradient(135deg,#7C3AED,#A855F7)'
+    },
+    {
+      title: 'التسويق الرقمي وإدارة الحملات الإعلانية',
+      author: 'م. محمد عبدالله',
+      rating: '4.7',
+      students: '1,530',
+      hours: '15 ساعة',
+      level: 'مبتدئ',
+      tag: 'الأكثر رواجاً',
+      price: '390 ج.م',
+      oldPrice: '650 ج.م',
+      icon: 'la-bullhorn',
+      gradient: 'linear-gradient(135deg,#00B14F,#34D399)'
+    },
+    {
+      title: 'تحليل البيانات باستخدام Excel و Power BI',
+      author: 'د. منى إبراهيم',
+      rating: '4.9',
+      students: '760',
+      hours: '20 ساعة',
+      level: 'متقدم',
+      tag: 'مميزة',
+      price: '610 ج.م',
+      oldPrice: '900 ج.م',
+      icon: 'la-chart-line',
+      gradient: 'linear-gradient(135deg,#0EA5E9,#38BDF8)'
+    },
+    {
+      title: 'تعلم اللغة الإنجليزية للتحدث بطلاقة',
+      author: 'أ. ليلى حسن',
+      rating: '4.8',
+      students: '2,110',
+      hours: '30 ساعة',
+      level: 'كل المستويات',
+      tag: 'الأكثر تقييماً',
+      price: '340 ج.م',
+      oldPrice: '560 ج.م',
+      icon: 'la-language',
+      gradient: 'linear-gradient(135deg,#F59E0B,#FBBF24)'
+    },
+    {
+      title: 'مقدمة في الذكاء الاصطناعي وتعلم الآلة',
+      author: 'م. يوسف الشريف',
+      rating: '4.9',
+      students: '640',
+      hours: '25 ساعة',
+      level: 'متوسط',
+      tag: 'جديد',
+      price: '720 ج.م',
+      oldPrice: '1000 ج.م',
+      icon: 'la-robot',
+      gradient: 'linear-gradient(135deg,#EF4444,#F87171)'
+    }
+  ];
+
+  const instructors = [
+    { name: 'م. أحمد سامي', field: 'هندسة البرمجيات', rating: '4.9', color: 'linear-gradient(135deg,#FF5A00,#FF8C38)' },
+    { name: 'أ. سارة خالد', field: 'تصميم UI/UX', rating: '4.8', color: 'linear-gradient(135deg,#7C3AED,#A855F7)' },
+    { name: 'م. محمد عبدالله', field: 'التسويق الرقمي', rating: '4.7', color: 'linear-gradient(135deg,#00B14F,#34D399)' },
+    { name: 'د. منى إبراهيم', field: 'تحليل البيانات', rating: '4.9', color: 'linear-gradient(135deg,#0EA5E9,#38BDF8)' }
+  ];
+
+  function escapeHtml(text) {
+    return String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function initials(name) {
+    const parts = name.replace(/^(م\.|أ\.|د\.)\s*/, '').trim().split(/\s+/);
+    return parts.slice(0, 2).map(function (p) { return p.charAt(0); }).join('');
+  }
+
+  function renderCourses() {
+    if (!coursesGrid) return;
+    coursesGrid.innerHTML = courses.map(function (course) {
+      return '' +
+        '<article class="course-card" data-title="' + escapeHtml(course.title) + '">' +
+          '<div class="course-thumb" style="background:' + course.gradient + '">' +
+            '<span class="course-tag">' + escapeHtml(course.tag) + '</span>' +
+            '<span class="course-level">' + escapeHtml(course.level) + '</span>' +
+            '<i class="las ' + course.icon + '"></i>' +
+          '</div>' +
+          '<div class="course-body">' +
+            '<h3 class="course-title">' + escapeHtml(course.title) + '</h3>' +
+            '<div class="course-author">' +
+              '<span class="course-author-avatar">' + escapeHtml(initials(course.author)) + '</span>' +
+              '<span>' + escapeHtml(course.author) + '</span>' +
+            '</div>' +
+            '<div class="course-meta">' +
+              '<span><i class="las la-star"></i>' + escapeHtml(course.rating) + '</span>' +
+              '<span><i class="las la-user-graduate" style="color:inherit"></i>' + escapeHtml(course.students) + ' طالب</span>' +
+              '<span><i class="las la-clock" style="color:inherit"></i>' + escapeHtml(course.hours) + '</span>' +
+            '</div>' +
+            '<div class="course-footer">' +
+              '<div class="course-price">' +
+                '<strong>' + escapeHtml(course.price) + '</strong>' +
+                '<del>' + escapeHtml(course.oldPrice) + '</del>' +
+              '</div>' +
+              '<button type="button" class="course-cta" data-course="' + escapeHtml(course.title) + '">اشترك الآن</button>' +
+            '</div>' +
+          '</div>' +
+        '</article>';
+    }).join('');
+
+    coursesGrid.querySelectorAll('.course-card').forEach(function (card) {
+      card.addEventListener('click', function () {
+        Swal.fire({
+          title: card.getAttribute('data-title'),
+          text: 'سيتم تحويلك إلى صفحة تفاصيل الدورة',
+          icon: 'info',
+          confirmButtonColor: '#FF5A00',
+          confirmButtonText: 'حسناً'
+        });
+      });
+    });
+  }
+
+  function renderInstructors() {
+    if (!instructorsGrid) return;
+    instructorsGrid.innerHTML = instructors.map(function (ins) {
+      return '' +
+        '<div class="instructor-card" data-name="' + escapeHtml(ins.name) + '">' +
+          '<div class="instructor-avatar" style="background:' + ins.color + '">' + escapeHtml(initials(ins.name)) + '</div>' +
+          '<strong>' + escapeHtml(ins.name) + '</strong>' +
+          '<span>' + escapeHtml(ins.field) + '</span>' +
+          '<div class="instructor-rating"><i class="las la-star"></i>' + escapeHtml(ins.rating) + '</div>' +
+        '</div>';
+    }).join('');
+
+    instructorsGrid.querySelectorAll('.instructor-card').forEach(function (card) {
+      card.addEventListener('click', function () {
+        Swal.fire({
+          title: card.getAttribute('data-name'),
+          text: 'عرض الملف الشخصي للمدرب',
+          icon: 'info',
+          confirmButtonColor: '#FF5A00',
+          confirmButtonText: 'حسناً'
+        });
+      });
+    });
+  }
+
+  function openDropdown() {
+    isDropdownOpen = true;
+    dropdown.classList.add('active');
+    dropdownOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDropdown() {
+    isDropdownOpen = false;
+    dropdown.classList.remove('active');
+    dropdownOverlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  function toggleDropdown() {
+    if (isDropdownOpen) {
+      closeDropdown();
+    } else {
+      openDropdown();
+    }
+  }
+
+  window.showAlert = function (title, text) {
+    Swal.fire({
+      title: title,
+      text: text || '',
+      icon: 'info',
+      confirmButtonColor: '#FF5A00',
+      confirmButtonText: 'حسناً'
+    });
+  };
+
+  window.showLogoutConfirm = function () {
+    Swal.fire({
+      title: 'تسجيل الخروج',
+      text: 'هل أنت متأكد من تسجيل الخروج؟',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#FF5A00',
+      cancelButtonColor: '#717171',
+      confirmButtonText: 'نعم، خروج',
+      cancelButtonText: 'إلغاء'
+    }).then(function (result) {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: 'تم بنجاح',
+          text: 'تم تسجيل الخروج بنجاح',
+          icon: 'success',
+          confirmButtonColor: '#FF5A00',
+          confirmButtonText: 'حسناً'
+        });
+      }
+    });
+  };
+
+  if (headerAvatarWrapper) {
+    headerAvatarWrapper.addEventListener('click', function (e) {
+      e.stopPropagation();
+      toggleDropdown();
+    });
+  }
+
+  if (dropdownOverlay) {
+    dropdownOverlay.addEventListener('click', closeDropdown);
+  }
+
+  document.addEventListener('click', function (e) {
+    if (isDropdownOpen && dropdown && headerAvatarWrapper) {
+      if (!dropdown.contains(e.target) && !headerAvatarWrapper.contains(e.target)) {
+        closeDropdown();
+      }
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && isDropdownOpen) {
+      closeDropdown();
+    }
+  });
+
+  dropdownItems.forEach(function (item) {
+    item.addEventListener('click', function (e) {
+      e.preventDefault();
+      const action = this.getAttribute('data-action');
+      const label = this.querySelector('span') ? this.querySelector('span').textContent : '';
+      if (action === 'logout') {
+        closeDropdown();
+        setTimeout(showLogoutConfirm, 250);
+        return;
+      }
+      dropdownItems.forEach(function (i) { i.classList.remove('active'); });
+      this.classList.add('active');
+      closeDropdown();
+      if (action !== 'home') {
+        setTimeout(function () {
+          showAlert(label, 'سيتم الانتقال إلى قسم ' + label);
+        }, 300);
+      }
+    });
+  });
+
+  bottomNavItems.forEach(function (item) {
+    item.addEventListener('click', function (e) {
+      e.preventDefault();
+      const tab = this.getAttribute('data-tab');
+      if (tab === 'home') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      const labels = {
+        courses: 'قسم الدورات التدريبية',
+        search: 'ابحث عن الدورة المناسبة لك',
+        library: 'مكتبتك التعليمية',
+        profile: 'حسابك الشخصي'
+      };
+      showAlert(labels[tab] || 'قريباً', 'هذا القسم قيد التطوير');
+    });
+  });
+
+  searchForms.forEach(function (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const input = form.querySelector('.search-input');
+      const value = input ? input.value.trim() : '';
+      if (!value) {
+        Swal.fire({
+          title: 'البحث',
+          text: 'من فضلك أدخل كلمة البحث',
+          icon: 'warning',
+          confirmButtonColor: '#FF5A00',
+          confirmButtonText: 'حسناً'
+        });
+        return;
+      }
+      Swal.fire({
+        title: 'نتائج البحث',
+        text: 'جاري البحث عن: ' + value,
+        icon: 'success',
+        confirmButtonColor: '#FF5A00',
+        confirmButtonText: 'حسناً'
+      });
+    });
+  });
+
+  if (categoriesGrid) {
+    categoriesGrid.querySelectorAll('.category-card').forEach(function (card) {
+      card.addEventListener('click', function () {
+        Swal.fire({
+          title: card.getAttribute('data-category'),
+          text: 'عرض الدورات المتاحة في هذا التصنيف',
+          icon: 'info',
+          confirmButtonColor: '#FF5A00',
+          confirmButtonText: 'تصفح'
+        });
+      });
+    });
+  }
+
+  if (notificationBtn) {
+    notificationBtn.addEventListener('click', function () {
+      Swal.fire({
+        title: 'الإشعارات',
+        html: '<div style="text-align:right;font-size:.9rem;line-height:2">' +
+              '• دورة جديدة في البرمجة متاحة الآن<br>' +
+              '• تم إضافة شهادة جديدة إلى ملفك<br>' +
+              '• خصم 25% على دورة التصميم</div>',
+        icon: 'info',
+        confirmButtonColor: '#FF5A00',
+        confirmButtonText: 'حسناً'
+      });
+    });
+  }
+
+  if (ctaBtn) {
+    ctaBtn.addEventListener('click', function () {
+      const grid = document.getElementById('coursesGrid');
+      if (grid) {
+        grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  }
+
+  const allCategoriesLink = document.getElementById('allCategoriesLink');
+  const allCoursesLink = document.getElementById('allCoursesLink');
+  const allInstructorsLink = document.getElementById('allInstructorsLink');
+
+  if (allCategoriesLink) {
+    allCategoriesLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      showAlert('كل التصنيفات', 'عرض جميع تصنيفات الدورات');
+    });
+  }
+
+  if (allCoursesLink) {
+    allCoursesLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      showAlert('كل الدورات', 'عرض جميع الدورات التدريبية');
+    });
+  }
+
+  if (allInstructorsLink) {
+    allInstructorsLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      showAlert('كل المدربين', 'عرض جميع المدربين على المنصة');
+    });
+  }
+
+  const brandLink = document.getElementById('brandLink');
+  if (brandLink) {
+    brandLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  renderCourses();
+  renderInstructors();
+})();
+</script>
+</body>
+</html>
