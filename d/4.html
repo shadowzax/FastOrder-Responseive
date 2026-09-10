@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#FF5A00">
+    <title>طلبات - سجل التوصيلات</title>
+    <meta name="description" content="سجل التوصيلات لسائق التوصيل">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛵</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF5A00',
+                        secondary: '#FF8C38',
+                        accent: '#FFB800',
+                        dark: '#1A1A1A',
+                        muted: '#717171',
+                        success: '#00B14F',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --color-primary: #FF5A00;
+            --color-secondary: #FF8C38;
+            --color-accent: #FFB800;
+            --color-background: #F7F9F8;
+            --color-card: #FFFFFF;
+            --color-darker: #F0F4F3;
+            --color-white: #1A1A1A;
+            --color-muted: #717171;
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --card-bg: #FFFFFF;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --darker-bg: #F0F4F3;
+            --header-height: 70px;
+            --sidebar-width: 280px;
+            --bottom-nav-height: 68px;
+            --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            width: 100%;
+            overscroll-behavior: none;
+        }
+        body {
+            font-family: 'Noto Sans Arabic', system-ui, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-white);
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: var(--color-background); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #FF8C38; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FF5A00; }
+        .dashboard-sidebar {
+            width: var(--sidebar-width);
+            background: var(--card-bg);
+            border-left: 1px solid var(--border-color);
+            position: fixed;
+            right: 0;
+            top: var(--header-height);
+            bottom: 0;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 30;
+            padding: 20px 16px;
+            transform: translateX(0);
+        }
+        .dashboard-sidebar.mobile-closed { transform: translateX(100%); }
+        @media (max-width: 1024px) {
+            .dashboard-sidebar.mobile-open { z-index: 105; transform: translateX(0); }
+            .dashboard-sidebar.mobile-closed { transform: translateX(100%); z-index: 45; }
+        }
+        @media (min-width: 1025px) {
+            .dashboard-sidebar { transform: translateX(0) !important; z-index: 30; }
+            .dashboard-sidebar.mobile-open,
+            .dashboard-sidebar.mobile-closed { transform: translateX(0) !important; }
+        }
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--color-muted);
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+        .sidebar-item i { font-size: 22px; width: 28px; flex-shrink: 0; }
+        .sidebar-item:hover { background: rgba(255, 90, 0, 0.08); color: var(--color-primary); }
+        .sidebar-item.active {
+            background: rgba(255, 90, 0, 0.12);
+            color: var(--color-primary);
+            border-right: 3px solid var(--color-primary);
+            font-weight: 600;
+        }
+        .sidebar-section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--color-muted);
+            padding: 16px 16px 8px;
+            font-weight: 700;
+        }
+        #mainHeader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--color-background);
+            z-index: 110;
+            transition: background-color 0.3s;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+        .header-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--color-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .menu-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--color-white);
+            font-size: 1.6rem;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .notification-btn {
+            position: relative;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--color-muted);
+            font-size: 1.5rem;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+            flex-shrink: 0;
+        }
+        .notification-btn:hover { color: #FF5A00; }
+        .notification-btn .notification-dot {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #FF5A00;
+            border: 2px solid var(--card-bg);
+        }
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border: 1px solid transparent;
+        }
+        .status-pill.online {
+            background: rgba(0, 177, 79, 0.1);
+            color: #00B14F;
+            border-color: rgba(0, 177, 79, 0.3);
+        }
+        .status-pill.offline {
+            background: rgba(113, 113, 113, 0.1);
+            color: #717171;
+            border-color: rgba(113, 113, 113, 0.3);
+        }
+        .status-pill .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        main {
+            padding-top: var(--header-height);
+            padding-bottom: 0;
+        }
+        @media (max-width: 1024px) {
+            main { padding-bottom: calc(var(--bottom-nav-height) + 20px); }
+        }
+        .bottom-mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--bottom-nav-height);
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            z-index: 100;
+            padding: 6px 8px;
+            padding-bottom: max(6px, env(safe-area-inset-bottom, 6px));
+            box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+            align-items: center;
+            justify-content: space-around;
+            gap: 4px;
+        }
+        @media (max-width: 1024px) {
+            .bottom-mobile-nav { display: flex; }
+        }
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            flex: 1;
+            padding: 8px 4px;
+            border-radius: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--color-muted);
+            font-size: 0.68rem;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            position: relative;
+            min-width: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .bottom-nav-item i { font-size: 1.35rem; transition: all 0.25s ease; flex-shrink: 0; }
+        .bottom-nav-item span {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            max-width: 100%;
+            font-size: 0.65rem;
+            letter-spacing: 0.2px;
+        }
+        .bottom-nav-item.active { color: var(--color-primary); }
+        .bottom-nav-item.active i { font-size: 1.5rem; }
+        .bottom-nav-item-center {
+            position: relative;
+            top: -20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.4);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            flex: none;
+            margin: 0 4px;
+        }
+        .bottom-nav-item-center i { font-size: 2rem; }
+        .bottom-nav-item-center span { display: none; }
+        .bottom-nav-item-center.active { background: #e04e00; color: #fff; }
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--color-white);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title i { color: #FF5A00; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        @media (min-width: 640px) {
+            .stats-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+        .stat-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 14px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+        .stat-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 90, 0, 0.1);
+        }
+        .stat-box .stat-ic {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .stat-box .stat-lbl {
+            font-size: 0.7rem;
+            color: var(--color-muted);
+            font-weight: 700;
+        }
+        .stat-box .stat-val {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--color-white);
+        }
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 10px 14px;
+            margin-bottom: 14px;
+            transition: border-color 0.2s;
+        }
+        .search-box:focus-within {
+            border-color: var(--color-primary);
+        }
+        .search-box input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--color-white);
+            font-family: inherit;
+            width: 100%;
+            font-size: 0.88rem;
+        }
+        .search-box input::placeholder {
+            color: var(--color-muted);
+        }
+        .search-box i {
+            color: var(--color-muted);
+            font-size: 1.2rem;
+        }
+        .filters-bar {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            margin-bottom: 18px;
+            scroll-behavior: smooth;
+        }
+        .filter-chip {
+            flex-shrink: 0;
+            padding: 8px 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 40px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--color-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .filter-chip:hover {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+        .filter-chip.active {
+            background: var(--color-primary);
+            color: #fff;
+            border-color: var(--color-primary);
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.3);
+        }
+        .orders-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        @media (min-width: 768px) {
+            .orders-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        .history-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 14px;
+            box-shadow: var(--shadow-card);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        .history-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0, 177, 79, 0.12);
+            border-color: rgba(0, 177, 79, 0.3);
+        }
+        .history-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 4px;
+            height: 100%;
+            background: #00B14F;
+        }
+        .history-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .history-id {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--color-muted);
+            background: var(--darker-bg);
+            padding: 4px 10px;
+            border-radius: 30px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .history-time {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--color-muted);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .history-time i {
+            color: #FF5A00;
+            font-size: 0.95rem;
+        }
+        .history-fee {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #00B14F;
+            background: rgba(0, 177, 79, 0.1);
+            padding: 5px 12px;
+            border-radius: 30px;
+        }
+        .history-route {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px 0;
+            border-top: 1px dashed var(--border-color);
+            border-bottom: 1px dashed var(--border-color);
+        }
+        .history-route-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+        }
+        .history-route-item .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .history-route-item .dot.pickup { background: #FF5A00; }
+        .history-route-item .dot.dropoff { background: #00B14F; }
+        .history-route-item .txt {
+            flex: 1;
+            min-width: 0;
+            font-weight: 700;
+            color: var(--color-white);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .history-route-item .txt .lbl {
+            font-size: 0.68rem;
+            color: var(--color-muted);
+            font-weight: 600;
+            display: block;
+        }
+        .history-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .history-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--color-muted);
+        }
+        .history-meta-item i {
+            color: var(--color-primary);
+            font-size: 0.95rem;
+        }
+        .history-rating {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .history-rating i {
+            font-size: 0.8rem;
+            color: #FFB800;
+        }
+        .history-rating i.off {
+            color: #ddd;
+        }
+        .history-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-top: 4px;
+        }
+        .hist-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 9px 8px;
+            border-radius: 10px;
+            font-family: inherit;
+            font-weight: 800;
+            font-size: 0.74rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            text-decoration: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hist-btn.details {
+            background: rgba(255, 90, 0, 0.1);
+            color: #FF5A00;
+        }
+        .hist-btn.details:hover {
+            background: rgba(255, 90, 0, 0.2);
+        }
+        .hist-btn.receipt {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3B82F6;
+        }
+        .hist-btn.receipt:hover {
+            background: rgba(59, 130, 246, 0.2);
+        }
+        .hist-btn.print {
+            background: rgba(0, 177, 79, 0.1);
+            color: #00B14F;
+        }
+        .hist-btn.print:hover {
+            background: rgba(0, 177, 79, 0.2);
+        }
+        .empty-state {
+            background: var(--card-bg);
+            border: 2px dashed var(--border-color);
+            border-radius: 20px;
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--color-muted);
+            grid-column: 1 / -1;
+        }
+        .empty-state i {
+            font-size: 3.5rem;
+            color: #FF8C38;
+            opacity: 0.5;
+            display: block;
+            margin-bottom: 14px;
+        }
+        .empty-state .empty-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--color-white);
+            margin-bottom: 6px;
+        }
+        .empty-state .empty-text {
+            font-size: 0.8rem;
+        }
+        .details-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
+            font-size: 0.85rem;
+        }
+        .details-row:last-child {
+            border-bottom: none;
+        }
+        .details-row .label {
+            color: #717171;
+            font-weight: 600;
+        }
+        .details-row .value {
+            color: #1A1A1A;
+            font-weight: 800;
+            max-width: 60%;
+            text-align: left;
+            word-break: break-word;
+        }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        @media (max-width: 480px) {
+            .stat-box .stat-val { font-size: 1rem; }
+            .hist-btn { font-size: 0.7rem; padding: 8px 6px; }
+            .hist-btn span { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="relative min-h-screen">
+        <aside class="dashboard-sidebar mobile-closed" id="dashboardSidebar">
+            <div class="mb-4 px-2 mt-2">
+                <div class="flex items-center gap-3 pb-4 border-b" style="border-color: var(--border-color);">
+                    <img id="userAvatar" src="https://i.ibb.co/3mZjjp1T/548212938-1338267831079244-6599431839367735090-n.jpg" class="w-14 h-14 rounded-full border-2 shadow object-cover" alt="avatar" style="border-color: var(--color-primary);">
+                    <div class="min-w-0">
+                        <p class="font-bold text-[var(--color-white)] truncate">محمد عبدالله</p>
+                        <p class="text-xs text-[var(--color-muted)]">سائق توصيل معتمد</p>
+                        <div class="flex items-center gap-1 mt-1">
+                            <i class="las la-star" style="color:#FFB800; font-size:0.85rem;"></i>
+                            <span class="text-xs font-bold text-[var(--color-white)]">4.9</span>
+                            <span class="text-xs text-[var(--color-muted)]">• 1,248 توصيلة</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <nav class="flex-1">
+                <div class="sidebar-section-title">القائمة الرئيسية</div>
+                <a href="#" class="sidebar-item" data-section="home"><i class="las la-home"></i><span>الرئيسية</span></a>
+                <a href="#" class="sidebar-item" data-section="available"><i class="las la-box-open"></i><span>الطلبات المتاحة</span><span class="mr-auto text-[10px] font-bold px-2 py-0.5 rounded-full" style="background: rgba(255,90,0,0.12); color: #FF5A00;">6</span></a>
+                <a href="#" class="sidebar-item" data-section="active"><i class="las la-motorcycle"></i><span>طلباتي النشطة</span><span class="mr-auto text-[10px] font-bold px-2 py-0.5 rounded-full" style="background: rgba(0,177,79,0.15); color: #00B14F;">2</span></a>
+                <a href="#" class="sidebar-item active" data-section="history"><i class="las la-history"></i><span>سجل التوصيلات</span></a>
+                <a href="#" class="sidebar-item" data-section="earnings"><i class="las la-wallet"></i><span>الأرباح والمحفظة</span></a>
+                <div class="sidebar-section-title">الحساب</div>
+                <a href="#" class="sidebar-item" data-section="profile"><i class="las la-user-circle"></i><span>الملف الشخصي</span></a>
+                <a href="#" class="sidebar-item" data-section="vehicle"><i class="las la-motorcycle"></i><span>بيانات المركبة</span></a>
+                <a href="#" class="sidebar-item" data-section="documents"><i class="las la-id-card"></i><span>المستندات</span></a>
+                <a href="#" class="sidebar-item" data-section="settings"><i class="las la-cog"></i><span>الإعدادات</span></a>
+                <div class="sidebar-section-title">الدعم</div>
+                <a href="#" class="sidebar-item" data-section="help"><i class="las la-headset"></i><span>مركز المساعدة</span></a>
+                <a href="#" class="sidebar-item" data-section="about"><i class="las la-info-circle"></i><span>من نحن</span></a>
+                <div class="mt-6 pt-4 border-t" style="border-color: var(--border-color);">
+                    <a href="#" id="logoutBtn" class="sidebar-item" style="color: #EF4444;"><i class="las la-sign-out-alt"></i><span>تسجيل الخروج</span></a>
+                </div>
+            </nav>
+            <div class="mt-4 text-center text-xs text-[var(--color-muted)]">
+                <p>طلبات للسائقين © 2025</p>
+                <p class="mt-1 opacity-70">الإصدار 2.1.0</p>
+            </div>
+        </aside>
+
+        <main class="lg:mr-[280px] transition-all">
+            <header id="mainHeader">
+                <div class="flex items-center gap-2 flex-1 min-w-0">
+                    <button class="menu-toggle lg:hidden" id="menuToggleBtn"><i class="las la-bars"></i></button>
+                    <div class="status-pill online" id="headerStatusPill">
+                        <span class="dot"></span>
+                        <span id="headerStatusText">متصل</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <button class="notification-btn" id="notificationBtn">
+                        <i class="las la-bell"></i>
+                        <span class="notification-dot"></span>
+                    </button>
+                    <img id="headerAvatar" src="https://i.ibb.co/3mZjjp1T/548212938-1338267831079244-6599431839367735090-n.jpg" class="header-avatar" alt="avatar">
+                </div>
+            </header>
+
+            <div class="container mx-auto px-4 py-6 max-w-5xl">
+
+                <div class="page-header mb-5" style="background: linear-gradient(135deg, #1A1A1A, #333333); border-radius: 20px; padding: 22px; color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25); overflow: hidden; position: relative;">
+                    <div>
+                        <h1 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 6px;">سجل التوصيلات</h1>
+                        <p style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.8);">استعرض جميع توصيلاتك السابقة</p>
+                    </div>
+                    <div style="font-size: 4rem; flex-shrink: 0; opacity: 0.85; color: #FF5A00;"><i class="las la-history"></i></div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-ic" style="background: rgba(0, 177, 79, 0.12); color: #00B14F;"><i class="las la-check-circle"></i></div>
+                        <div class="stat-lbl">توصيلات مكتملة</div>
+                        <div class="stat-val">1,248</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-ic" style="background: rgba(255, 90, 0, 0.12); color: #FF5A00;"><i class="las la-money-bill-wave"></i></div>
+                        <div class="stat-lbl">إجمالي الأرباح</div>
+                        <div class="stat-val">12,450 ج.م</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-ic" style="background: rgba(255, 184, 0, 0.15); color: #B37F00;"><i class="las la-star"></i></div>
+                        <div class="stat-lbl">متوسط التقييم</div>
+                        <div class="stat-val">4.9 <span style="font-size:0.75rem;color:#717171;">/ 5</span></div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-ic" style="background: rgba(59, 130, 246, 0.12); color: #3B82F6;"><i class="las la-route"></i></div>
+                        <div class="stat-lbl">إجمالي المسافة</div>
+                        <div class="stat-val">3,120 كم</div>
+                    </div>
+                </div>
+
+                <div class="search-box">
+                    <i class="las la-search"></i>
+                    <input type="text" id="searchInput" placeholder="ابحث برقم الطلب، اسم المطعم، أو اسم العميل...">
+                </div>
+
+                <div class="filters-bar hide-scrollbar" id="filtersBar">
+                    <div class="filter-chip active" data-filter="all">الكل <span id="countAll">(8)</span></div>
+                    <div class="filter-chip" data-filter="today">اليوم</div>
+                    <div class="filter-chip" data-filter="week">هذا الأسبوع</div>
+                    <div class="filter-chip" data-filter="month">هذا الشهر</div>
+                    <div class="filter-chip" data-filter="5star">تقييم 5 نجوم</div>
+                </div>
+
+                <div class="orders-grid" id="ordersGrid"></div>
+
+            </div>
+        </main>
+    </div>
+
+    <div class="bottom-mobile-nav" id="bottomMobileNav">
+        <a href="#" class="bottom-nav-item" data-tab="home"><i class="las la-home"></i><span>الرئيسية</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="available"><i class="las la-box-open"></i><span>المتاحة</span></a>
+        <a href="#" class="bottom-nav-item bottom-nav-item-center" data-tab="active"><i class="las la-motorcycle"></i><span>النشطة</span></a>
+        <a href="#" class="bottom-nav-item active" data-tab="history"><i class="las la-history"></i><span>السجل</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="profile"><i class="las la-user"></i><span>حسابي</span></a>
+    </div>
+
+    <script>
+        (function () {
+            const sidebar = document.getElementById('dashboardSidebar');
+            const headerAvatar = document.getElementById('headerAvatar');
+            const menuToggleBtn = document.getElementById('menuToggleBtn');
+            const notificationBtn = document.getElementById('notificationBtn');
+            const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
+            const sidebarItems = document.querySelectorAll('.sidebar-item[data-section]');
+            const headerStatusPill = document.getElementById('headerStatusPill');
+            const headerStatusText = document.getElementById('headerStatusText');
+            const ordersGrid = document.getElementById('ordersGrid');
+            const filtersBar = document.getElementById('filtersBar');
+            const countAll = document.getElementById('countAll');
+            const searchInput = document.getElementById('searchInput');
+
+            const LOGO_URL = 'https://i.ibb.co/mrRhHsQh/1788099660805-removebg-preview.png';
+
+            let isOnline = true;
+            let activeFilter = 'all';
+            let searchQuery = '';
+
+            const historyOrders = [
+                {
+                    id: 'ORD-1023',
+                    restaurant: 'ابن حميدو',
+                    restaurantAddress: 'شارع السلام، حي النصر، شرم الشيخ',
+                    customer: 'أحمد محمد',
+                    customerAddress: 'فندق ريكسوس سيزونز، خليج نعمة',
+                    items: 3,
+                    total: 85,
+                    fee: 18,
+                    distance: 3.4,
+                    eta: 22,
+                    rating: 5,
+                    date: 'اليوم',
+                    time: 'منذ ساعتين',
+                    period: 'today',
+                    paymentMethod: 'نقدي'
+                },
+                {
+                    id: 'ORD-1022',
+                    restaurant: 'مطعم الشرق',
+                    restaurantAddress: 'شارع الملك سلمان، شرم الشيخ',
+                    customer: 'سارة علي',
+                    customerAddress: 'كمبنسكي شرم الشيخ، السوق القديم',
+                    items: 2,
+                    total: 62,
+                    fee: 14,
+                    distance: 2.1,
+                    eta: 16,
+                    rating: 5,
+                    date: 'اليوم',
+                    time: 'منذ 4 ساعات',
+                    period: 'today',
+                    paymentMethod: 'فيزا'
+                },
+                {
+                    id: 'ORD-1021',
+                    restaurant: 'بيتزا هت',
+                    restaurantAddress: 'شارع الملك فيصل، شرم الشيخ',
+                    customer: 'محمود حسن',
+                    customerAddress: 'منتجع سيرافيتا، نبق',
+                    items: 4,
+                    total: 130,
+                    fee: 22,
+                    distance: 4.8,
+                    eta: 28,
+                    rating: 4,
+                    date: 'أمس',
+                    time: 'منذ 22 ساعة',
+                    period: 'week',
+                    paymentMethod: 'نقدي'
+                },
+                {
+                    id: 'ORD-1020',
+                    restaurant: 'شاورما الشام',
+                    restaurantAddress: 'ميدان الساعة، شرم الشيخ',
+                    customer: 'ليلى أحمد',
+                    customerAddress: 'فندق شيراتون شرم الشيخ، طريق السلام',
+                    items: 1,
+                    total: 35,
+                    fee: 12,
+                    distance: 1.8,
+                    eta: 14,
+                    rating: 5,
+                    date: 'أمس',
+                    time: 'منذ 26 ساعة',
+                    period: 'week',
+                    paymentMethod: 'فيزا'
+                },
+                {
+                    id: 'ORD-1019',
+                    restaurant: 'كنتاكي',
+                    restaurantAddress: 'شارع النصر، شرم الشيخ',
+                    customer: 'خالد إبراهيم',
+                    customerAddress: 'فندق هيلتون شرم الشيخ، طريق السلام',
+                    items: 5,
+                    total: 175,
+                    fee: 25,
+                    distance: 2.5,
+                    eta: 18,
+                    rating: 5,
+                    date: 'الأسبوع الماضي',
+                    time: 'منذ 3 أيام',
+                    period: 'week',
+                    paymentMethod: 'نقدي'
+                },
+                {
+                    id: 'ORD-1018',
+                    restaurant: 'ماكدونالدز',
+                    restaurantAddress: 'منطقة السوق التجاري، شرم الشيخ',
+                    customer: 'نورهان سامي',
+                    customerAddress: 'فندق ماريوت شرم الشيخ، خليج نعمة',
+                    items: 2,
+                    total: 78,
+                    fee: 10,
+                    distance: 1.2,
+                    eta: 12,
+                    rating: 4,
+                    date: 'الأسبوع الماضي',
+                    time: 'منذ 5 أيام',
+                    period: 'week',
+                    paymentMethod: 'فيزا'
+                },
+                {
+                    id: 'ORD-1017',
+                    restaurant: 'دجاج تكا',
+                    restaurantAddress: 'حي الرويسات، شرم الشيخ',
+                    customer: 'منى عبد الرحمن',
+                    customerAddress: 'فندق فور سيزونز شرم الشيخ',
+                    items: 3,
+                    total: 110,
+                    fee: 20,
+                    distance: 3.9,
+                    eta: 24,
+                    rating: 5,
+                    date: 'الشهر الماضي',
+                    time: 'منذ أسبوعين',
+                    period: 'month',
+                    paymentMethod: 'نقدي'
+                },
+                {
+                    id: 'ORD-1016',
+                    restaurant: 'مطعم البدوي',
+                    restaurantAddress: 'الطريق الدائري، شرم الشيخ',
+                    customer: 'عمر فاروق',
+                    customerAddress: 'فندق ريتز كارلتون شرم الشيخ',
+                    items: 6,
+                    total: 220,
+                    fee: 30,
+                    distance: 5.2,
+                    eta: 32,
+                    rating: 5,
+                    date: 'الشهر الماضي',
+                    time: 'منذ 3 أسابيع',
+                    period: 'month',
+                    paymentMethod: 'فيزا'
+                }
+            ];
+
+            function openSidebar() {
+                sidebar.classList.add('mobile-open');
+                sidebar.classList.remove('mobile-closed');
+            }
+
+            function closeSidebar() {
+                sidebar.classList.remove('mobile-open');
+                sidebar.classList.add('mobile-closed');
+            }
+
+            if (window.innerWidth < 1025) {
+                sidebar.classList.add('mobile-closed');
+            }
+
+            window.addEventListener('resize', function () {
+                if (window.innerWidth >= 1025) {
+                    sidebar.classList.remove('mobile-open', 'mobile-closed');
+                } else {
+                    if (!sidebar.classList.contains('mobile-open')) {
+                        sidebar.classList.add('mobile-closed');
+                    }
+                }
+            });
+
+            menuToggleBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (sidebar.classList.contains('mobile-open')) closeSidebar();
+                else openSidebar();
+            });
+
+            headerAvatar.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (window.innerWidth < 1025) {
+                    if (sidebar.classList.contains('mobile-open')) closeSidebar();
+                    else openSidebar();
+                } else {
+                    Swal.fire({
+                        title: 'الملف الشخصي',
+                        html: '<div style="text-align:right;font-size:0.9rem;">' +
+                            '<p style="margin-bottom:8px;"><b>الاسم:</b> محمد عبدالله</p>' +
+                            '<p style="margin-bottom:8px;"><b>الوظيفة:</b> سائق توصيل معتمد</p>' +
+                            '<p style="margin-bottom:8px;"><b>التقييم:</b> 4.9 ⭐</p>' +
+                            '<p style="margin-bottom:8px;"><b>المركبة:</b> دراجة نارية - 5421 ABC</p>' +
+                            '<p style="margin-bottom:8px;"><b>التوصيلات:</b> 1,248 توصيلة</p>' +
+                            '</div>',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'حسناً'
+                    });
+                }
+            });
+
+            document.addEventListener('click', function (e) {
+                if (window.innerWidth < 1025 && sidebar.classList.contains('mobile-open')) {
+                    if (!sidebar.contains(e.target) && e.target !== menuToggleBtn && !menuToggleBtn.contains(e.target) && e.target !== headerAvatar && !headerAvatar.contains(e.target)) {
+                        closeSidebar();
+                    }
+                }
+            });
+
+            sidebarItems.forEach(function (item) {
+                item.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    sidebarItems.forEach(function (i) { i.classList.remove('active'); });
+                    this.classList.add('active');
+                    const section = this.getAttribute('data-section');
+                    handleSectionChange(section);
+                    if (window.innerWidth < 1025) closeSidebar();
+                });
+            });
+
+            document.getElementById('logoutBtn').addEventListener('click', function (e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'تسجيل الخروج',
+                    text: 'هل أنت متأكد من تسجيل الخروج من حساب السائق؟',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#FF5A00',
+                    cancelButtonColor: '#717171',
+                    confirmButtonText: 'نعم، خروج',
+                    cancelButtonText: 'إلغاء'
+                }).then(function (result) {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'تم بنجاح',
+                            text: 'تم تسجيل الخروج بنجاح',
+                            icon: 'success',
+                            confirmButtonColor: '#FF5A00'
+                        });
+                    }
+                });
+            });
+
+            bottomNavItems.forEach(function (item) {
+                item.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    bottomNavItems.forEach(function (i) { i.classList.remove('active'); });
+                    this.classList.add('active');
+                    const tab = this.getAttribute('data-tab');
+                    handleSectionChange(tab);
+                });
+            });
+
+            notificationBtn.addEventListener('click', function () {
+                Swal.fire({
+                    title: 'الإشعارات',
+                    html: '<div style="text-align:right;font-size:0.85rem;">' +
+                        '<p style="margin-bottom:8px; padding:8px; border-radius:8px; background:#FFF3E8;">🔔 طلب جديد متاح بالقرب منك</p>' +
+                        '<p style="margin-bottom:8px; padding:8px; border-radius:8px; background:#FFF3E8;">💰 تم إضافة 18 ج.م إلى محفظتك</p>' +
+                        '<p style="padding:8px; border-radius:8px; background:#FFF3E8;">⭐ تقييم جديد 5 نجوم من عميل</p>' +
+                        '</div>',
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00',
+                    confirmButtonText: 'حسناً'
+                });
+            });
+
+            function handleSectionChange(section) {
+                if (section === 'history') {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else if (section === 'home') {
+                    Swal.fire({
+                        title: 'الرئيسية',
+                        text: 'جاري الانتقال للصفحة الرئيسية',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00'
+                    });
+                } else if (section === 'available') {
+                    Swal.fire({
+                        title: 'الطلبات المتاحة',
+                        text: 'جاري الانتقال للطلبات المتاحة',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00'
+                    });
+                } else if (section === 'active') {
+                    Swal.fire({
+                        title: 'طلباتي النشطة',
+                        text: 'جاري الانتقال لطلباتك النشطة',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00'
+                    });
+                } else if (section === 'earnings') {
+                    Swal.fire({
+                        title: 'محفظتي',
+                        html: '<div style="text-align:right;">' +
+                            '<div style="background:#FFF3E8;padding:14px;border-radius:12px;margin-bottom:10px;">' +
+                            '<p style="font-size:0.75rem;color:#717171;margin-bottom:4px;">الرصيد المتاح</p>' +
+                            '<p style="font-size:1.5rem;font-weight:800;color:#FF5A00;">342.50 ج.م</p>' +
+                            '</div>' +
+                            '<div style="display:flex;gap:8px;">' +
+                            '<div style="flex:1;background:#F0F4F3;padding:10px;border-radius:10px;text-align:center;">' +
+                            '<p style="font-size:0.7rem;color:#717171;">اليوم</p>' +
+                            '<p style="font-weight:800;">145 ج.م</p>' +
+                            '</div>' +
+                            '<div style="flex:1;background:#F0F4F3;padding:10px;border-radius:10px;text-align:center;">' +
+                            '<p style="font-size:0.7rem;color:#717171;">الأسبوع</p>' +
+                            '<p style="font-weight:800;">892 ج.م</p>' +
+                            '</div>' +
+                            '<div style="flex:1;background:#F0F4F3;padding:10px;border-radius:10px;text-align:center;">' +
+                            '<p style="font-size:0.7rem;color:#717171;">الشهر</p>' +
+                            '<p style="font-weight:800;">3,450 ج.م</p>' +
+                            '</div>' +
+                            '</div>' +
+                            '</div>',
+                        icon: 'success',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'طلب سحب الرصيد',
+                        showCancelButton: true,
+                        cancelButtonText: 'إغلاق',
+                        cancelButtonColor: '#717171'
+                    });
+                } else if (section === 'profile') {
+                    Swal.fire({
+                        title: 'الملف الشخصي',
+                        html: '<div style="text-align:right;font-size:0.9rem;">' +
+                            '<p style="margin-bottom:8px;"><b>الاسم:</b> محمد عبدالله</p>' +
+                            '<p style="margin-bottom:8px;"><b>الهاتف:</b> +20 123 456 7890</p>' +
+                            '<p style="margin-bottom:8px;"><b>البريد:</b> driver@talabat.com</p>' +
+                            '<p style="margin-bottom:8px;"><b>المركبة:</b> دراجة نارية</p>' +
+                            '<p style="margin-bottom:8px;"><b>رقم اللوحة:</b> 5421 ABC</p>' +
+                            '<p style="margin-bottom:8px;"><b>التقييم:</b> 4.9 ⭐</p>' +
+                            '</div>',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'حسناً'
+                    });
+                } else {
+                    const labels = {
+                        vehicle: 'بيانات المركبة',
+                        documents: 'المستندات',
+                        settings: 'الإعدادات',
+                        help: 'مركز المساعدة',
+                        about: 'من نحن'
+                    };
+                    Swal.fire({
+                        title: labels[section] || 'قسم',
+                        text: 'هذا القسم قيد التطوير',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'حسناً'
+                    });
+                }
+            }
+
+            function getFilteredOrders() {
+                let orders = historyOrders.slice();
+                if (activeFilter === 'today') {
+                    orders = orders.filter(function (o) { return o.period === 'today'; });
+                } else if (activeFilter === 'week') {
+                    orders = orders.filter(function (o) { return o.period === 'week'; });
+                } else if (activeFilter === 'month') {
+                    orders = orders.filter(function (o) { return o.period === 'month'; });
+                } else if (activeFilter === '5star') {
+                    orders = orders.filter(function (o) { return o.rating === 5; });
+                }
+                if (searchQuery.trim()) {
+                    const q = searchQuery.trim().toLowerCase();
+                    orders = orders.filter(function (o) {
+                        return o.id.toLowerCase().indexOf(q) !== -1 ||
+                            o.restaurant.toLowerCase().indexOf(q) !== -1 ||
+                            o.customer.toLowerCase().indexOf(q) !== -1;
+                    });
+                }
+                return orders;
+            }
+
+            function renderOrders() {
+                const orders = getFilteredOrders();
+                if (orders.length === 0) {
+                    ordersGrid.innerHTML =
+                        '<div class="empty-state">' +
+                            '<i class="las la-inbox"></i>' +
+                            '<div class="empty-title">لا توجد نتائج</div>' +
+                            '<div class="empty-text">جرّب تغيير الفلتر أو البحث</div>' +
+                        '</div>';
+                    return;
+                }
+
+                let html = '';
+                orders.forEach(function (order) {
+                    let stars = '';
+                    for (let i = 0; i < 5; i++) {
+                        stars += '<i class="las la-star' + (i < order.rating ? '' : ' off') + '"></i>';
+                    }
+
+                    html +=
+                        '<div class="history-card">' +
+                            '<div class="history-top">' +
+                                '<span class="history-id"><i class="las la-receipt"></i> ' + order.id + '</span>' +
+                                '<span class="history-fee">+' + order.fee + ' ج.م</span>' +
+                            '</div>' +
+                            '<div class="history-time"><i class="las la-clock"></i> ' + order.date + ' • ' + order.time + '</div>' +
+                            '<div class="history-route">' +
+                                '<div class="history-route-item">' +
+                                    '<span class="dot pickup"></span>' +
+                                    '<div class="txt">' +
+                                        '<span class="lbl">استلام من</span>' +
+                                        order.restaurant +
+                                    '</div>' +
+                                '</div>' +
+                                '<div class="history-route-item">' +
+                                    '<span class="dot dropoff"></span>' +
+                                    '<div class="txt">' +
+                                        '<span class="lbl">تسليم إلى</span>' +
+                                        order.customer +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="history-meta">' +
+                                '<div class="history-meta-item"><i class="las la-route"></i> ' + order.distance + ' كم</div>' +
+                                '<div class="history-meta-item"><i class="las la-shopping-bag"></i> ' + order.items + ' أصناف</div>' +
+                                '<div class="history-meta-item"><i class="las la-money-bill"></i> ' + order.total + ' ج.م</div>' +
+                                '<div class="history-rating">' + stars + '</div>' +
+                            '</div>' +
+                            '<div class="history-actions">' +
+                                '<button class="hist-btn details" data-details="' + order.id + '"><i class="las la-info-circle"></i> <span>التفاصيل</span></button>' +
+                                '<button class="hist-btn receipt" data-receipt="' + order.id + '"><i class="las la-file-invoice"></i> <span>الإيصال</span></button>' +
+                                '<button class="hist-btn print" data-print="' + order.id + '"><i class="las la-print"></i> <span>طباعة</span></button>' +
+                            '</div>' +
+                        '</div>';
+                });
+                ordersGrid.innerHTML = html;
+            }
+
+            function updateCounts() {
+                countAll.textContent = '(' + historyOrders.length + ')';
+            }
+
+            searchInput.addEventListener('input', function (e) {
+                searchQuery = e.target.value;
+                renderOrders();
+            });
+
+            filtersBar.addEventListener('click', function (e) {
+                const chip = e.target.closest('.filter-chip');
+                if (!chip) return;
+                document.querySelectorAll('.filter-chip').forEach(function (c) { c.classList.remove('active'); });
+                chip.classList.add('active');
+                activeFilter = chip.getAttribute('data-filter');
+                renderOrders();
+            });
+
+            ordersGrid.addEventListener('click', function (e) {
+                const detailsBtn = e.target.closest('[data-details]');
+                const receiptBtn = e.target.closest('[data-receipt]');
+                const printBtn = e.target.closest('[data-print]');
+
+                if (detailsBtn) {
+                    const id = detailsBtn.getAttribute('data-details');
+                    const order = historyOrders.find(function (o) { return o.id === id; });
+                    if (order) openDetailsModal(order);
+                } else if (receiptBtn) {
+                    const id = receiptBtn.getAttribute('data-receipt');
+                    const order = historyOrders.find(function (o) { return o.id === id; });
+                    if (order) openReceiptModal(order);
+                } else if (printBtn) {
+                    const id = printBtn.getAttribute('data-print');
+                    const order = historyOrders.find(function (o) { return o.id === id; });
+                    if (order) printReceipt(order);
+                }
+            });
+
+            function openDetailsModal(order) {
+                Swal.fire({
+                    title: 'تفاصيل الطلب ' + order.id,
+                    html:
+                        '<div style="text-align:right;">' +
+                            '<div style="background:rgba(0,177,79,0.1);padding:12px;border-radius:12px;margin-bottom:10px;">' +
+                                '<p style="font-size:0.75rem;color:#717171;margin-bottom:4px;">أجرة التوصيل</p>' +
+                                '<p style="font-size:1.3rem;font-weight:800;color:#00B14F;">' + order.fee + ' ج.م</p>' +
+                            '</div>' +
+                            '<div class="details-row"><span class="label">المطعم</span><span class="value">' + order.restaurant + '</span></div>' +
+                            '<div class="details-row"><span class="label">عنوان المطعم</span><span class="value">' + order.restaurantAddress + '</span></div>' +
+                            '<div class="details-row"><span class="label">العميل</span><span class="value">' + order.customer + '</span></div>' +
+                            '<div class="details-row"><span class="label">عنوان التسليم</span><span class="value">' + order.customerAddress + '</span></div>' +
+                            '<div class="details-row"><span class="label">عدد الأصناف</span><span class="value">' + order.items + ' أصناف</span></div>' +
+                            '<div class="details-row"><span class="label">قيمة الطلب</span><span class="value">' + order.total + ' ج.م</span></div>' +
+                            '<div class="details-row"><span class="label">المسافة</span><span class="value">' + order.distance + ' كم</span></div>' +
+                            '<div class="details-row"><span class="label">وقت التوصيل</span><span class="value">' + order.eta + ' دقيقة</span></div>' +
+                            '<div class="details-row"><span class="label">طريقة الدفع</span><span class="value">' + order.paymentMethod + '</span></div>' +
+                            '<div class="details-row"><span class="label">التاريخ</span><span class="value">' + order.date + ' - ' + order.time + '</span></div>' +
+                        '</div>',
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00',
+                    confirmButtonText: 'إغلاق'
+                });
+            }
+
+            function buildReceiptHTML(order) {
+                const issueDate = new Date();
+                const day = String(issueDate.getDate()).padStart(2, '0');
+                const month = String(issueDate.getMonth() + 1).padStart(2, '0');
+                const year = issueDate.getFullYear();
+                const hours = String(issueDate.getHours()).padStart(2, '0');
+                const minutes = String(issueDate.getMinutes()).padStart(2, '0');
+                const issueStr = day + '/' + month + '/' + year + ' - ' + hours + ':' + minutes;
+
+                let starsRow = '';
+                for (let i = 0; i < 5; i++) {
+                    starsRow += '<span style="color:' + (i < order.rating ? '#FFB800' : '#ddd') + ';font-size:14px;">★</span>';
+                }
+
+                return '' +
+                '<div class="receipt-wrap">' +
+                    '<div class="rcpt-header">' +
+                        '<img src="' + LOGO_URL + '" alt="logo" class="rcpt-logo">' +
+                        '<div class="rcpt-brand">' +
+                            '<h1 class="rcpt-brand-name">طلبات</h1>' +
+                            '<p class="rcpt-brand-tag">خدمة توصيل احترافية</p>' +
+                        '</div>' +
+                    '</div>' +
+
+                    '<div class="rcpt-title-bar">إيصال توصيل</div>' +
+
+                    '<div class="rcpt-section">' +
+                        '<table class="rcpt-table rcpt-info-table">' +
+                            '<tr>' +
+                                '<td class="rcpt-lbl">رقم الطلب</td>' +
+                                '<td class="rcpt-val rcpt-mono">' + order.id + '</td>' +
+                                '<td class="rcpt-lbl">تاريخ الإصدار</td>' +
+                                '<td class="rcpt-val">' + issueStr + '</td>' +
+                            '</tr>' +
+                            '<tr>' +
+                                '<td class="rcpt-lbl">تاريخ التوصيل</td>' +
+                                '<td class="rcpt-val">' + order.date + '</td>' +
+                                '<td class="rcpt-lbl">وقت التوصيل</td>' +
+                                '<td class="rcpt-val">' + order.time + '</td>' +
+                            '</tr>' +
+                            '<tr>' +
+                                '<td class="rcpt-lbl">طريقة الدفع</td>' +
+                                '<td class="rcpt-val">' + order.paymentMethod + '</td>' +
+                                '<td class="rcpt-lbl">التقييم</td>' +
+                                '<td class="rcpt-val">' + starsRow + ' <span style="color:#666;font-size:12px;">(' + order.rating + '/5)</span></td>' +
+                            '</tr>' +
+                        '</table>' +
+                    '</div>' +
+
+                    '<div class="rcpt-section-title"><span class="rcpt-section-dot pickup"></span> بيانات الاستلام</div>' +
+                    '<table class="rcpt-table rcpt-details-table">' +
+                        '<tr>' +
+                            '<td class="rcpt-row-lbl">المطعم</td>' +
+                            '<td class="rcpt-row-val">' + order.restaurant + '</td>' +
+                        '</tr>' +
+                        '<tr>' +
+                            '<td class="rcpt-row-lbl">العنوان</td>' +
+                            '<td class="rcpt-row-val">' + order.restaurantAddress + '</td>' +
+                        '</tr>' +
+                    '</table>' +
+
+                    '<div class="rcpt-section-title"><span class="rcpt-section-dot dropoff"></span> بيانات التسليم</div>' +
+                    '<table class="rcpt-table rcpt-details-table">' +
+                        '<tr>' +
+                            '<td class="rcpt-row-lbl">العميل</td>' +
+                            '<td class="rcpt-row-val">' + order.customer + '</td>' +
+                        '</tr>' +
+                        '<tr>' +
+                            '<td class="rcpt-row-lbl">العنوان</td>' +
+                            '<td class="rcpt-row-val">' + order.customerAddress + '</td>' +
+                        '</tr>' +
+                    '</table>' +
+
+                    '<div class="rcpt-section-title"><span class="rcpt-section-dot info"></span> تفاصيل الطلب</div>' +
+                    '<table class="rcpt-table rcpt-details-table rcpt-details-narrow">' +
+                        '<tr>' +
+                            '<td class="rcpt-row-lbl">عدد الأصناف</td>' +
+                            '<td class="rcpt-row-val">' + order.items + ' أصناف</td>' +
+                        '</tr>' +
+                        '<tr>' +
+                            '<td class="rcpt-row-lbl">قيمة الطلب</td>' +
+                            '<td class="rcpt-row-val">' + order.total + ' ج.م</td>' +
+                        '</tr>' +
+                        '<tr>' +
+                            '<td class="rcpt-row-lbl">المسافة</td>' +
+                            '<td class="rcpt-row-val">' + order.distance + ' كم</td>' +
+                        '</tr>' +
+                        '<tr>' +
+                            '<td class="rcpt-row-lbl">مدة التوصيل</td>' +
+                            '<td class="rcpt-row-val">' + order.eta + ' دقيقة</td>' +
+                        '</tr>' +
+                    '</table>' +
+
+                    '<table class="rcpt-total-table">' +
+                        '<tr>' +
+                            '<td class="rcpt-total-lbl">إجمالي قيمة الطلب</td>' +
+                            '<td class="rcpt-total-val">' + order.total + ' ج.م</td>' +
+                        '</tr>' +
+                        '<tr class="rcpt-total-main">' +
+                            '<td class="rcpt-total-lbl-main">أجرة التوصيل المستحقة</td>' +
+                            '<td class="rcpt-total-val-main">' + order.fee + ' ج.م</td>' +
+                        '</tr>' +
+                    '</table>' +
+
+                    '<div class="rcpt-footer">' +
+                        '<div class="rcpt-footer-row">' +
+                            '<span class="rcpt-footer-lbl">اسم السائق:</span>' +
+                            '<span class="rcpt-footer-val">محمد عبدالله</span>' +
+                        '</div>' +
+                        '<div class="rcpt-footer-row">' +
+                            '<span class="rcpt-footer-lbl">رقم المركبة:</span>' +
+                            '<span class="rcpt-footer-val">5421 ABC</span>' +
+                        '</div>' +
+                        '<div class="rcpt-footer-row">' +
+                            '<span class="rcpt-footer-lbl">الخط الساخن:</span>' +
+                            '<span class="rcpt-footer-val">19XXX</span>' +
+                        '</div>' +
+                    '</div>' +
+
+                    '<div class="rcpt-bottom">' +
+                        '<p class="rcpt-thanks">شكراً لاستخدامكم خدمة طلبات</p>' +
+                        '<p class="rcpt-note">هذا الإيصال تم إنشاؤه إلكترونياً ولا يحتاج إلى ختم</p>' +
+                        '<p class="rcpt-site">www.talabat.com</p>' +
+                    '</div>' +
+                '</div>';
+            }
+
+            const receiptCSS = '' +
+                '.receipt-wrap { max-width: 380px; margin: 0 auto; background: #fff; padding: 16px; font-family: "Noto Sans Arabic", system-ui, sans-serif; color: #1A1A1A; }' +
+                '.rcpt-header { display: flex; align-items: center; justify-content: center; gap: 12px; padding-bottom: 12px; border-bottom: 2px solid #FF5A00; margin-bottom: 12px; }' +
+                '.rcpt-logo { width: 60px; height: 60px; object-fit: contain; }' +
+                '.rcpt-brand { text-align: right; }' +
+                '.rcpt-brand-name { font-size: 22px; font-weight: 800; color: #FF5A00; margin: 0; line-height: 1.2; }' +
+                '.rcpt-brand-tag { font-size: 11px; color: #717171; margin: 2px 0 0 0; }' +
+                '.rcpt-title-bar { background: linear-gradient(135deg, #FF5A00, #FF8C38); color: #fff; text-align: center; padding: 8px; border-radius: 8px; font-size: 14px; font-weight: 800; letter-spacing: 1px; margin-bottom: 14px; }' +
+                '.rcpt-section { margin-bottom: 12px; }' +
+                '.rcpt-section-title { font-size: 12px; font-weight: 800; color: #1A1A1A; margin: 12px 0 6px 0; padding-bottom: 4px; border-bottom: 1px dashed #ddd; display: flex; align-items: center; gap: 6px; }' +
+                '.rcpt-section-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }' +
+                '.rcpt-section-dot.pickup { background: #FF5A00; }' +
+                '.rcpt-section-dot.dropoff { background: #00B14F; }' +
+                '.rcpt-section-dot.info { background: #3B82F6; }' +
+                '.rcpt-table { width: 100%; border-collapse: collapse; font-size: 11px; }' +
+                '.rcpt-info-table { background: #FAFAFA; border: 1px solid #eee; border-radius: 8px; overflow: hidden; }' +
+                '.rcpt-info-table td { padding: 6px 8px; border-bottom: 1px solid #f0f0f0; }' +
+                '.rcpt-info-table tr:last-child td { border-bottom: none; }' +
+                '.rcpt-lbl { color: #717171; font-weight: 700; width: 25%; background: #F5F5F5; }' +
+                '.rcpt-val { color: #1A1A1A; font-weight: 700; width: 25%; }' +
+                '.rcpt-mono { font-family: monospace; letter-spacing: 0.5px; color: #FF5A00; }' +
+                '.rcpt-details-table { background: #fff; border: 1px solid #eee; border-radius: 8px; overflow: hidden; margin-bottom: 4px; }' +
+                '.rcpt-details-table td { padding: 7px 10px; border-bottom: 1px solid #f5f5f5; }' +
+                '.rcpt-details-table tr:last-child td { border-bottom: none; }' +
+                '.rcpt-details-narrow td { padding: 6px 10px; }' +
+                '.rcpt-row-lbl { color: #717171; font-weight: 700; width: 40%; background: #FAFAFA; }' +
+                '.rcpt-row-val { color: #1A1A1A; font-weight: 700; width: 60%; text-align: left; }' +
+                '.rcpt-total-table { width: 100%; border-collapse: collapse; margin-top: 14px; }' +
+                '.rcpt-total-table td { padding: 8px 12px; font-size: 12px; }' +
+                '.rcpt-total-lbl { color: #717171; font-weight: 700; background: #FAFAFA; text-align: right; border: 1px solid #eee; border-left: none; }' +
+                '.rcpt-total-val { color: #1A1A1A; font-weight: 800; background: #FAFAFA; text-align: left; border: 1px solid #eee; border-right: none; }' +
+                '.rcpt-total-main td { padding: 12px; font-size: 14px; }' +
+                '.rcpt-total-lbl-main { background: linear-gradient(135deg, #00B14F, #00C853); color: #fff; font-weight: 800; text-align: right; border-radius: 0 8px 8px 0; }' +
+                '.rcpt-total-val-main { background: linear-gradient(135deg, #00B14F, #00C853); color: #fff; font-weight: 800; font-size: 18px; text-align: left; border-radius: 8px 0 0 8px; }' +
+                '.rcpt-footer { margin-top: 16px; padding: 10px 12px; background: #F7F9F8; border-radius: 8px; border: 1px dashed #ddd; }' +
+                '.rcpt-footer-row { display: flex; justify-content: space-between; font-size: 11px; padding: 3px 0; }' +
+                '.rcpt-footer-lbl { color: #717171; font-weight: 700; }' +
+                '.rcpt-footer-val { color: #1A1A1A; font-weight: 800; }' +
+                '.rcpt-bottom { margin-top: 16px; text-align: center; padding-top: 12px; border-top: 2px dashed #FF5A00; }' +
+                '.rcpt-thanks { font-size: 13px; font-weight: 800; color: #FF5A00; margin: 0 0 4px 0; }' +
+                '.rcpt-note { font-size: 10px; color: #717171; margin: 0 0 4px 0; }' +
+                '.rcpt-site { font-size: 11px; color: #1A1A1A; font-weight: 700; margin: 0; direction: ltr; }';
+
+            function openReceiptModal(order) {
+                Swal.fire({
+                    title: 'معاينة الإيصال',
+                    html:
+                        '<style>' + receiptCSS + '</style>' +
+                        '<div style="text-align:right;background:#FAFAFA;padding:10px;border-radius:12px;border:1px dashed #ddd;">' +
+                            buildReceiptHTML(order) +
+                        '</div>',
+                    icon: undefined,
+                    confirmButtonColor: '#FF5A00',
+                    confirmButtonText: 'طباعة',
+                    showCancelButton: true,
+                    cancelButtonText: 'إغلاق',
+                    cancelButtonColor: '#717171',
+                    width: '480px',
+                    customClass: {
+                        popup: 'rcpt-popup'
+                    }
+                }).then(function (result) {
+                    if (result.isConfirmed) {
+                        printReceipt(order);
+                    }
+                });
+            }
+
+            function printReceipt(order) {
+                const printWindow = window.open('', '_blank', 'width=440,height=720');
+                if (!printWindow) {
+                    Swal.fire({
+                        title: 'تنبيه',
+                        text: 'يرجى السماح بالنوافذ المنبثقة للطباعة',
+                        icon: 'warning',
+                        confirmButtonColor: '#FF5A00'
+                    });
+                    return;
+                }
+                const receiptContent = buildReceiptHTML(order);
+                const htmlContent =
+                    '<!DOCTYPE html>' +
+                    '<html lang="ar" dir="rtl">' +
+                    '<head>' +
+                        '<meta charset="UTF-8">' +
+                        '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+                        '<title>إيصال ' + order.id + '</title>' +
+                        '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;700;800&display=swap" rel="stylesheet">' +
+                        '<style>' +
+                            '* { margin: 0; padding: 0; box-sizing: border-box; }' +
+                            'body { font-family: "Noto Sans Arabic", system-ui, sans-serif; background: #F0F4F3; color: #1A1A1A; padding: 20px; direction: rtl; min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; }' +
+                            receiptCSS +
+                            '@media print {' +
+                                'body { background: #fff; padding: 0; display: block; }' +
+                                '.receipt-wrap { max-width: 100%; padding: 6mm; box-shadow: none; }' +
+                                '@page { size: 80mm auto; margin: 4mm; }' +
+                                '.rcpt-logo { width: 55px; height: 55px; }' +
+                            '}' +
+                            '@media screen {' +
+                                '.receipt-wrap { box-shadow: 0 8px 24px rgba(0,0,0,0.1); border-radius: 12px; }' +
+                            '}' +
+                        '</style>' +
+                    '</head>' +
+                    '<body>' +
+                        receiptContent +
+                        '<script>' +
+                            'window.onload = function() {' +
+                                'var img = document.querySelector(".rcpt-logo");' +
+                                'function doPrint() {' +
+                                    'window.focus();' +
+                                    'window.print();' +
+                                    'setTimeout(function() { window.close(); }, 600);' +
+                                '}' +
+                                'if (img && !img.complete) {' +
+                                    'img.onload = function() { setTimeout(doPrint, 250); };' +
+                                    'img.onerror = function() { setTimeout(doPrint, 250); };' +
+                                    'setTimeout(function() { if (!img.complete) doPrint(); }, 3000);' +
+                                '} else {' +
+                                    'setTimeout(doPrint, 350);' +
+                                '}' +
+                            '};' +
+                        '<\/script>' +
+                    '</body>' +
+                    '</html>';
+                printWindow.document.open();
+                printWindow.document.write(htmlContent);
+                printWindow.document.close();
+            }
+
+            headerStatusPill.addEventListener('click', function () {
+                isOnline = !isOnline;
+                if (isOnline) {
+                    headerStatusPill.classList.add('online');
+                    headerStatusPill.classList.remove('offline');
+                    headerStatusText.textContent = 'متصل';
+                    Swal.fire({
+                        title: 'أنت متصل الآن',
+                        text: 'ستصلك الطلبات الجديدة',
+                        icon: 'success',
+                        confirmButtonColor: '#FF5A00',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    headerStatusPill.classList.add('offline');
+                    headerStatusPill.classList.remove('online');
+                    headerStatusText.textContent = 'غير متصل';
+                    Swal.fire({
+                        title: 'أنت غير متصل',
+                        text: 'لن تصلك طلبات جديدة',
+                        icon: 'warning',
+                        confirmButtonColor: '#FF5A00',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            });
+
+            updateCounts();
+            renderOrders();
+        })();
+    </script>
+</body>
+</html>
