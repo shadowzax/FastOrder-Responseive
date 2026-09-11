@@ -1,0 +1,3041 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#FF5A00">
+    <title>المحفظة والأرباح</title>
+    <meta name="description" content="محفظة وأرباح سائق التوصيل">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛵</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF5A00',
+                        secondary: '#FF8C38',
+                        accent: '#FFB800',
+                        dark: '#1A1A1A',
+                        muted: '#717171',
+                        success: '#00B14F',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --color-primary: #FF5A00;
+            --color-secondary: #FF8C38;
+            --color-accent: #FFB800;
+            --color-background: #F7F9F8;
+            --color-card: #FFFFFF;
+            --color-darker: #F0F4F3;
+            --color-white: #1A1A1A;
+            --color-muted: #717171;
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --card-bg: #FFFFFF;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --darker-bg: #F0F4F3;
+            --header-height: 70px;
+            --sidebar-width: 280px;
+            --bottom-nav-height: 68px;
+            --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            width: 100%;
+            overscroll-behavior: none;
+        }
+        body {
+            font-family: 'Noto Sans Arabic', system-ui, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-white);
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: var(--color-background); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #FF8C38; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FF5A00; }
+        .dashboard-sidebar {
+            width: var(--sidebar-width);
+            background: var(--card-bg);
+            border-left: 1px solid var(--border-color);
+            position: fixed;
+            right: 0;
+            top: var(--header-height);
+            bottom: 0;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 30;
+            padding: 20px 16px;
+            transform: translateX(0);
+        }
+        .dashboard-sidebar.mobile-closed { transform: translateX(100%); }
+        @media (max-width: 1024px) {
+            .dashboard-sidebar.mobile-open { z-index: 105; transform: translateX(0); }
+            .dashboard-sidebar.mobile-closed { transform: translateX(100%); z-index: 45; }
+        }
+        @media (min-width: 1025px) {
+            .dashboard-sidebar { transform: translateX(0) !important; z-index: 30; }
+            .dashboard-sidebar.mobile-open,
+            .dashboard-sidebar.mobile-closed { transform: translateX(0) !important; }
+        }
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--color-muted);
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+        .sidebar-item i { font-size: 22px; width: 28px; flex-shrink: 0; }
+        .sidebar-item:hover { background: rgba(255, 90, 0, 0.08); color: var(--color-primary); }
+        .sidebar-item.active {
+            background: rgba(255, 90, 0, 0.12);
+            color: var(--color-primary);
+            border-right: 3px solid var(--color-primary);
+            font-weight: 600;
+        }
+        .sidebar-section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--color-muted);
+            padding: 16px 16px 8px;
+            font-weight: 700;
+        }
+        #mainHeader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--color-background);
+            z-index: 110;
+            transition: background-color 0.3s;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+        .header-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--color-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .menu-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--color-white);
+            font-size: 1.6rem;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .notification-btn {
+            position: relative;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--color-muted);
+            font-size: 1.5rem;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+            flex-shrink: 0;
+        }
+        .notification-btn:hover { color: #FF5A00; }
+        .notification-btn .notification-dot {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #FF5A00;
+            border: 2px solid var(--card-bg);
+        }
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border: 1px solid transparent;
+        }
+        .status-pill.online {
+            background: rgba(0, 177, 79, 0.1);
+            color: #00B14F;
+            border-color: rgba(0, 177, 79, 0.3);
+        }
+        .status-pill.offline {
+            background: rgba(113, 113, 113, 0.1);
+            color: #717171;
+            border-color: rgba(113, 113, 113, 0.3);
+        }
+        .status-pill .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        main {
+            padding-top: var(--header-height);
+            padding-bottom: 0;
+        }
+        @media (max-width: 1024px) {
+            main { padding-bottom: calc(var(--bottom-nav-height) + 20px); }
+        }
+        .bottom-mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--bottom-nav-height);
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            z-index: 100;
+            padding: 6px 8px;
+            padding-bottom: max(6px, env(safe-area-inset-bottom, 6px));
+            box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+            align-items: center;
+            justify-content: space-around;
+            gap: 4px;
+        }
+        @media (max-width: 1024px) {
+            .bottom-mobile-nav { display: flex; }
+        }
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            flex: 1;
+            padding: 8px 4px;
+            border-radius: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--color-muted);
+            font-size: 0.68rem;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            position: relative;
+            min-width: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .bottom-nav-item i { font-size: 1.35rem; transition: all 0.25s ease; flex-shrink: 0; }
+        .bottom-nav-item span {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            max-width: 100%;
+            font-size: 0.65rem;
+            letter-spacing: 0.2px;
+        }
+        .bottom-nav-item.active { color: var(--color-primary); }
+        .bottom-nav-item.active i { font-size: 1.5rem; }
+        .bottom-nav-item-center {
+            position: relative;
+            top: -20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.4);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            flex: none;
+            margin: 0 4px;
+        }
+        .bottom-nav-item-center i { font-size: 2rem; }
+        .bottom-nav-item-center span { display: none; }
+        .bottom-nav-item-center.active { background: #e04e00; color: #fff; }
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--color-white);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title i { color: #FF5A00; }
+        .commission-note {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: linear-gradient(135deg, rgba(255,90,0,0.08), rgba(255,140,56,0.05));
+            border: 1px solid rgba(255,90,0,0.2);
+            border-radius: 18px;
+            padding: 14px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        .commission-note::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #FF5A00, #FF8C38);
+        }
+        .commission-note .note-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(255,90,0,0.15);
+            color: #FF5A00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+        .commission-note strong {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--color-white);
+            margin-bottom: 4px;
+        }
+        .commission-note p {
+            font-size: 0.74rem;
+            color: var(--color-muted);
+            font-weight: 600;
+            line-height: 1.6;
+        }
+        .balance-card {
+            background: linear-gradient(135deg, #FF5A00, #FF8C38);
+            border-radius: 22px;
+            padding: 22px;
+            color: #fff;
+            box-shadow: 0 14px 34px rgba(255, 90, 0, 0.28);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        .balance-card::after {
+            content: "";
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            width: 170px;
+            height: 170px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.13);
+        }
+        .balance-card::before {
+            content: "";
+            position: absolute;
+            bottom: -70px;
+            right: -30px;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.09);
+        }
+        .balance-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            position: relative;
+            z-index: 2;
+        }
+        .balance-lbl {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.88);
+            margin-bottom: 6px;
+        }
+        .balance-amount {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.5px;
+        }
+        .balance-amount span { font-size: 0.95rem; font-weight: 700; }
+        .balance-ic {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.22);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.7rem;
+            flex-shrink: 0;
+        }
+        .balance-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 16px;
+            position: relative;
+            z-index: 2;
+        }
+        .balance-mini {
+            background: rgba(255, 255, 255, 0.17);
+            border-radius: 14px;
+            padding: 10px 12px;
+        }
+        .mini-lbl {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.88);
+            margin-bottom: 4px;
+        }
+        .mini-val { font-size: 0.95rem; font-weight: 800; }
+        .balance-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 16px;
+            position: relative;
+            z-index: 2;
+        }
+        .bal-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 12px;
+            border: none;
+            border-radius: 14px;
+            font-family: inherit;
+            font-weight: 800;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .bal-btn.primary { background: #fff; color: #FF5A00; }
+        .bal-btn.primary:hover { background: #FFF3E8; }
+        .bal-btn.ghost {
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.45);
+        }
+        .bal-btn.ghost:hover { background: rgba(255, 255, 255, 0.28); }
+        .today-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 22px;
+            padding: 20px;
+            box-shadow: var(--shadow-card);
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        .today-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(180deg, #00B14F, #00C853);
+        }
+        .today-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .today-lbl {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--color-muted);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .today-lbl i { color: #00B14F; font-size: 1rem; }
+        .today-amount {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: var(--color-white);
+            line-height: 1.1;
+        }
+        .today-amount span { font-size: 0.9rem; font-weight: 700; color: var(--color-muted); }
+        .today-ic {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: rgba(0,177,79,0.12);
+            color: #00B14F;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+        .today-breakdown {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 14px 0;
+            border-top: 1px dashed var(--border-color);
+            border-bottom: 1px dashed var(--border-color);
+        }
+        .today-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            font-size: 0.83rem;
+        }
+        .today-row-lbl {
+            color: var(--color-muted);
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .today-row-lbl i { font-size: 1rem; }
+        .today-row-val {
+            font-weight: 800;
+            color: var(--color-white);
+        }
+        .today-row-val.minus { color: #EF4444; }
+        .today-row-val.plus { color: #00B14F; }
+        .today-total {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding-top: 12px;
+            font-weight: 800;
+        }
+        .today-total span:first-child {
+            font-size: 0.85rem;
+            color: var(--color-white);
+        }
+        .today-total span:last-child {
+            font-size: 1.15rem;
+            color: #00B14F;
+        }
+        .today-print-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            margin-top: 14px;
+            padding: 12px;
+            border: 1px solid rgba(0, 177, 79, 0.3);
+            background: rgba(0, 177, 79, 0.08);
+            color: #00B14F;
+            border-radius: 12px;
+            font-family: inherit;
+            font-weight: 800;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .today-print-btn:hover {
+            background: rgba(0, 177, 79, 0.15);
+            border-color: rgba(0, 177, 79, 0.5);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        @media (min-width: 640px) {
+            .stats-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+        .stat-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 14px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+        .stat-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 90, 0, 0.1);
+        }
+        .stat-box .stat-ic {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .stat-box .stat-lbl {
+            font-size: 0.7rem;
+            color: var(--color-muted);
+            font-weight: 700;
+        }
+        .stat-box .stat-val {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--color-white);
+        }
+        .chart-card {
+            background: linear-gradient(160deg, #FFFFFF 0%, #FBFCFB 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 22px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            margin-bottom: 18px;
+            position: relative;
+            overflow: hidden;
+        }
+        .chart-card::after {
+            content: "";
+            position: absolute;
+            top: -80px;
+            left: -80px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,90,0,0.06), transparent 70%);
+            pointer-events: none;
+        }
+        .chart-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
+        }
+        .chart-head h3 {
+            font-size: 1rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--color-white);
+        }
+        .chart-head h3 i {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(255,90,0,0.12), rgba(255,140,56,0.08));
+            color: #FF5A00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+        .chart-total {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #00B14F;
+            background: linear-gradient(135deg, rgba(0, 177, 79, 0.12), rgba(0, 200, 83, 0.06));
+            padding: 6px 14px;
+            border-radius: 30px;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid rgba(0, 177, 79, 0.2);
+        }
+        .chart-total i { font-size: 0.85rem; }
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 8px;
+            height: 180px;
+            position: relative;
+            z-index: 2;
+            padding: 0 4px;
+        }
+        .chart-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            height: 100%;
+            min-width: 0;
+            position: relative;
+        }
+        .chart-val {
+            font-size: 0.66rem;
+            font-weight: 800;
+            color: var(--color-white);
+            background: var(--darker-bg);
+            padding: 3px 8px;
+            border-radius: 20px;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+        .chart-track {
+            flex: 1;
+            width: 100%;
+            max-width: 36px;
+            display: flex;
+            align-items: flex-end;
+            background: linear-gradient(180deg, var(--darker-bg) 0%, rgba(240, 244, 243, 0.3) 100%);
+            border-radius: 14px;
+            overflow: hidden;
+            position: relative;
+        }
+        .chart-bar {
+            width: 100%;
+            background: linear-gradient(180deg, #FFB84D 0%, #FF8C38 40%, #FF5A00 100%);
+            border-radius: 14px 14px 4px 4px;
+            transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.25);
+        }
+        .chart-bar::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            left: 0;
+            height: 30%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.35), transparent);
+            border-radius: 14px 14px 0 0;
+            pointer-events: none;
+        }
+        .chart-bar.today-bar {
+            background: linear-gradient(180deg, #FFE066 0%, #FFB800 30%, #FF5A00 100%);
+            box-shadow: 0 6px 18px rgba(255, 90, 0, 0.4);
+        }
+        .chart-col.today .chart-val {
+            background: linear-gradient(135deg, #FF5A00, #FF8C38);
+            color: #fff;
+        }
+        .chart-day {
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: var(--color-muted);
+            white-space: nowrap;
+            text-align: center;
+            letter-spacing: 0.2px;
+        }
+        .chart-col.today .chart-day {
+            color: #FF5A00;
+            font-weight: 800;
+        }
+        .chart-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px dashed var(--border-color);
+            position: relative;
+            z-index: 2;
+        }
+        .chart-foot-item {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            flex: 1;
+            min-width: 0;
+        }
+        .chart-foot-lbl {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--color-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .chart-foot-lbl i { font-size: 0.8rem; }
+        .chart-foot-val {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: var(--color-white);
+        }
+        .chart-foot-val.green { color: #00B14F; }
+        .chart-foot-val.orange { color: #FF5A00; }
+        .chart-foot-val.blue { color: #3B82F6; }
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 10px 14px;
+            margin-bottom: 14px;
+            transition: border-color 0.2s;
+        }
+        .search-box:focus-within { border-color: var(--color-primary); }
+        .search-box input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--color-white);
+            font-family: inherit;
+            width: 100%;
+            font-size: 0.88rem;
+        }
+        .search-box input::placeholder { color: var(--color-muted); }
+        .search-box i { color: var(--color-muted); font-size: 1.2rem; }
+        .filters-bar {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            margin-bottom: 18px;
+            scroll-behavior: smooth;
+        }
+        .filter-chip {
+            flex-shrink: 0;
+            padding: 8px 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 40px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--color-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .filter-chip:hover {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+        .filter-chip.active {
+            background: var(--color-primary);
+            color: #fff;
+            border-color: var(--color-primary);
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.3);
+        }
+        .trx-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .trx-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 0;
+            box-shadow: var(--shadow-card);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .trx-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.1);
+            border-color: rgba(255, 90, 0, 0.25);
+        }
+        .trx-stripe {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 5px;
+            height: 100%;
+            border-radius: 0 20px 20px 0;
+        }
+        .trx-stripe.plus { background: linear-gradient(180deg, #00C853, #00B14F); }
+        .trx-stripe.minus { background: linear-gradient(180deg, #F87171, #EF4444); }
+        .trx-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px 12px 14px;
+            cursor: pointer;
+        }
+        .trx-ic {
+            width: 50px;
+            height: 50px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.55rem;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .trx-ic::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.6);
+            pointer-events: none;
+        }
+        .trx-main { flex: 1; min-width: 0; }
+        .trx-title-line {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 3px;
+        }
+        .trx-title {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: var(--color-white);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .trx-time {
+            font-size: 0.68rem;
+            color: var(--color-muted);
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .trx-time i { font-size: 0.75rem; }
+        .trx-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+        .trx-amt {
+            font-size: 1.05rem;
+            font-weight: 800;
+            white-space: nowrap;
+            letter-spacing: -0.3px;
+        }
+        .trx-amt.plus { color: #00B14F; }
+        .trx-amt.minus { color: #EF4444; }
+        .trx-amt-lbl {
+            font-size: 0.58rem;
+            font-weight: 700;
+            color: var(--color-muted);
+            white-space: nowrap;
+        }
+        .trx-badges {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .pm-badge {
+            font-size: 0.6rem;
+            font-weight: 800;
+            padding: 3px 9px;
+            border-radius: 20px;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .pm-badge.cash {
+            background: rgba(0,177,79,0.14);
+            color: #00B14F;
+        }
+        .pm-badge.card {
+            background: rgba(59,130,246,0.14);
+            color: #3B82F6;
+        }
+        .status-badge {
+            font-size: 0.6rem;
+            font-weight: 800;
+            padding: 3px 9px;
+            border-radius: 20px;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .status-badge.done {
+            background: rgba(0,177,79,0.12);
+            color: #00B14F;
+        }
+        .status-badge.pending {
+            background: rgba(255,184,0,0.18);
+            color: #B37F00;
+        }
+        .trx-desc-line {
+            font-size: 0.72rem;
+            color: var(--color-muted);
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 16px 12px 14px;
+            margin-top: -4px;
+        }
+        .trx-desc-line i {
+            color: var(--color-primary);
+            font-size: 0.85rem;
+            margin-left: 3px;
+        }
+        .trx-breakdown-new {
+            border-top: 1px dashed var(--border-color);
+            padding: 12px 16px 14px 14px;
+            background: linear-gradient(180deg, rgba(240, 244, 243, 0.4), transparent);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .trx-bd-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            font-size: 0.75rem;
+        }
+        .trx-bd-row .lbl {
+            color: var(--color-muted);
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .trx-bd-row .lbl i {
+            font-size: 0.95rem;
+            width: 16px;
+            text-align: center;
+        }
+        .trx-bd-row .val {
+            font-weight: 800;
+            color: var(--color-white);
+            white-space: nowrap;
+        }
+        .trx-bd-row .val.red { color: #EF4444; }
+        .trx-bd-row .val.green { color: #00B14F; }
+        .trx-bd-row .val.blue { color: #3B82F6; }
+        .trx-bd-final {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 9px 12px;
+            background: linear-gradient(135deg, rgba(0,177,79,0.1), rgba(0,177,79,0.05));
+            border-radius: 12px;
+            margin-top: 2px;
+            border: 1px solid rgba(0,177,79,0.2);
+        }
+        .trx-bd-final .lbl {
+            font-size: 0.76rem;
+            font-weight: 800;
+            color: #00B14F;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .trx-bd-final .val {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #00B14F;
+        }
+        .trx-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            padding: 0 14px 14px 14px;
+        }
+        .trx-action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 9px 8px;
+            border-radius: 10px;
+            font-family: inherit;
+            font-weight: 800;
+            font-size: 0.74rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .trx-action-btn.details {
+            background: rgba(255, 90, 0, 0.1);
+            color: #FF5A00;
+        }
+        .trx-action-btn.details:hover { background: rgba(255, 90, 0, 0.2); }
+        .trx-action-btn.print {
+            background: rgba(0, 177, 79, 0.1);
+            color: #00B14F;
+        }
+        .trx-action-btn.print:hover { background: rgba(0, 177, 79, 0.2); }
+        .empty-state {
+            background: var(--card-bg);
+            border: 2px dashed var(--border-color);
+            border-radius: 20px;
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--color-muted);
+        }
+        .empty-state i {
+            font-size: 3.5rem;
+            color: #FF8C38;
+            opacity: 0.5;
+            display: block;
+            margin-bottom: 14px;
+        }
+        .empty-state .empty-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--color-white);
+            margin-bottom: 6px;
+        }
+        .empty-state .empty-text { font-size: 0.8rem; }
+        .inline-panel {
+            display: none;
+            margin-bottom: 18px;
+            animation: slideDown 0.35s ease;
+        }
+        .inline-panel.active { display: block; }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-12px);
+                max-height: 0;
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+                max-height: 3000px;
+            }
+        }
+        .inline-panel-inner {
+            background: var(--card-bg);
+            border: 2px solid rgba(255, 90, 0, 0.25);
+            border-radius: 22px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(255, 90, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .inline-panel-inner::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(180deg, #FF5A00, #FF8C38);
+        }
+        .inline-panel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding-bottom: 14px;
+            margin-bottom: 14px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        .inline-panel-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--color-white);
+            min-width: 0;
+        }
+        .inline-panel-title .title-ic {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(255,90,0,0.15), rgba(255,140,56,0.08));
+            color: #FF5A00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .inline-panel-title .title-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+        .inline-panel-title .title-text strong {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--color-white);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .inline-panel-title .title-text small {
+            font-size: 0.7rem;
+            color: var(--color-muted);
+            font-weight: 600;
+        }
+        .inline-panel-close {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.1);
+            color: #EF4444;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .inline-panel-close:hover {
+            background: rgba(239, 68, 68, 0.2);
+            transform: scale(1.05);
+        }
+        .inline-hero {
+            padding: 16px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+        .inline-hero .hero-ic {
+            font-size: 2rem;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .inline-hero .hero-lbl {
+            font-size: 0.72rem;
+            color: #717171;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .inline-hero .hero-amt {
+            font-size: 1.7rem;
+            font-weight: 800;
+            line-height: 1.15;
+        }
+        .inline-hero .hero-amt.plus { color: #00B14F; }
+        .inline-hero .hero-amt.minus { color: #EF4444; }
+        .details-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 0;
+            border-bottom: 1px dashed #eee;
+            font-size: 0.85rem;
+        }
+        .details-row:last-child { border-bottom: none; }
+        .details-row .label {
+            color: #717171;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .details-row .value {
+            color: #1A1A1A;
+            font-weight: 800;
+            max-width: 62%;
+            text-align: left;
+            word-break: break-word;
+        }
+        .statement-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        @media (min-width: 480px) {
+            .statement-grid { grid-template-columns: 1fr 1fr; }
+        }
+        .statement-box {
+            padding: 14px;
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .statement-box .box-lbl {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #717171;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .statement-box .box-lbl i {
+            font-size: 0.95rem;
+        }
+        .statement-box .box-val {
+            font-size: 1.15rem;
+            font-weight: 800;
+        }
+        .statement-box.blue {
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        .statement-box.blue .box-val { color: #3B82F6; }
+        .statement-box.blue .box-lbl i { color: #3B82F6; }
+        .statement-box.green {
+            background: rgba(0, 177, 79, 0.08);
+            border: 1px solid rgba(0, 177, 79, 0.2);
+        }
+        .statement-box.green .box-val { color: #00B14F; }
+        .statement-box.green .box-lbl i { color: #00B14F; }
+        .statement-box.orange {
+            background: rgba(255, 90, 0, 0.08);
+            border: 1px solid rgba(255, 90, 0, 0.2);
+        }
+        .statement-box.orange .box-val { color: #FF5A00; }
+        .statement-box.orange .box-lbl i { color: #FF5A00; }
+        .statement-box.red {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .statement-box.red .box-val { color: #EF4444; }
+        .statement-box.red .box-lbl i { color: #EF4444; }
+        .statement-total {
+            background: linear-gradient(135deg, rgba(255,90,0,0.1), rgba(255,140,56,0.05));
+            border: 1px solid rgba(255,90,0,0.25);
+            border-radius: 14px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .statement-total .lbl {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: var(--color-white);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .statement-total .lbl i { color: #FF5A00; font-size: 1.1rem; }
+        .statement-total .val {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #FF5A00;
+        }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        @media (max-width: 480px) {
+            .stat-box .stat-val { font-size: 0.95rem; }
+            .balance-amount { font-size: 1.7rem; }
+            .today-amount { font-size: 1.6rem; }
+            .bal-btn { font-size: 0.75rem; padding: 11px 8px; }
+            .chart-bars { height: 150px; gap: 6px; }
+            .chart-val { font-size: 0.6rem; padding: 2px 6px; }
+            .chart-day { font-size: 0.58rem; }
+            .chart-track { max-width: 30px; }
+            .trx-title { font-size: 0.83rem; }
+            .trx-amt { font-size: 0.95rem; }
+            .trx-ic { width: 44px; height: 44px; font-size: 1.35rem; }
+            .trx-top { padding: 12px 14px 10px 12px; gap: 10px; }
+            .trx-desc-line { padding: 0 14px 10px 12px; }
+            .trx-breakdown-new { padding: 10px 14px 12px 12px; gap: 7px; }
+            .trx-bd-row { font-size: 0.72rem; }
+            .trx-actions { padding: 0 12px 12px 12px; }
+            .trx-action-btn { font-size: 0.7rem; padding: 8px 6px; }
+            .commission-note { padding: 12px; gap: 10px; }
+            .commission-note .note-icon { width: 36px; height: 36px; font-size: 1.2rem; }
+            .commission-note strong { font-size: 0.8rem; }
+            .commission-note p { font-size: 0.7rem; }
+            .chart-foot-val { font-size: 0.82rem; }
+        }
+
+        #printArea {
+            display: none;
+        }
+
+        @page {
+            size: 80.5mm 297mm;
+            margin: 0;
+        }
+
+        @media print {
+            html, body {
+                width: 80.5mm;
+                margin: 0;
+                padding: 0;
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-family: 'Noto Sans Arabic', 'Alexandria', sans-serif;
+                direction: rtl;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                color-adjust: exact;
+            }
+
+            body > *:not(#printArea) {
+                display: none !important;
+            }
+
+            #printArea {
+                display: block !important;
+                position: static;
+                width: 80.5mm;
+                min-height: auto;
+                padding: 3mm 6mm 4mm 2mm;
+                margin: 0 auto;
+                background: #ffffff !important;
+                color: #000000 !important;
+                direction: rtl;
+                overflow: hidden;
+                box-sizing: border-box;
+                visibility: visible !important;
+                line-height: 1.45;
+            }
+
+            #printArea * {
+                visibility: visible !important;
+                box-sizing: border-box;
+                color: #000 !important;
+            }
+
+            #printArea .rcpt-header {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 1.5mm;
+                padding-bottom: 2.5mm;
+                border-bottom: 2px solid #000;
+                margin-bottom: 2.5mm;
+                text-align: center;
+            }
+
+            #printArea .rcpt-logo {
+                width: 42mm;
+                height: 42mm;
+                object-fit: contain;
+                display: block;
+                margin: 0 auto;
+            }
+
+            #printArea .rcpt-brand {
+                text-align: center;
+                width: 100%;
+            }
+
+            #printArea .rcpt-brand-name {
+                font-size: 22px;
+                font-weight: 800;
+                color: #000;
+                margin: 0;
+                line-height: 1.1;
+                text-align: center;
+            }
+
+            #printArea .rcpt-brand-tag {
+                font-size: 11px;
+                color: #000;
+                margin: 2px 0 0 0;
+                font-weight: 600;
+                text-align: center;
+            }
+
+            #printArea .rcpt-title-bar {
+                background: #000 !important;
+                color: #fff !important;
+                text-align: center;
+                padding: 5px;
+                border-radius: 3px;
+                font-size: 12px;
+                font-weight: 800;
+                letter-spacing: 1px;
+                margin-bottom: 2.5mm;
+            }
+
+            #printArea .rcpt-title-bar * {
+                color: #fff !important;
+            }
+
+            #printArea .rcpt-section-title {
+                font-size: 11px;
+                font-weight: 800;
+                color: #000;
+                margin: 2.5mm 0 1.2mm 0;
+                padding-bottom: 0.8mm;
+                border-bottom: 1px dashed #000;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+            }
+
+            #printArea .rcpt-section-dot {
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                display: inline-block;
+                background: #000;
+            }
+
+            #printArea .rcpt-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 11px;
+                table-layout: fixed;
+                word-break: break-word;
+            }
+
+            #printArea .rcpt-info-table,
+            #printArea .rcpt-details-table {
+                border: 1px solid #000;
+                margin-bottom: 2mm;
+            }
+
+            #printArea .rcpt-info-table td,
+            #printArea .rcpt-details-table td {
+                padding: 4px 5px;
+                border: 0.5px solid #000;
+                font-size: 11px;
+                color: #000;
+                background: #fff;
+                word-break: break-word;
+                vertical-align: middle;
+            }
+
+            #printArea .rcpt-lbl {
+                color: #000;
+                font-weight: 700;
+                width: 25%;
+                background: #efefef !important;
+            }
+
+            #printArea .rcpt-val {
+                color: #000;
+                font-weight: 700;
+                width: 25%;
+            }
+
+            #printArea .rcpt-mono {
+                font-family: 'Courier New', monospace;
+                letter-spacing: 0.2px;
+                font-weight: 800;
+            }
+
+            #printArea .rcpt-row-lbl {
+                color: #000;
+                font-weight: 700;
+                width: 55%;
+                background: #efefef !important;
+            }
+
+            #printArea .rcpt-row-val {
+                color: #000;
+                font-weight: 700;
+                width: 45%;
+                text-align: left;
+                word-break: break-word;
+            }
+
+            #printArea .rcpt-total-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 2.5mm;
+                table-layout: fixed;
+            }
+
+            #printArea .rcpt-total-table td {
+                padding: 5px 6px;
+                font-size: 11px;
+                color: #000;
+                border: 1px solid #000;
+                word-break: break-word;
+            }
+
+            #printArea .rcpt-total-lbl {
+                color: #000;
+                font-weight: 700;
+                background: #efefef !important;
+                text-align: right;
+                width: 58%;
+            }
+
+            #printArea .rcpt-total-val {
+                color: #000;
+                font-weight: 800;
+                background: #efefef !important;
+                text-align: left;
+                width: 42%;
+            }
+
+            #printArea .rcpt-total-main td {
+                padding: 7px 8px;
+                font-size: 12px;
+                background: #000 !important;
+            }
+
+            #printArea .rcpt-total-lbl-main,
+            #printArea .rcpt-total-val-main {
+                background: #000 !important;
+                color: #fff !important;
+                font-weight: 800;
+                border-color: #000 !important;
+            }
+
+            #printArea .rcpt-total-lbl-main {
+                text-align: right;
+                width: 58%;
+            }
+
+            #printArea .rcpt-total-val-main {
+                text-align: left;
+                width: 42%;
+                font-size: 14px;
+            }
+
+            #printArea .rcpt-footer {
+                margin-top: 2.5mm;
+                padding: 2mm 2.5mm;
+                background: #f4f4f4 !important;
+                border: 1px dashed #000;
+            }
+
+            #printArea .rcpt-footer-row {
+                display: flex;
+                justify-content: space-between;
+                font-size: 10px;
+                padding: 1.2px 0;
+            }
+
+            #printArea .rcpt-footer-lbl {
+                color: #000;
+                font-weight: 700;
+            }
+
+            #printArea .rcpt-footer-val {
+                color: #000;
+                font-weight: 800;
+            }
+
+            #printArea .rcpt-bottom {
+                margin-top: 2.5mm;
+                text-align: center;
+                padding-top: 2mm;
+                border-top: 2px dashed #000;
+            }
+
+            #printArea .rcpt-thanks {
+                font-size: 12px;
+                font-weight: 800;
+                color: #000;
+                margin: 0 0 1mm 0;
+            }
+
+            #printArea .rcpt-note {
+                font-size: 9px;
+                color: #000;
+                margin: 0 0 1mm 0;
+                font-weight: 600;
+            }
+
+            #printArea .rcpt-site {
+                font-size: 11px;
+                color: #000;
+                font-weight: 700;
+                margin: 0;
+                direction: ltr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="relative min-h-screen">
+        <aside class="dashboard-sidebar mobile-closed" id="dashboardSidebar">
+            <div class="mb-4 px-2 mt-2">
+                <div class="flex items-center gap-3 pb-4 border-b" style="border-color: var(--border-color);">
+                    <img id="userAvatar" src="https://i.ibb.co/3mZjjp1T/548212938-1338267831079244-6599431839367735090-n.jpg" class="w-14 h-14 rounded-full border-2 shadow object-cover" alt="avatar" style="border-color: var(--color-primary);">
+                    <div class="min-w-0">
+                        <p class="font-bold text-[var(--color-white)] truncate">محمد عبدالله</p>
+                        <p class="text-xs text-[var(--color-muted)]">سائق توصيل معتمد</p>
+                        <div class="flex items-center gap-1 mt-1">
+                            <i class="las la-star" style="color:#FFB800; font-size:0.85rem;"></i>
+                            <span class="text-xs font-bold text-[var(--color-white)]">4.9</span>
+                            <span class="text-xs text-[var(--color-muted)]">• 1,248 توصيلة</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <nav class="flex-1">
+                <div class="sidebar-section-title">القائمة الرئيسية</div>
+                <a href="#" class="sidebar-item" data-section="home"><i class="las la-home"></i><span>الرئيسية</span></a>
+                <a href="#" class="sidebar-item" data-section="available"><i class="las la-box-open"></i><span>الطلبات المتاحة</span><span class="mr-auto text-[10px] font-bold px-2 py-0.5 rounded-full" style="background: rgba(255,90,0,0.12); color: #FF5A00;">6</span></a>
+                <a href="#" class="sidebar-item" data-section="active"><i class="las la-motorcycle"></i><span>طلباتي النشطة</span><span class="mr-auto text-[10px] font-bold px-2 py-0.5 rounded-full" style="background: rgba(0,177,79,0.15); color: #00B14F;">2</span></a>
+                <a href="#" class="sidebar-item" data-section="history"><i class="las la-history"></i><span>سجل التوصيلات</span></a>
+                <a href="#" class="sidebar-item active" data-section="earnings"><i class="las la-wallet"></i><span>الأرباح والمحفظة</span></a>
+                <div class="sidebar-section-title">الحساب</div>
+                <a href="#" class="sidebar-item" data-section="profile"><i class="las la-user-circle"></i><span>الملف الشخصي</span></a>
+                <a href="#" class="sidebar-item" data-section="vehicle"><i class="las la-motorcycle"></i><span>بيانات المركبة</span></a>
+                <a href="#" class="sidebar-item" data-section="documents"><i class="las la-id-card"></i><span>المستندات</span></a>
+                <a href="#" class="sidebar-item" data-section="settings"><i class="las la-cog"></i><span>الإعدادات</span></a>
+                <div class="sidebar-section-title">الدعم</div>
+                <a href="#" class="sidebar-item" data-section="help"><i class="las la-headset"></i><span>مركز المساعدة</span></a>
+                <a href="#" class="sidebar-item" data-section="about"><i class="las la-info-circle"></i><span>من نحن</span></a>
+                <div class="mt-6 pt-4 border-t" style="border-color: var(--border-color);">
+                    <a href="#" id="logoutBtn" class="sidebar-item" style="color: #EF4444;"><i class="las la-sign-out-alt"></i><span>تسجيل الخروج</span></a>
+                </div>
+            </nav>
+            <div class="mt-4 text-center text-xs text-[var(--color-muted)]">
+                <p>© 2025</p>
+                <p class="mt-1 opacity-70">الإصدار 2.1.0</p>
+            </div>
+        </aside>
+
+        <main class="lg:mr-[280px] transition-all">
+            <header id="mainHeader">
+                <div class="flex items-center gap-2 flex-1 min-w-0">
+                    <button class="menu-toggle lg:hidden" id="menuToggleBtn"><i class="las la-bars"></i></button>
+                    <div class="status-pill online" id="headerStatusPill">
+                        <span class="dot"></span>
+                        <span id="headerStatusText">متصل</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <button class="notification-btn" id="notificationBtn">
+                        <i class="las la-bell"></i>
+                        <span class="notification-dot"></span>
+                    </button>
+                    <img id="headerAvatar" src="https://i.ibb.co/3mZjjp1T/548212938-1338267831079244-6599431839367735090-n.jpg" class="header-avatar" alt="avatar">
+                </div>
+            </header>
+
+            <div class="container mx-auto px-4 py-6 max-w-3xl">
+
+                <div class="page-header mb-5" style="background: linear-gradient(135deg, #1A1A1A, #333333); border-radius: 20px; padding: 22px; color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25); overflow: hidden; position: relative;">
+                    <div>
+                        <h1 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 6px;">المحفظة والأرباح</h1>
+                        <p style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.8);">تابع أرباحك وحركات محفظتك</p>
+                    </div>
+                    <div style="font-size: 4rem; flex-shrink: 0; opacity: 0.85; color: #FF5A00;"><i class="las la-wallet"></i></div>
+                </div>
+
+                <div class="commission-note">
+                    <div class="note-icon"><i class="las la-info-circle"></i></div>
+                    <div>
+                        <strong>طريقة حساب الأرباح</strong>
+                        <p>في طلبات الدفع عند الاستلام (كاش) يتم تحصيل المبلغ كامل (قيمة الطلب + أجرة التوصيل) من العميل، ثم تُخصم قيمة الطلب لصالح المطعم، وتبقى أجرة التوصيل ناقص عمولة التطبيق 10% كربح صافي لك. في طلبات الدفع الإلكتروني تحصل على أجرة التوصيل ناقص 10% فقط.</p>
+                    </div>
+                </div>
+
+                <div class="balance-card">
+                    <div class="balance-top">
+                        <div>
+                            <p class="balance-lbl">الرصيد المتاح للسحب</p>
+                            <p class="balance-amount">342.50 <span>ج.م</span></p>
+                        </div>
+                        <div class="balance-ic"><i class="las la-wallet"></i></div>
+                    </div>
+                    <div class="balance-split">
+                        <div class="balance-mini">
+                            <p class="mini-lbl">نقدية مع السائق</p>
+                            <p class="mini-val" id="cashInHandMini">228.50 ج.م</p>
+                        </div>
+                        <div class="balance-mini">
+                            <p class="mini-lbl">إجمالي الأرباح</p>
+                            <p class="mini-val">12,450 ج.م</p>
+                        </div>
+                    </div>
+                    <div class="balance-actions">
+                        <button class="bal-btn primary" id="withdrawBtn"><i class="las la-money-bill"></i> سحب الرصيد</button>
+                        <button class="bal-btn ghost" id="statementBtn"><i class="las la-file-alt"></i> كشف حساب</button>
+                    </div>
+                </div>
+
+                <div class="inline-panel" id="statementPanel">
+                    <div class="inline-panel-inner">
+                        <div class="inline-panel-head">
+                            <div class="inline-panel-title">
+                                <div class="title-ic"><i class="las la-file-alt"></i></div>
+                                <div class="title-text">
+                                    <strong>كشف حساب مختصر</strong>
+                                    <small>ملخص جميع الحركات المالية</small>
+                                </div>
+                            </div>
+                            <button class="inline-panel-close" data-close="statementPanel"><i class="las la-times"></i></button>
+                        </div>
+                        <div class="statement-grid" id="statementGrid"></div>
+                        <div class="statement-total">
+                            <span class="lbl"><i class="las la-wallet"></i> الرصيد المتاح حالياً</span>
+                            <span class="val" id="statementCurrentBalance">342.50 ج.م</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="inline-panel" id="detailsPanel">
+                    <div class="inline-panel-inner">
+                        <div class="inline-panel-head">
+                            <div class="inline-panel-title">
+                                <div class="title-ic"><i class="las la-receipt"></i></div>
+                                <div class="title-text">
+                                    <strong id="detailsPanelTitle">تفاصيل العملية</strong>
+                                    <small id="detailsPanelSub">بيانات كاملة عن الحركة</small>
+                                </div>
+                            </div>
+                            <button class="inline-panel-close" data-close="detailsPanel"><i class="las la-times"></i></button>
+                        </div>
+                        <div id="detailsPanelContent"></div>
+                    </div>
+                </div>
+
+                <div class="today-card">
+                    <div class="today-head">
+                        <div>
+                            <p class="today-lbl"><i class="las la-coins"></i> مكسب اليوم</p>
+                            <p class="today-amount" id="teAmountBig">56.95 <span>ج.م</span></p>
+                        </div>
+                        <div class="today-ic"><i class="las la-hand-holding-usd"></i></div>
+                    </div>
+                    <div class="today-breakdown">
+                        <div class="today-row">
+                            <span class="today-row-lbl"><i class="las la-money-bill-wave"></i> إجمالي التحصيل النقدي</span>
+                            <span class="today-row-val" id="teCashCollected">87.00 ج.م</span>
+                        </div>
+                        <div class="today-row">
+                            <span class="today-row-lbl"><i class="las la-utensils"></i> قيمة الطلبات (للمطاعم)</span>
+                            <span class="today-row-val minus" id="teOrderValue">-67.00 ج.م</span>
+                        </div>
+                        <div class="today-row">
+                            <span class="today-row-lbl"><i class="las la-motorcycle"></i> إجمالي أجرة التوصيل</span>
+                            <span class="today-row-val" id="teGross">35.50 ج.م</span>
+                        </div>
+                        <div class="today-row">
+                            <span class="today-row-lbl"><i class="las la-percent"></i> عمولة التطبيق (10%)</span>
+                            <span class="today-row-val minus" id="teCommission">-3.55 ج.م</span>
+                        </div>
+                        <div class="today-row">
+                            <span class="today-row-lbl"><i class="las la-check-circle"></i> صافي التوصيلات</span>
+                            <span class="today-row-val" id="teNetDelivery">31.95 ج.م</span>
+                        </div>
+                        <div class="today-row">
+                            <span class="today-row-lbl"><i class="las la-gift"></i> المكافآت</span>
+                            <span class="today-row-val plus" id="teBonus">+25.00 ج.م</span>
+                        </div>
+                    </div>
+                    <div class="today-total">
+                        <span>إجمالي مكسب اليوم</span>
+                        <span id="teTotal">56.95 ج.م</span>
+                    </div>
+                    <button class="today-print-btn" id="printDailySummaryBtn">
+                        <i class="las la-print"></i> طباعة ملخص اليوم
+                    </button>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-ic" style="background: rgba(0, 177, 79, 0.12); color: #00B14F;"><i class="las la-calendar-alt"></i></div>
+                        <div class="stat-lbl">أرباح اليوم</div>
+                        <div class="stat-val">56.95 ج.م</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-ic" style="background: rgba(255, 90, 0, 0.12); color: #FF5A00;"><i class="las la-chart-line"></i></div>
+                        <div class="stat-lbl">أرباح الأسبوع</div>
+                        <div class="stat-val">892 ج.م</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-ic" style="background: rgba(59, 130, 246, 0.12); color: #3B82F6;"><i class="las la-chart-bar"></i></div>
+                        <div class="stat-lbl">أرباح الشهر</div>
+                        <div class="stat-val">3,450 ج.م</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-ic" style="background: rgba(255, 184, 0, 0.15); color: #B37F00;"><i class="las la-percent"></i></div>
+                        <div class="stat-lbl">عمولة التطبيق (10%)</div>
+                        <div class="stat-val" id="statCommission">16.80 ج.م</div>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-head">
+                        <h3><i class="las la-chart-bar"></i> أرباح آخر 7 أيام</h3>
+                        <span class="chart-total"><i class="las la-wallet"></i> 892.00 ج.م</span>
+                    </div>
+                    <div class="chart-bars" id="chartBars"></div>
+                    <div class="chart-foot">
+                        <div class="chart-foot-item">
+                            <span class="chart-foot-lbl"><i class="las la-arrow-up"></i> أعلى يوم</span>
+                            <span class="chart-foot-val green" id="chartBestDay">175 ج.م</span>
+                        </div>
+                        <div class="chart-foot-item">
+                            <span class="chart-foot-lbl"><i class="las la-calculator"></i> المتوسط اليومي</span>
+                            <span class="chart-foot-val blue" id="chartAvgDay">127.43 ج.م</span>
+                        </div>
+                        <div class="chart-foot-item">
+                            <span class="chart-foot-lbl"><i class="las la-arrow-down"></i> أقل يوم</span>
+                            <span class="chart-foot-val orange" id="chartWorstDay">80 ج.م</span>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="section-title"><i class="las la-exchange-alt"></i> حركات المحفظة</h2>
+
+                <div class="search-box">
+                    <i class="las la-search"></i>
+                    <input type="text" id="searchInput" placeholder="ابحث برقم العملية أو الوصف...">
+                </div>
+
+                <div class="filters-bar hide-scrollbar" id="filtersBar">
+                    <div class="filter-chip active" data-filter="all">الكل <span id="countAll">(13)</span></div>
+                    <div class="filter-chip" data-filter="today">اليوم</div>
+                    <div class="filter-chip" data-filter="week">هذا الأسبوع</div>
+                    <div class="filter-chip" data-filter="month">هذا الشهر</div>
+                    <div class="filter-chip" data-filter="delivery">أرباح التوصيل</div>
+                    <div class="filter-chip" data-filter="cash">الدفع عند الاستلام</div>
+                    <div class="filter-chip" data-filter="withdrawal">السحب</div>
+                </div>
+
+                <div class="trx-list" id="trxList"></div>
+
+            </div>
+        </main>
+    </div>
+
+    <div class="bottom-mobile-nav" id="bottomMobileNav">
+        <a href="#" class="bottom-nav-item" data-tab="home"><i class="las la-home"></i><span>الرئيسية</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="available"><i class="las la-box-open"></i><span>المتاحة</span></a>
+        <a href="#" class="bottom-nav-item bottom-nav-item-center" data-tab="active"><i class="las la-motorcycle"></i><span>النشطة</span></a>
+        <a href="#" class="bottom-nav-item active" data-tab="earnings"><i class="las la-wallet"></i><span>المحفظة</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="profile"><i class="las la-user"></i><span>حسابي</span></a>
+    </div>
+
+    <div id="printArea"></div>
+
+    <script>
+        (function () {
+            const sidebar = document.getElementById('dashboardSidebar');
+            const headerAvatar = document.getElementById('headerAvatar');
+            const menuToggleBtn = document.getElementById('menuToggleBtn');
+            const notificationBtn = document.getElementById('notificationBtn');
+            const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
+            const sidebarItems = document.querySelectorAll('.sidebar-item[data-section]');
+            const headerStatusPill = document.getElementById('headerStatusPill');
+            const headerStatusText = document.getElementById('headerStatusText');
+            const trxList = document.getElementById('trxList');
+            const filtersBar = document.getElementById('filtersBar');
+            const countAll = document.getElementById('countAll');
+            const searchInput = document.getElementById('searchInput');
+            const chartBars = document.getElementById('chartBars');
+            const withdrawBtn = document.getElementById('withdrawBtn');
+            const statementBtn = document.getElementById('statementBtn');
+            const statCommission = document.getElementById('statCommission');
+            const cashInHandMini = document.getElementById('cashInHandMini');
+            const printArea = document.getElementById('printArea');
+            const printDailySummaryBtn = document.getElementById('printDailySummaryBtn');
+            const statementPanel = document.getElementById('statementPanel');
+            const detailsPanel = document.getElementById('detailsPanel');
+            const statementGrid = document.getElementById('statementGrid');
+            const statementCurrentBalance = document.getElementById('statementCurrentBalance');
+            const detailsPanelTitle = document.getElementById('detailsPanelTitle');
+            const detailsPanelSub = document.getElementById('detailsPanelSub');
+            const detailsPanelContent = document.getElementById('detailsPanelContent');
+
+            const COMMISSION_RATE = 0.10;
+            const availableBalance = 342.50;
+            const LOGO_URL = 'https://i.ibb.co/mrRhHsQh/1788099660805-removebg-preview.png';
+
+            let isOnline = true;
+            let activeFilter = 'all';
+            let searchQuery = '';
+            let openPanelId = null;
+
+            const weeklyEarnings = [
+                { day: 'السبت', value: 120 },
+                { day: 'الأحد', value: 95 },
+                { day: 'الاثنين', value: 160 },
+                { day: 'الثلاثاء', value: 80 },
+                { day: 'الأربعاء', value: 145 },
+                { day: 'الخميس', value: 175 },
+                { day: 'الجمعة', value: 117 }
+            ];
+
+            const typeConfig = {
+                delivery: { icon: 'la-motorcycle', color: '#00B14F', bg: 'rgba(0,177,79,0.12)', label: 'أرباح توصيل' },
+                bonus: { icon: 'la-gift', color: '#FFB800', bg: 'rgba(255,184,0,0.16)', label: 'مكافأة' },
+                deposit: { icon: 'la-arrow-down', color: '#3B82F6', bg: 'rgba(59,130,246,0.12)', label: 'إيداع' },
+                withdrawal: { icon: 'la-arrow-up', color: '#EF4444', bg: 'rgba(239,68,68,0.12)', label: 'سحب' },
+                penalty: { icon: 'la-exclamation-circle', color: '#EF4444', bg: 'rgba(239,68,68,0.12)', label: 'خصم' }
+            };
+
+            const transactions = [
+                { id: 'TRX-2048', type: 'delivery', title: 'أرباح توصيل', desc: 'ابن حميدو ← أحمد محمد', ref: 'ORD-1023', paymentMethod: 'cash', orderTotal: 67.00, deliveryFee: 20.00, commission: 2.00, amount: 18.00, day: 'اليوم', time: 'منذ ساعتين', daysAgo: 0, status: 'مكتمل' },
+                { id: 'TRX-2047', type: 'delivery', title: 'أرباح توصيل', desc: 'مطعم الشرق ← سارة علي', ref: 'ORD-1022', paymentMethod: 'card', deliveryFee: 15.50, commission: 1.55, amount: 13.95, day: 'اليوم', time: 'منذ 4 ساعات', daysAgo: 0, status: 'مكتمل' },
+                { id: 'TRX-2046', type: 'bonus', title: 'مكافأة إنجاز', desc: 'إتمام 10 توصيلات اليوم', ref: 'BONUS-112', amount: 25.00, day: 'اليوم', time: 'منذ 5 ساعات', daysAgo: 0, status: 'مكتمل' },
+                { id: 'TRX-2045', type: 'delivery', title: 'أرباح توصيل', desc: 'بيتزا هت ← محمود حسن', ref: 'ORD-1021', paymentMethod: 'cash', orderTotal: 108.00, deliveryFee: 25.00, commission: 2.50, amount: 22.50, day: 'أمس', time: 'منذ 22 ساعة', daysAgo: 1, status: 'مكتمل' },
+                { id: 'TRX-2044', type: 'delivery', title: 'أرباح توصيل', desc: 'شاورما الشام ← ليلى أحمد', ref: 'ORD-1020', paymentMethod: 'card', deliveryFee: 13.50, commission: 1.35, amount: 12.15, day: 'أمس', time: 'منذ 26 ساعة', daysAgo: 1, status: 'مكتمل' },
+                { id: 'TRX-2043', type: 'withdrawal', title: 'سحب رصيد', desc: 'تحويل إلى فودافون كاش', ref: 'WD-5501', amount: -250.00, day: 'أمس', time: 'منذ 30 ساعة', daysAgo: 1, status: 'قيد المعالجة' },
+                { id: 'TRX-2042', type: 'delivery', title: 'أرباح توصيل', desc: 'كنتاكي ← خالد إبراهيم', ref: 'ORD-1019', paymentMethod: 'cash', orderTotal: 150.00, deliveryFee: 28.00, commission: 2.80, amount: 25.20, day: 'منذ 3 أيام', time: 'مساءً', daysAgo: 3, status: 'مكتمل' },
+                { id: 'TRX-2041', type: 'penalty', title: 'خصم تأخير', desc: 'تأخر في تسليم الطلب', ref: 'PEN-220', amount: -10.00, day: 'منذ 4 أيام', time: 'ظهراً', daysAgo: 4, status: 'مكتمل' },
+                { id: 'TRX-2040', type: 'delivery', title: 'أرباح توصيل', desc: 'ماكدونالدز ← نورهان سامي', ref: 'ORD-1018', paymentMethod: 'card', deliveryFee: 11.00, commission: 1.10, amount: 9.90, day: 'منذ 5 أيام', time: 'مساءً', daysAgo: 5, status: 'مكتمل' },
+                { id: 'TRX-2039', type: 'deposit', title: 'تسوية أسبوعية', desc: 'إيداع أرباح الأسبوع الماضي', ref: 'DEP-771', amount: 320.00, day: 'منذ 8 أيام', time: 'صباحاً', daysAgo: 8, status: 'مكتمل' },
+                { id: 'TRX-2038', type: 'delivery', title: 'أرباح توصيل', desc: 'دجاج تكا ← منى عبد الرحمن', ref: 'ORD-1017', paymentMethod: 'cash', orderTotal: 88.00, deliveryFee: 22.00, commission: 2.20, amount: 19.80, day: 'منذ 14 يوم', time: 'مساءً', daysAgo: 14, status: 'مكتمل' },
+                { id: 'TRX-2037', type: 'bonus', title: 'مكافأة تقييم', desc: 'الحفاظ على تقييم 4.9', ref: 'BONUS-108', amount: 50.00, day: 'منذ 20 يوم', time: 'ظهراً', daysAgo: 20, status: 'مكتمل' },
+                { id: 'TRX-2036', type: 'delivery', title: 'أرباح توصيل', desc: 'مطعم البدوي ← عمر فاروق', ref: 'ORD-1016', paymentMethod: 'cash', orderTotal: 190.00, deliveryFee: 33.00, commission: 3.30, amount: 29.70, day: 'منذ 25 يوم', time: 'مساءً', daysAgo: 25, status: 'مكتمل' }
+            ];
+
+            function openSidebar() {
+                sidebar.classList.add('mobile-open');
+                sidebar.classList.remove('mobile-closed');
+            }
+
+            function closeSidebar() {
+                sidebar.classList.remove('mobile-open');
+                sidebar.classList.add('mobile-closed');
+            }
+
+            if (window.innerWidth < 1025) {
+                sidebar.classList.add('mobile-closed');
+            }
+
+            window.addEventListener('resize', function () {
+                if (window.innerWidth >= 1025) {
+                    sidebar.classList.remove('mobile-open', 'mobile-closed');
+                } else {
+                    if (!sidebar.classList.contains('mobile-open')) {
+                        sidebar.classList.add('mobile-closed');
+                    }
+                }
+            });
+
+            menuToggleBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (sidebar.classList.contains('mobile-open')) closeSidebar();
+                else openSidebar();
+            });
+
+            headerAvatar.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (window.innerWidth < 1025) {
+                    if (sidebar.classList.contains('mobile-open')) closeSidebar();
+                    else openSidebar();
+                } else {
+                    Swal.fire({
+                        title: 'الملف الشخصي',
+                        html: '<div style="text-align:right;font-size:0.9rem;">' +
+                            '<p style="margin-bottom:8px;"><b>الاسم:</b> محمد عبدالله</p>' +
+                            '<p style="margin-bottom:8px;"><b>الوظيفة:</b> سائق توصيل معتمد</p>' +
+                            '<p style="margin-bottom:8px;"><b>التقييم:</b> 4.9 ⭐</p>' +
+                            '<p style="margin-bottom:8px;"><b>المركبة:</b> دراجة نارية - 5421 ABC</p>' +
+                            '<p style="margin-bottom:8px;"><b>التوصيلات:</b> 1,248 توصيلة</p>' +
+                            '</div>',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'حسناً'
+                    });
+                }
+            });
+
+            document.addEventListener('click', function (e) {
+                if (window.innerWidth < 1025 && sidebar.classList.contains('mobile-open')) {
+                    if (!sidebar.contains(e.target) && e.target !== menuToggleBtn && !menuToggleBtn.contains(e.target) && e.target !== headerAvatar && !headerAvatar.contains(e.target)) {
+                        closeSidebar();
+                    }
+                }
+            });
+
+            sidebarItems.forEach(function (item) {
+                item.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    sidebarItems.forEach(function (i) { i.classList.remove('active'); });
+                    this.classList.add('active');
+                    const section = this.getAttribute('data-section');
+                    handleSectionChange(section);
+                    if (window.innerWidth < 1025) closeSidebar();
+                });
+            });
+
+            document.getElementById('logoutBtn').addEventListener('click', function (e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'تسجيل الخروج',
+                    text: 'هل أنت متأكد من تسجيل الخروج من حساب السائق؟',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#FF5A00',
+                    cancelButtonColor: '#717171',
+                    confirmButtonText: 'نعم، خروج',
+                    cancelButtonText: 'إلغاء'
+                }).then(function (result) {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'تم بنجاح',
+                            text: 'تم تسجيل الخروج بنجاح',
+                            icon: 'success',
+                            confirmButtonColor: '#FF5A00'
+                        });
+                    }
+                });
+            });
+
+            bottomNavItems.forEach(function (item) {
+                item.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    bottomNavItems.forEach(function (i) { i.classList.remove('active'); });
+                    this.classList.add('active');
+                    const tab = this.getAttribute('data-tab');
+                    handleSectionChange(tab);
+                });
+            });
+
+            notificationBtn.addEventListener('click', function () {
+                Swal.fire({
+                    title: 'الإشعارات',
+                    html: '<div style="text-align:right;font-size:0.85rem;">' +
+                        '<p style="margin-bottom:8px; padding:8px; border-radius:8px; background:#FFF3E8;">💰 تم إضافة 18.00 ج.م إلى محفظتك (صافي أرباح توصيل كاش بعد عمولة 10%)</p>' +
+                        '<p style="margin-bottom:8px; padding:8px; border-radius:8px; background:#FFF3E8;">✅ تم تنفيذ طلب السحب بنجاح</p>' +
+                        '<p style="padding:8px; border-radius:8px; background:#FFF3E8;">⭐ تقييم جديد 5 نجوم من عميل</p>' +
+                        '</div>',
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00',
+                    confirmButtonText: 'حسناً'
+                });
+            });
+
+            function handleSectionChange(section) {
+                if (section === 'earnings' || section === 'history') {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else if (section === 'home') {
+                    Swal.fire({
+                        title: 'الرئيسية',
+                        text: 'جاري الانتقال للصفحة الرئيسية',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00'
+                    });
+                } else if (section === 'available') {
+                    Swal.fire({
+                        title: 'الطلبات المتاحة',
+                        text: 'جاري الانتقال للطلبات المتاحة',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00'
+                    });
+                } else if (section === 'active') {
+                    Swal.fire({
+                        title: 'طلباتي النشطة',
+                        text: 'جاري الانتقال لطلباتك النشطة',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00'
+                    });
+                } else if (section === 'profile') {
+                    Swal.fire({
+                        title: 'الملف الشخصي',
+                        html: '<div style="text-align:right;font-size:0.9rem;">' +
+                            '<p style="margin-bottom:8px;"><b>الاسم:</b> محمد عبدالله</p>' +
+                            '<p style="margin-bottom:8px;"><b>الهاتف:</b> +20 123 456 7890</p>' +
+                            '<p style="margin-bottom:8px;"><b>البريد:</b> driver@shadowza.space</p>' +
+                            '<p style="margin-bottom:8px;"><b>المركبة:</b> دراجة نارية</p>' +
+                            '<p style="margin-bottom:8px;"><b>رقم اللوحة:</b> 5421 ABC</p>' +
+                            '<p style="margin-bottom:8px;"><b>التقييم:</b> 4.9 ⭐</p>' +
+                            '</div>',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'حسناً'
+                    });
+                } else {
+                    const labels = {
+                        vehicle: 'بيانات المركبة',
+                        documents: 'المستندات',
+                        settings: 'الإعدادات',
+                        help: 'مركز المساعدة',
+                        about: 'من نحن'
+                    };
+                    Swal.fire({
+                        title: labels[section] || 'قسم',
+                        text: 'هذا القسم قيد التطوير',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'حسناً'
+                    });
+                }
+            }
+
+            function renderChart() {
+                let max = 0;
+                let sum = 0;
+                let best = weeklyEarnings[0];
+                let worst = weeklyEarnings[0];
+                const lastIndex = weeklyEarnings.length - 1;
+
+                weeklyEarnings.forEach(function (d, idx) {
+                    if (d.value > max) max = d.value;
+                    sum += d.value;
+                    if (d.value > best.value) best = d;
+                    if (d.value < worst.value) worst = d;
+                });
+
+                const avg = sum / weeklyEarnings.length;
+
+                let html = '';
+                weeklyEarnings.forEach(function (d, idx) {
+                    const h = max > 0 ? Math.round((d.value / max) * 100) : 0;
+                    const isToday = idx === lastIndex;
+                    html +=
+                        '<div class="chart-col' + (isToday ? ' today' : '') + '">' +
+                            '<span class="chart-val">' + d.value + '</span>' +
+                            '<div class="chart-track">' +
+                                '<div class="chart-bar' + (isToday ? ' today-bar' : '') + '" style="height:' + h + '%"></div>' +
+                            '</div>' +
+                            '<span class="chart-day">' + d.day + '</span>' +
+                        '</div>';
+                });
+                chartBars.innerHTML = html;
+
+                document.getElementById('chartBestDay').textContent = best.value + ' ج.م';
+                document.getElementById('chartWorstDay').textContent = worst.value + ' ج.م';
+                document.getElementById('chartAvgDay').textContent = avg.toFixed(2) + ' ج.م';
+            }
+
+            function renderCashInHand() {
+                let total = 0;
+                transactions.forEach(function (t) {
+                    if (t.type === 'delivery' && t.paymentMethod === 'cash' && t.daysAgo <= 2) {
+                        total += t.orderTotal;
+                    }
+                });
+                cashInHandMini.textContent = total.toFixed(2) + ' ج.م';
+            }
+
+            function getTodayStats() {
+                const todayTrx = transactions.filter(function (t) { return t.daysAgo === 0; });
+                const deliveries = todayTrx.filter(function (t) { return t.type === 'delivery'; });
+                const bonuses = todayTrx.filter(function (t) { return t.type === 'bonus'; });
+
+                let cashCollected = 0;
+                let orderValueCash = 0;
+                let grossFee = 0;
+                let commissionTotal = 0;
+                let netDelivery = 0;
+                let cashCount = 0;
+                let cardCount = 0;
+
+                deliveries.forEach(function (t) {
+                    const fee = t.deliveryFee || 0;
+                    grossFee += fee;
+                    commissionTotal += t.commission || 0;
+                    netDelivery += t.amount;
+                    if (t.paymentMethod === 'cash') {
+                        cashCollected += (t.orderTotal + fee);
+                        orderValueCash += t.orderTotal;
+                        cashCount++;
+                    } else {
+                        cardCount++;
+                    }
+                });
+
+                let bonusTotal = 0;
+                let bonusCount = 0;
+                bonuses.forEach(function (t) { bonusTotal += t.amount; bonusCount++; });
+
+                return {
+                    deliveries: deliveries,
+                    bonuses: bonuses,
+                    cashCollected: cashCollected,
+                    orderValueCash: orderValueCash,
+                    grossFee: grossFee,
+                    commissionTotal: commissionTotal,
+                    netDelivery: netDelivery,
+                    bonusTotal: bonusTotal,
+                    bonusCount: bonusCount,
+                    cashCount: cashCount,
+                    cardCount: cardCount,
+                    totalToday: netDelivery + bonusTotal,
+                    deliveriesCount: deliveries.length
+                };
+            }
+
+            function renderTodayEarnings() {
+                const s = getTodayStats();
+
+                document.getElementById('teCashCollected').textContent = s.cashCollected.toFixed(2) + ' ج.م';
+                document.getElementById('teOrderValue').textContent = '-' + s.orderValueCash.toFixed(2) + ' ج.م';
+                document.getElementById('teGross').textContent = s.grossFee.toFixed(2) + ' ج.م';
+                document.getElementById('teCommission').textContent = '-' + s.commissionTotal.toFixed(2) + ' ج.م';
+                document.getElementById('teNetDelivery').textContent = s.netDelivery.toFixed(2) + ' ج.م';
+                document.getElementById('teBonus').textContent = '+' + s.bonusTotal.toFixed(2) + ' ج.م';
+                document.getElementById('teTotal').textContent = s.totalToday.toFixed(2) + ' ج.م';
+                document.getElementById('teAmountBig').innerHTML = s.totalToday.toFixed(2) + ' <span>ج.م</span>';
+            }
+
+            function renderTotalCommission() {
+                let total = 0;
+                transactions.forEach(function (t) {
+                    if (t.type === 'delivery' && t.commission) {
+                        total += t.commission;
+                    }
+                });
+                statCommission.textContent = total.toFixed(2) + ' ج.م';
+            }
+
+            function getFilteredTransactions() {
+                let list = transactions.slice();
+                if (activeFilter === 'today') {
+                    list = list.filter(function (t) { return t.daysAgo === 0; });
+                } else if (activeFilter === 'week') {
+                    list = list.filter(function (t) { return t.daysAgo <= 6; });
+                } else if (activeFilter === 'month') {
+                    list = list.filter(function (t) { return t.daysAgo <= 29; });
+                } else if (activeFilter === 'delivery') {
+                    list = list.filter(function (t) { return t.type === 'delivery'; });
+                } else if (activeFilter === 'cash') {
+                    list = list.filter(function (t) { return t.type === 'delivery' && t.paymentMethod === 'cash'; });
+                } else if (activeFilter === 'withdrawal') {
+                    list = list.filter(function (t) { return t.type === 'withdrawal'; });
+                }
+                if (searchQuery.trim()) {
+                    const q = searchQuery.trim().toLowerCase();
+                    list = list.filter(function (t) {
+                        return t.id.toLowerCase().indexOf(q) !== -1 ||
+                            t.title.toLowerCase().indexOf(q) !== -1 ||
+                            t.desc.toLowerCase().indexOf(q) !== -1 ||
+                            t.ref.toLowerCase().indexOf(q) !== -1;
+                    });
+                }
+                return list;
+            }
+
+            function renderTransactions() {
+                const list = getFilteredTransactions();
+                if (list.length === 0) {
+                    trxList.innerHTML =
+                        '<div class="empty-state">' +
+                            '<i class="las la-inbox"></i>' +
+                            '<div class="empty-title">لا توجد حركات</div>' +
+                            '<div class="empty-text">جرّب تغيير الفلتر أو البحث</div>' +
+                        '</div>';
+                    return;
+                }
+
+                let html = '';
+                list.forEach(function (t) {
+                    const cfg = typeConfig[t.type] || typeConfig.delivery;
+                    const isPlus = t.amount > 0;
+                    const amountStr = Math.abs(t.amount).toFixed(2);
+
+                    let amountLabel = 'صافي ربحك';
+                    if (t.type === 'withdrawal') amountLabel = 'مبلغ السحب';
+                    else if (t.type === 'bonus') amountLabel = 'المكافأة';
+                    else if (t.type === 'penalty') amountLabel = 'الخصم';
+                    else if (t.type === 'deposit') amountLabel = 'الإيداع';
+
+                    let pmBadge = '';
+                    if (t.type === 'delivery') {
+                        if (t.paymentMethod === 'cash') {
+                            pmBadge = '<span class="pm-badge cash"><i class="las la-money-bill-wave"></i> كاش</span>';
+                        } else {
+                            pmBadge = '<span class="pm-badge card"><i class="las la-credit-card"></i> إلكتروني</span>';
+                        }
+                    }
+
+                    let statusBadge = '';
+                    if (t.status === 'قيد المعالجة') {
+                        statusBadge = '<span class="status-badge pending"><i class="las la-hourglass-half"></i> ' + t.status + '</span>';
+                    } else {
+                        statusBadge = '<span class="status-badge done"><i class="las la-check-circle"></i> ' + t.status + '</span>';
+                    }
+
+                    let breakdownHtml = '';
+                    if (t.type === 'delivery') {
+                        if (t.paymentMethod === 'cash') {
+                            const collected = t.orderTotal + t.deliveryFee;
+                            breakdownHtml =
+                                '<div class="trx-breakdown-new">' +
+                                    '<div class="trx-bd-row">' +
+                                        '<span class="lbl"><i class="las la-hand-holding-usd"></i> المحصل من العميل (كاش)</span>' +
+                                        '<span class="val blue">' + collected.toFixed(2) + ' ج.م</span>' +
+                                    '</div>' +
+                                    '<div class="trx-bd-row">' +
+                                        '<span class="lbl"><i class="las la-utensils"></i> قيمة الطلب (للمطعم)</span>' +
+                                        '<span class="val red">-' + t.orderTotal.toFixed(2) + ' ج.م</span>' +
+                                    '</div>' +
+                                    '<div class="trx-bd-row">' +
+                                        '<span class="lbl"><i class="las la-percent"></i> عمولة التطبيق (10%)</span>' +
+                                        '<span class="val red">-' + t.commission.toFixed(2) + ' ج.م</span>' +
+                                    '</div>' +
+                                    '<div class="trx-bd-final">' +
+                                        '<span class="lbl"><i class="las la-check-circle"></i> صافي ربحك</span>' +
+                                        '<span class="val">' + t.amount.toFixed(2) + ' ج.م</span>' +
+                                    '</div>' +
+                                '</div>';
+                        } else {
+                            breakdownHtml =
+                                '<div class="trx-breakdown-new">' +
+                                    '<div class="trx-bd-row">' +
+                                        '<span class="lbl"><i class="las la-motorcycle"></i> أجرة التوصيل</span>' +
+                                        '<span class="val">' + t.deliveryFee.toFixed(2) + ' ج.م</span>' +
+                                    '</div>' +
+                                    '<div class="trx-bd-row">' +
+                                        '<span class="lbl"><i class="las la-percent"></i> عمولة التطبيق (10%)</span>' +
+                                        '<span class="val red">-' + t.commission.toFixed(2) + ' ج.م</span>' +
+                                    '</div>' +
+                                    '<div class="trx-bd-final">' +
+                                        '<span class="lbl"><i class="las la-check-circle"></i> صافي ربحك</span>' +
+                                        '<span class="val">' + t.amount.toFixed(2) + ' ج.م</span>' +
+                                    '</div>' +
+                                '</div>';
+                        }
+                    }
+
+                    html +=
+                        '<div class="trx-item">' +
+                            '<div class="trx-stripe ' + (isPlus ? 'plus' : 'minus') + '"></div>' +
+                            '<div class="trx-top" data-trx="' + t.id + '">' +
+                                '<div class="trx-ic" style="background:' + cfg.bg + '; color:' + cfg.color + ';">' +
+                                    '<i class="las ' + cfg.icon + '"></i>' +
+                                '</div>' +
+                                '<div class="trx-main">' +
+                                    '<div class="trx-title-line">' +
+                                        '<span class="trx-title">' + t.title + '</span>' +
+                                    '</div>' +
+                                    '<div class="trx-badges">' +
+                                        pmBadge +
+                                        statusBadge +
+                                    '</div>' +
+                                '</div>' +
+                                '<div class="trx-right">' +
+                                    '<div class="trx-amt ' + (isPlus ? 'plus' : 'minus') + '">' +
+                                        (isPlus ? '+' : '-') + amountStr + ' ج.م' +
+                                    '</div>' +
+                                    '<span class="trx-amt-lbl">' + amountLabel + '</span>' +
+                                    '<span class="trx-time"><i class="las la-clock"></i> ' + t.time + '</span>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="trx-desc-line">' +
+                                '<i class="las la-map-marker-alt"></i>' + t.desc +
+                            '</div>' +
+                            breakdownHtml +
+                            '<div class="trx-actions">' +
+                                '<button class="trx-action-btn details" data-details="' + t.id + '"><i class="las la-info-circle"></i> التفاصيل</button>' +
+                                '<button class="trx-action-btn print" data-print="' + t.id + '"><i class="las la-print"></i> طباعة إيصال</button>' +
+                            '</div>' +
+                        '</div>';
+                });
+                trxList.innerHTML = html;
+            }
+
+            function updateCounts() {
+                countAll.textContent = '(' + transactions.length + ')';
+            }
+
+            searchInput.addEventListener('input', function (e) {
+                searchQuery = e.target.value;
+                renderTransactions();
+            });
+
+            filtersBar.addEventListener('click', function (e) {
+                const chip = e.target.closest('.filter-chip');
+                if (!chip) return;
+                document.querySelectorAll('.filter-chip').forEach(function (c) { c.classList.remove('active'); });
+                chip.classList.add('active');
+                activeFilter = chip.getAttribute('data-filter');
+                renderTransactions();
+            });
+
+            trxList.addEventListener('click', function (e) {
+                const detailsBtn = e.target.closest('[data-details]');
+                const printBtn = e.target.closest('[data-print]');
+                const topArea = e.target.closest('[data-trx]');
+
+                if (printBtn) {
+                    e.stopPropagation();
+                    const id = printBtn.getAttribute('data-print');
+                    const trx = transactions.find(function (t) { return t.id === id; });
+                    if (trx) printReceipt(trx);
+                } else if (detailsBtn) {
+                    e.stopPropagation();
+                    const id = detailsBtn.getAttribute('data-details');
+                    const trx = transactions.find(function (t) { return t.id === id; });
+                    if (trx) showDetailsPanel(trx);
+                } else if (topArea) {
+                    const id = topArea.getAttribute('data-trx');
+                    const trx = transactions.find(function (t) { return t.id === id; });
+                    if (trx) showDetailsPanel(trx);
+                }
+            });
+
+            function closeAllPanels(exceptId) {
+                ['statementPanel', 'detailsPanel'].forEach(function (pid) {
+                    if (pid !== exceptId) {
+                        const el = document.getElementById(pid);
+                        if (el) el.classList.remove('active');
+                    }
+                });
+            }
+
+            function showStatementPanel() {
+                closeAllPanels('statementPanel');
+
+                const totalIn = transactions.filter(function (t) { return t.amount > 0; })
+                    .reduce(function (s, t) { return s + t.amount; }, 0);
+                const totalOut = transactions.filter(function (t) { return t.amount < 0; })
+                    .reduce(function (s, t) { return s + Math.abs(t.amount); }, 0);
+                const totalCommission = transactions.filter(function (t) { return t.type === 'delivery' && t.commission; })
+                    .reduce(function (s, t) { return s + t.commission; }, 0);
+                const totalCashCollected = transactions.filter(function (t) { return t.type === 'delivery' && t.paymentMethod === 'cash'; })
+                    .reduce(function (s, t) { return s + t.orderTotal + t.deliveryFee; }, 0);
+
+                statementGrid.innerHTML =
+                    '<div class="statement-box blue">' +
+                        '<span class="box-lbl"><i class="las la-money-bill-wave"></i> إجمالي المحصل النقدي</span>' +
+                        '<span class="box-val">' + totalCashCollected.toFixed(2) + ' ج.م</span>' +
+                    '</div>' +
+                    '<div class="statement-box green">' +
+                        '<span class="box-lbl"><i class="las la-arrow-down"></i> إجمالي الأرباح الصافية</span>' +
+                        '<span class="box-val">' + totalIn.toFixed(2) + ' ج.م</span>' +
+                    '</div>' +
+                    '<div class="statement-box orange">' +
+                        '<span class="box-lbl"><i class="las la-percent"></i> إجمالي عمولة التطبيق (10%)</span>' +
+                        '<span class="box-val">' + totalCommission.toFixed(2) + ' ج.م</span>' +
+                    '</div>' +
+                    '<div class="statement-box red">' +
+                        '<span class="box-lbl"><i class="las la-arrow-up"></i> إجمالي السحب والخصومات</span>' +
+                        '<span class="box-val">' + totalOut.toFixed(2) + ' ج.م</span>' +
+                    '</div>';
+
+                statementCurrentBalance.textContent = availableBalance.toFixed(2) + ' ج.م';
+
+                statementPanel.classList.add('active');
+                statementPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            function showDetailsPanel(t) {
+                closeAllPanels('detailsPanel');
+
+                const cfg = typeConfig[t.type] || typeConfig.delivery;
+                const isPlus = t.amount > 0;
+                const amountStr = (isPlus ? '+' : '-') + Math.abs(t.amount).toFixed(2) + ' ج.م';
+                const amountClass = isPlus ? 'plus' : 'minus';
+                const heroBg = isPlus
+                    ? 'linear-gradient(135deg, rgba(0,177,79,0.12), rgba(0,200,83,0.06))'
+                    : 'linear-gradient(135deg, rgba(239,68,68,0.12), rgba(248,113,113,0.06))';
+
+                detailsPanelTitle.textContent = 'تفاصيل ' + t.id;
+                detailsPanelSub.textContent = t.title + ' • ' + t.ref;
+
+                let breakdownHtml = '';
+
+                if (t.type === 'delivery') {
+                    if (t.paymentMethod === 'cash') {
+                        const collected = t.orderTotal + t.deliveryFee;
+                        breakdownHtml =
+                            '<div class="details-row"><span class="label">طريقة الدفع</span><span class="value" style="color:#00B14F;">الدفع عند الاستلام (كاش)</span></div>' +
+                            '<div class="details-row"><span class="label">المحصل من العميل</span><span class="value">' + collected.toFixed(2) + ' ج.م</span></div>' +
+                            '<div class="details-row"><span class="label">قيمة الطلب (للمطعم)</span><span class="value" style="color:#EF4444;">-' + t.orderTotal.toFixed(2) + ' ج.م</span></div>' +
+                            '<div class="details-row"><span class="label">أجرة التوصيل</span><span class="value">' + t.deliveryFee.toFixed(2) + ' ج.م</span></div>' +
+                            '<div class="details-row"><span class="label">عمولة التطبيق (10%)</span><span class="value" style="color:#EF4444;">-' + t.commission.toFixed(2) + ' ج.م</span></div>' +
+                            '<div class="details-row"><span class="label">صافي ربحك</span><span class="value" style="color:#00B14F;">' + t.amount.toFixed(2) + ' ج.م</span></div>';
+                    } else {
+                        breakdownHtml =
+                            '<div class="details-row"><span class="label">طريقة الدفع</span><span class="value" style="color:#3B82F6;">دفع إلكتروني</span></div>' +
+                            '<div class="details-row"><span class="label">أجرة التوصيل</span><span class="value">' + t.deliveryFee.toFixed(2) + ' ج.م</span></div>' +
+                            '<div class="details-row"><span class="label">عمولة التطبيق (10%)</span><span class="value" style="color:#EF4444;">-' + t.commission.toFixed(2) + ' ج.م</span></div>' +
+                            '<div class="details-row"><span class="label">صافي ربحك</span><span class="value" style="color:#00B14F;">' + t.amount.toFixed(2) + ' ج.م</span></div>';
+                    }
+                }
+
+                detailsPanelContent.innerHTML =
+                    '<div class="inline-hero" style="background:' + heroBg + ';">' +
+                        '<i class="las ' + cfg.icon + ' hero-ic" style="color:' + cfg.color + ';"></i>' +
+                        '<p class="hero-lbl">' + cfg.label + '</p>' +
+                        '<p class="hero-amt ' + amountClass + '">' + amountStr + '</p>' +
+                    '</div>' +
+                    breakdownHtml +
+                    '<div class="details-row"><span class="label">رقم العملية</span><span class="value">' + t.id + '</span></div>' +
+                    '<div class="details-row"><span class="label">المرجع</span><span class="value">' + t.ref + '</span></div>' +
+                    '<div class="details-row"><span class="label">الوصف</span><span class="value">' + t.desc + '</span></div>' +
+                    '<div class="details-row"><span class="label">التاريخ</span><span class="value">' + t.day + ' - ' + t.time + '</span></div>' +
+                    '<div class="details-row"><span class="label">الحالة</span><span class="value">' + t.status + '</span></div>';
+
+                detailsPanel.classList.add('active');
+                detailsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            document.querySelectorAll('[data-close]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    const id = this.getAttribute('data-close');
+                    const el = document.getElementById(id);
+                    if (el) el.classList.remove('active');
+                });
+            });
+
+            statementBtn.addEventListener('click', showStatementPanel);
+
+            function buildReceiptHTML(t) {
+                const issueDate = new Date();
+                const day = String(issueDate.getDate()).padStart(2, '0');
+                const month = String(issueDate.getMonth() + 1).padStart(2, '0');
+                const year = issueDate.getFullYear();
+                const hours = String(issueDate.getHours()).padStart(2, '0');
+                const minutes = String(issueDate.getMinutes()).padStart(2, '0');
+                const issueStr = day + '/' + month + '/' + year + ' - ' + hours + ':' + minutes;
+
+                const isPlus = t.amount > 0;
+                const pmLabel = t.paymentMethod === 'cash' ? 'الدفع عند الاستلام (كاش)' : 'دفع إلكتروني';
+
+                let deliverySection = '';
+                let detailsSection = '';
+                let totalSection = '';
+
+                if (t.type === 'delivery') {
+                    const collected = t.paymentMethod === 'cash' ? (t.orderTotal + t.deliveryFee) : 0;
+
+                    if (t.paymentMethod === 'cash') {
+                        deliverySection =
+                            '<div class="rcpt-section-title"><span class="rcpt-section-dot"></span> تفاصيل التحصيل النقدي</div>' +
+                            '<table class="rcpt-table rcpt-details-table">' +
+                                '<tr>' +
+                                    '<td class="rcpt-row-lbl">المحصل من العميل</td>' +
+                                    '<td class="rcpt-row-val">' + collected.toFixed(2) + ' ج.م</td>' +
+                                '</tr>' +
+                                '<tr>' +
+                                    '<td class="rcpt-row-lbl">قيمة الطلب (للمطعم)</td>' +
+                                    '<td class="rcpt-row-val">-' + t.orderTotal.toFixed(2) + ' ج.م</td>' +
+                                '</tr>' +
+                                '<tr>' +
+                                    '<td class="rcpt-row-lbl">أجرة التوصيل</td>' +
+                                    '<td class="rcpt-row-val">' + t.deliveryFee.toFixed(2) + ' ج.م</td>' +
+                                '</tr>' +
+                                '<tr>' +
+                                    '<td class="rcpt-row-lbl">عمولة التطبيق (10%)</td>' +
+                                    '<td class="rcpt-row-val">-' + t.commission.toFixed(2) + ' ج.م</td>' +
+                                '</tr>' +
+                            '</table>';
+                    } else {
+                        deliverySection =
+                            '<div class="rcpt-section-title"><span class="rcpt-section-dot"></span> تفاصيل الدفع الإلكتروني</div>' +
+                            '<table class="rcpt-table rcpt-details-table">' +
+                                '<tr>' +
+                                    '<td class="rcpt-row-lbl">أجرة التوصيل</td>' +
+                                    '<td class="rcpt-row-val">' + t.deliveryFee.toFixed(2) + ' ج.م</td>' +
+                                '</tr>' +
+                                '<tr>' +
+                                    '<td class="rcpt-row-lbl">عمولة التطبيق (10%)</td>' +
+                                    '<td class="rcpt-row-val">-' + t.commission.toFixed(2) + ' ج.م</td>' +
+                                '</tr>' +
+                            '</table>';
+                    }
+
+                    totalSection =
+                        '<table class="rcpt-total-table">' +
+                            (t.paymentMethod === 'cash' ?
+                            '<tr>' +
+                                '<td class="rcpt-total-lbl">إجمالي المحصل من العميل</td>' +
+                                '<td class="rcpt-total-val">' + collected.toFixed(2) + ' ج.م</td>' +
+                            '</tr>' : '') +
+                            '<tr class="rcpt-total-main">' +
+                                '<td class="rcpt-total-lbl-main">صافي ربحك</td>' +
+                                '<td class="rcpt-total-val-main">' + t.amount.toFixed(2) + ' ج.م</td>' +
+                            '</tr>' +
+                        '</table>';
+                } else {
+                    detailsSection =
+                        '<div class="rcpt-section-title"><span class="rcpt-section-dot"></span> تفاصيل العملية</div>' +
+                        '<table class="rcpt-table rcpt-details-table">' +
+                            '<tr>' +
+                                '<td class="rcpt-row-lbl">نوع العملية</td>' +
+                                '<td class="rcpt-row-val">' + (typeConfig[t.type] ? typeConfig[t.type].label : t.type) + '</td>' +
+                            '</tr>' +
+                            '<tr>' +
+                                '<td class="rcpt-row-lbl">الوصف</td>' +
+                                '<td class="rcpt-row-val">' + t.desc + '</td>' +
+                            '</tr>' +
+                        '</table>';
+
+                    totalSection =
+                        '<table class="rcpt-total-table">' +
+                            '<tr class="rcpt-total-main">' +
+                                '<td class="rcpt-total-lbl-main">' + (isPlus ? 'المبلغ المضاف' : 'المبلغ المخصوم') + '</td>' +
+                                '<td class="rcpt-total-val-main">' + Math.abs(t.amount).toFixed(2) + ' ج.م</td>' +
+                            '</tr>' +
+                        '</table>';
+                }
+
+                return '' +
+                '<div class="rcpt-header">' +
+                    '<img src="' + LOGO_URL + '" alt="logo" class="rcpt-logo" crossorigin="anonymous">' +
+                    '<div class="rcpt-brand">' +
+                        '<h1 class="rcpt-brand-name">إيصال حركة محفظة</h1>' +
+                        '<p class="rcpt-brand-tag">Wallet Transaction Receipt</p>' +
+                    '</div>' +
+                '</div>' +
+
+                '<div class="rcpt-title-bar">إيصال عملية مالية</div>' +
+
+                '<table class="rcpt-table rcpt-info-table">' +
+                    '<tr>' +
+                        '<td class="rcpt-lbl">رقم العملية</td>' +
+                        '<td class="rcpt-val rcpt-mono">' + t.id + '</td>' +
+                        '<td class="rcpt-lbl">تاريخ الإصدار</td>' +
+                        '<td class="rcpt-val">' + issueStr + '</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                        '<td class="rcpt-lbl">تاريخ العملية</td>' +
+                        '<td class="rcpt-val">' + t.day + '</td>' +
+                        '<td class="rcpt-lbl">الوقت</td>' +
+                        '<td class="rcpt-val">' + t.time + '</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                        '<td class="rcpt-lbl">المرجع</td>' +
+                        '<td class="rcpt-val rcpt-mono">' + t.ref + '</td>' +
+                        '<td class="rcpt-lbl">الحالة</td>' +
+                        '<td class="rcpt-val">' + t.status + '</td>' +
+                    '</tr>' +
+                    (t.type === 'delivery' ?
+                    '<tr>' +
+                        '<td class="rcpt-lbl">طريقة الدفع</td>' +
+                        '<td class="rcpt-val" colspan="3">' + pmLabel + '</td>' +
+                    '</tr>' : '') +
+                '</table>' +
+
+                deliverySection +
+                detailsSection +
+                totalSection +
+
+                '<div class="rcpt-footer">' +
+                    '<div class="rcpt-footer-row">' +
+                        '<span class="rcpt-footer-lbl">اسم السائق:</span>' +
+                        '<span class="rcpt-footer-val">محمد عبدالله</span>' +
+                    '</div>' +
+                    '<div class="rcpt-footer-row">' +
+                        '<span class="rcpt-footer-lbl">رقم المركبة:</span>' +
+                        '<span class="rcpt-footer-val">5421 ABC</span>' +
+                    '</div>' +
+                    '<div class="rcpt-footer-row">' +
+                        '<span class="rcpt-footer-lbl">الخط الساخن:</span>' +
+                        '<span class="rcpt-footer-val">19XXX</span>' +
+                    '</div>' +
+                '</div>' +
+
+                '<div class="rcpt-bottom">' +
+                    '<p class="rcpt-thanks">شكراً لاستخدامكم خدمتنا</p>' +
+                    '<p class="rcpt-note">هذا الإيصال تم إنشاؤه إلكترونياً ولا يحتاج إلى ختم</p>' +
+                    '<p class="rcpt-site">www.shadowza.space</p>' +
+                '</div>';
+            }
+
+            function buildDailySummaryHTML() {
+                const issueDate = new Date();
+                const day = String(issueDate.getDate()).padStart(2, '0');
+                const month = String(issueDate.getMonth() + 1).padStart(2, '0');
+                const year = issueDate.getFullYear();
+                const hours = String(issueDate.getHours()).padStart(2, '0');
+                const minutes = String(issueDate.getMinutes()).padStart(2, '0');
+                const issueStr = day + '/' + month + '/' + year + ' - ' + hours + ':' + minutes;
+                const reportDate = day + '/' + month + '/' + year;
+
+                const s = getTodayStats();
+
+                let deliverRows = '';
+                s.deliveries.forEach(function (t, idx) {
+                    const fee = t.deliveryFee || 0;
+                    const pmText = t.paymentMethod === 'cash' ? 'كاش' : 'إلكتروني';
+                    deliverRows +=
+                        '<tr>' +
+                            '<td style="text-align:center; width:8%;">' + (idx + 1) + '</td>' +
+                            '<td style="width:52%; font-size:10px;">' + t.desc + '</td>' +
+                            '<td style="text-align:center; width:15%; font-size:9px;">' + pmText + '</td>' +
+                            '<td style="text-align:left; width:25%; font-size:10px;">' + fee.toFixed(2) + '</td>' +
+                        '</tr>';
+                });
+
+                return '' +
+                '<div class="rcpt-header">' +
+                    '<img src="' + LOGO_URL + '" alt="logo" class="rcpt-logo" crossorigin="anonymous">' +
+                    '<div class="rcpt-brand">' +
+                        '<h1 class="rcpt-brand-name">ملخص اليوم</h1>' +
+                        '<p class="rcpt-brand-tag">Daily Summary Report</p>' +
+                    '</div>' +
+                '</div>' +
+
+                '<div class="rcpt-title-bar">تقرير ملخص اليوم</div>' +
+
+                '<table class="rcpt-table rcpt-info-table">' +
+                    '<tr>' +
+                        '<td class="rcpt-lbl">التاريخ</td>' +
+                        '<td class="rcpt-val" colspan="3">' + reportDate + '</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                        '<td class="rcpt-lbl">تاريخ الإصدار</td>' +
+                        '<td class="rcpt-val" colspan="3">' + issueStr + '</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                        '<td class="rcpt-lbl">السائق</td>' +
+                        '<td class="rcpt-val" colspan="3">محمد عبدالله</td>' +
+                    '</tr>' +
+                '</table>' +
+
+                '<div class="rcpt-section-title"><span class="rcpt-section-dot"></span> ملخص أرباح اليوم</div>' +
+                '<table class="rcpt-table rcpt-details-table">' +
+                    '<tr>' +
+                        '<td class="rcpt-row-lbl">إجمالي التحصيل النقدي</td>' +
+                        '<td class="rcpt-row-val">' + s.cashCollected.toFixed(2) + ' ج.م</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                        '<td class="rcpt-row-lbl">قيمة الطلبات (للمطاعم)</td>' +
+                        '<td class="rcpt-row-val">-' + s.orderValueCash.toFixed(2) + ' ج.م</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                        '<td class="rcpt-row-lbl">إجمالي أجرة التوصيل</td>' +
+                        '<td class="rcpt-row-val">' + s.grossFee.toFixed(2) + ' ج.م</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                        '<td class="rcpt-row-lbl">عمولة التطبيق (10%)</td>' +
+                        '<td class="rcpt-row-val">-' + s.commissionTotal.toFixed(2) + ' ج.م</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                        '<td class="rcpt-row-lbl">صافي التوصيلات</td>' +
+                        '<td class="rcpt-row-val">' + s.netDelivery.toFixed(2) + ' ج.م</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                        '<td class="rcpt-row-lbl">المكافآت (' + s.bonusCount + ')</td>' +
+                        '<td class="rcpt-row-val">+' + s.bonusTotal.toFixed(2) + ' ج.م</td>' +
+                    '</tr>' +
+                '</table>' +
+
+                '<table class="rcpt-total-table">' +
+                    '<tr class="rcpt-total-main">' +
+                        '<td class="rcpt-total-lbl-main">إجمالي مكسب اليوم</td>' +
+                        '<td class="rcpt-total-val-main">' + s.totalToday.toFixed(2) + ' ج.م</td>' +
+                    '</tr>' +
+                '</table>' +
+
+                '<div class="rcpt-section-title"><span class="rcpt-section-dot"></span> إحصائيات التوصيلات</div>' +
+                '<table class="rcpt-table rcpt-details-table">' +
+                    '<tr>' +
+                        '<td class="rcpt-row-lbl">عدد التوصيلات</td>' +
+                        '<td class="rcpt-row-val">' + s.deliveriesCount + '</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                        '<td class="rcpt-row-lbl">توصيلات كاش</td>' +
+                        '<td class="rcpt-row-val">' + s.cashCount + '</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                        '<td class="rcpt-row-lbl">توصيلات إلكترونية</td>' +
+                        '<td class="rcpt-row-val">' + s.cardCount + '</td>' +
+                    '</tr>' +
+                    '<tr>' +
+                        '<td class="rcpt-row-lbl">عدد المكافآت</td>' +
+                        '<td class="rcpt-row-val">' + s.bonusCount + '</td>' +
+                    '</tr>' +
+                '</table>' +
+
+                (s.deliveries.length > 0 ?
+                '<div class="rcpt-section-title"><span class="rcpt-section-dot"></span> تفاصيل التوصيلات</div>' +
+                '<table class="rcpt-table" style="font-size:10px;">' +
+                    '<thead>' +
+                        '<tr>' +
+                            '<th style="text-align:center; width:8%;">#</th>' +
+                            '<th style="text-align:right; width:52%;">الطلب</th>' +
+                            '<th style="text-align:center; width:15%;">الدفع</th>' +
+                            '<th style="text-align:left; width:25%;">الأجرة</th>' +
+                        '</tr>' +
+                    '</thead>' +
+                    '<tbody>' + deliverRows + '</tbody>' +
+                '</table>' : '') +
+
+                '<div class="rcpt-footer">' +
+                    '<div class="rcpt-footer-row">' +
+                        '<span class="rcpt-footer-lbl">اسم السائق:</span>' +
+                        '<span class="rcpt-footer-val">محمد عبدالله</span>' +
+                    '</div>' +
+                    '<div class="rcpt-footer-row">' +
+                        '<span class="rcpt-footer-lbl">رقم المركبة:</span>' +
+                        '<span class="rcpt-footer-val">5421 ABC</span>' +
+                    '</div>' +
+                    '<div class="rcpt-footer-row">' +
+                        '<span class="rcpt-footer-lbl">الخط الساخن:</span>' +
+                        '<span class="rcpt-footer-val">19XXX</span>' +
+                    '</div>' +
+                '</div>' +
+
+                '<div class="rcpt-bottom">' +
+                    '<p class="rcpt-thanks">ملخص أرباح اليوم</p>' +
+                    '<p class="rcpt-note">هذا التقرير تم إنشاؤه إلكترونياً ولا يحتاج إلى ختم</p>' +
+                    '<p class="rcpt-site">www.shadowza.space</p>' +
+                '</div>';
+            }
+
+            function printReceipt(t) {
+                printArea.innerHTML = buildReceiptHTML(t);
+
+                const img = printArea.querySelector('.rcpt-logo');
+                const doPrint = function () {
+                    window.focus();
+                    window.print();
+                };
+
+                if (img && !img.complete) {
+                    let printed = false;
+                    const printOnce = function () {
+                        if (printed) return;
+                        printed = true;
+                        setTimeout(doPrint, 200);
+                    };
+                    img.onload = printOnce;
+                    img.onerror = printOnce;
+                    setTimeout(function () { if (!img.complete) printOnce(); }, 1500);
+                } else {
+                    setTimeout(doPrint, 200);
+                }
+            }
+
+            function printDailySummary() {
+                printArea.innerHTML = buildDailySummaryHTML();
+
+                const img = printArea.querySelector('.rcpt-logo');
+                const doPrint = function () {
+                    window.focus();
+                    window.print();
+                };
+
+                if (img && !img.complete) {
+                    let printed = false;
+                    const printOnce = function () {
+                        if (printed) return;
+                        printed = true;
+                        setTimeout(doPrint, 200);
+                    };
+                    img.onload = printOnce;
+                    img.onerror = printOnce;
+                    setTimeout(function () { if (!img.complete) printOnce(); }, 1500);
+                } else {
+                    setTimeout(doPrint, 200);
+                }
+            }
+
+            printDailySummaryBtn.addEventListener('click', printDailySummary);
+
+            withdrawBtn.addEventListener('click', function () {
+                Swal.fire({
+                    title: 'طلب سحب الرصيد',
+                    html:
+                        '<div style="text-align:right;">' +
+                            '<div style="background:#FFF3E8; padding:14px; border-radius:14px; margin-bottom:14px;">' +
+                                '<p style="font-size:0.75rem; color:#717171; margin-bottom:4px;">الرصيد المتاح</p>' +
+                                '<p style="font-size:1.5rem; font-weight:800; color:#FF5A00;">' + availableBalance.toFixed(2) + ' ج.م</p>' +
+                            '</div>' +
+                            '<label style="display:block; font-size:0.8rem; font-weight:700; color:#717171; margin-bottom:6px;">المبلغ المطلوب</label>' +
+                            '<input id="withdrawAmount" type="number" min="50" step="1" placeholder="أدخل المبلغ" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:12px; font-family:inherit; font-size:1rem; outline:none; text-align:center; font-weight:700;">' +
+                            '<p style="font-size:0.72rem; color:#717171; margin-top:8px;">الحد الأدنى للسحب 50.00 ج.م</p>' +
+                        '</div>',
+                    showCancelButton: true,
+                    confirmButtonColor: '#FF5A00',
+                    cancelButtonColor: '#717171',
+                    confirmButtonText: 'تأكيد الطلب',
+                    cancelButtonText: 'إلغاء',
+                    preConfirm: function () {
+                        const input = document.getElementById('withdrawAmount');
+                        const val = parseFloat(input.value);
+                        if (!input.value || isNaN(val)) {
+                            Swal.showValidationMessage('يرجى إدخال مبلغ صحيح');
+                            return false;
+                        }
+                        if (val < 50) {
+                            Swal.showValidationMessage('الحد الأدنى للسحب 50.00 ج.م');
+                            return false;
+                        }
+                        if (val > availableBalance) {
+                            Swal.showValidationMessage('المبلغ أكبر من الرصيد المتاح');
+                            return false;
+                        }
+                        return val;
+                    }
+                }).then(function (result) {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'تم إرسال الطلب',
+                            html: '<p style="font-size:0.9rem;">سيتم تحويل مبلغ <b style="color:#FF5A00;">' + parseFloat(result.value).toFixed(2) + ' ج.م</b><br>خلال 24 ساعة</p>',
+                            icon: 'success',
+                            confirmButtonColor: '#FF5A00',
+                            confirmButtonText: 'حسناً'
+                        });
+                    }
+                });
+            });
+
+            headerStatusPill.addEventListener('click', function () {
+                isOnline = !isOnline;
+                if (isOnline) {
+                    headerStatusPill.classList.add('online');
+                    headerStatusPill.classList.remove('offline');
+                    headerStatusText.textContent = 'متصل';
+                    Swal.fire({
+                        title: 'أنت متصل الآن',
+                        text: 'ستصلك الطلبات الجديدة',
+                        icon: 'success',
+                        confirmButtonColor: '#FF5A00',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    headerStatusPill.classList.add('offline');
+                    headerStatusPill.classList.remove('online');
+                    headerStatusText.textContent = 'غير متصل';
+                    Swal.fire({
+                        title: 'أنت غير متصل',
+                        text: 'لن تصلك طلبات جديدة',
+                        icon: 'warning',
+                        confirmButtonColor: '#FF5A00',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            });
+
+            renderChart();
+            renderCashInHand();
+            renderTodayEarnings();
+            renderTotalCommission();
+            updateCounts();
+            renderTransactions();
+        })();
+    </script>
+</body>
+</html>
