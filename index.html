@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <script src="/1/1.js"></script>
 
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -770,7 +769,7 @@
             z-index: 1;
             background: #f0f0f0;
             flex: 1;
-            min-height: 0;
+            min-height: 200px;
         }
         .swal2-popup.map-fullscreen {
             width: 100vw !important;
@@ -895,7 +894,7 @@
                     <div class="text-7xl sm:text-8xl flex-shrink-0"><i class="las la-utensils"></i></div>
                 </div>
 
-                <div class="plus-card mb-8" onclick="showPlusAlert()">
+                <div class="plus-card mb-8" id="plusCard">
                     <div class="flex-1">
                         <div class="flex items-center gap-3 mb-4">
                             <div class="plus-icon"><i class="las la-crown"></i></div>
@@ -1146,77 +1145,165 @@
     </div>
 
     <script>
-        (function() {
-            const sidebar = document.getElementById('dashboardSidebar');
-            const headerAvatar = document.getElementById('headerAvatar');
-            const notificationBtn = document.getElementById('notificationBtn');
-            const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
-            const userAddressText = document.getElementById('userAddressText');
-            const userAddressContainer = document.getElementById('userAddressContainer');
+    /* ============================================================
+       FastOrder - نسخة متوافقة مع WebView / Sketchware (ES5)
+       ============================================================ */
+    (function () {
+        'use strict';
 
-            let leafletMap = null;
-            let leafletMarker = null;
-            let selectedLat = 27.9158;
-            let selectedLng = 34.3300;
-            let isMapModalOpen = false;
-            let isGeolocationInProgress = false;
-            let locationWatchId = null;
+        /* ---------------- 1) أدوات آمنة ---------------- */
 
-            function openSidebar() {
-                sidebar.classList.add('mobile-open');
-                sidebar.classList.remove('mobile-closed');
-            }
+        var memStore = {};
 
-            function closeSidebar() {
-                sidebar.classList.remove('mobile-open');
-                sidebar.classList.add('mobile-closed');
-            }
-
-            if (window.innerWidth < 1025) {
-                sidebar.classList.add('mobile-closed');
-            }
-
-            window.addEventListener('resize', function() {
-                if (window.innerWidth >= 1025) {
-                    sidebar.classList.remove('mobile-open', 'mobile-closed');
-                } else {
-                    if (!sidebar.classList.contains('mobile-open')) {
-                        sidebar.classList.add('mobile-closed');
-                    }
+        function storageGet(key) {
+            try {
+                if (window.localStorage) {
+                    var v = window.localStorage.getItem(key);
+                    if (v !== null) { return v; }
                 }
-            });
+            } catch (e) {}
+            return (typeof memStore[key] === 'undefined') ? null : memStore[key];
+        }
 
-            headerAvatar.addEventListener('click', function(e) {
+        function storageSet(key, value) {
+            memStore[key] = String(value);
+            try {
+                if (window.localStorage) { window.localStorage.setItem(key, String(value)); }
+            } catch (e) {}
+        }
+
+        function httpGetJson(url, done) {
+            if (typeof window.fetch === 'function') {
+                try {
+                    window.fetch(url, { headers: { 'Accept': 'application/json' } })
+                        .then(function (r) { return r.json(); })
+                        .then(function (d) { done(d); })
+                        ['catch'](function () { done(null); });
+                    return;
+                } catch (e) {}
+            }
+            try {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', url, true);
+                try { xhr.setRequestHeader('Accept', 'application/json'); } catch (e) {}
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState !== 4) { return; }
+                    var data = null;
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try { data = JSON.parse(xhr.responseText); } catch (e) { data = null; }
+                    }
+                    done(data);
+                };
+                xhr.onerror = function () { done(null); };
+                xhr.send();
+            } catch (e) {
+                done(null);
+            }
+        }
+
+        function fallbackFire(opts) {
+            if (typeof opts === 'string') { opts = { title: opts }; }
+            opts = opts || {};
+            var msg = (opts.title ? opts.title : '') + (opts.text ? '\n' + opts.text : '');
+            try { window.alert(msg); } catch (e) {}
+            var res = { isConfirmed: true, isDismissed: false, value: undefined };
+            var chain = {
+                then: function (cb) { if (typeof cb === 'function') { try { cb(res); } catch (e) {} } return chain; },
+                'catch': function () { return chain; }
+            };
+            return chain;
+        }
+
+        var Swal = window.Swal;
+        if (!Swal || typeof Swal.fire !== 'function') {
+            Swal = window.Swal = { fire: fallbackFire };
+        }
+        if (typeof Swal.showLoading !== 'function') { Swal.showLoading = function () {}; }
+        if (typeof Swal.hideLoading !== 'function') { Swal.hideLoading = function () {}; }
+        if (typeof Swal.showValidationMessage !== 'function') { Swal.showValidationMessage = function () {}; }
+
+        /* ---------------- 2) عناصر الصفحة ---------------- */
+
+        var sidebar = document.getElementById('dashboardSidebar');
+        var headerAvatar = document.getElementById('headerAvatar');
+        var notificationBtn = document.getElementById('notificationBtn');
+        var bottomNavItems = document.querySelectorAll('.bottom-nav-item');
+        var userAddressText = document.getElementById('userAddressText');
+        var userAddressContainer = document.getElementById('userAddressContainer');
+
+        var leafletMap = null;
+        var leafletMarker = null;
+        var selectedLat = 27.9158;
+        var selectedLng = 34.3300;
+        var isMapModalOpen = false;
+        var isGeolocationInProgress = false;
+
+        /* ---------------- 3) القائمة الجانبية ---------------- */
+
+        function openSidebar() {
+            if (!sidebar) { return; }
+            sidebar.classList.add('mobile-open');
+            sidebar.classList.remove('mobile-closed');
+        }
+
+        function closeSidebar() {
+            if (!sidebar) { return; }
+            sidebar.classList.remove('mobile-open');
+            sidebar.classList.add('mobile-closed');
+        }
+
+        if (sidebar && window.innerWidth < 1025) {
+            sidebar.classList.add('mobile-closed');
+        }
+
+        window.addEventListener('resize', function () {
+            if (!sidebar) { return; }
+            if (window.innerWidth >= 1025) {
+                sidebar.classList.remove('mobile-open');
+                sidebar.classList.remove('mobile-closed');
+            } else if (!sidebar.classList.contains('mobile-open')) {
+                sidebar.classList.add('mobile-closed');
+            }
+        });
+
+        if (headerAvatar) {
+            headerAvatar.addEventListener('click', function (e) {
                 e.stopPropagation();
                 if (window.innerWidth < 1025) {
-                    if (sidebar.classList.contains('mobile-open')) {
-                        closeSidebar();
-                    } else {
-                        openSidebar();
-                    }
+                    if (sidebar.classList.contains('mobile-open')) { closeSidebar(); }
+                    else { openSidebar(); }
                 }
             });
+        }
 
-            document.addEventListener('click', function(e) {
-                if (window.innerWidth < 1025 && sidebar.classList.contains('mobile-open')) {
-                    if (!sidebar.contains(e.target) && e.target !== headerAvatar && !headerAvatar.contains(e.target)) {
-                        closeSidebar();
-                    }
+        document.addEventListener('click', function (e) {
+            if (!sidebar) { return; }
+            if (window.innerWidth < 1025 && sidebar.classList.contains('mobile-open')) {
+                if (!sidebar.contains(e.target) && e.target !== headerAvatar &&
+                    !(headerAvatar && headerAvatar.contains(e.target))) {
+                    closeSidebar();
                 }
-            });
+            }
+        });
 
-            const sidebarItems = document.querySelectorAll('.sidebar-item');
-            sidebarItems.forEach(item => {
-                item.addEventListener('click', function(e) {
-                    if (this.id === 'logoutBtn') return;
+        var sidebarItems = document.querySelectorAll('.sidebar-item');
+        for (var si = 0; si < sidebarItems.length; si++) {
+            (function (item) {
+                item.addEventListener('click', function (e) {
+                    if (item.id === 'logoutBtn') { return; }
                     e.preventDefault();
-                    sidebarItems.forEach(i => i.classList.remove('active'));
-                    this.classList.add('active');
-                    if (window.innerWidth < 1025) closeSidebar();
+                    for (var j = 0; j < sidebarItems.length; j++) {
+                        sidebarItems[j].classList.remove('active');
+                    }
+                    item.classList.add('active');
+                    if (window.innerWidth < 1025) { closeSidebar(); }
                 });
-            });
+            })(sidebarItems[si]);
+        }
 
-            document.getElementById('logoutBtn').addEventListener('click', (e) => {
+        var logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 Swal.fire({
                     title: 'تسجيل الخروج',
@@ -1227,8 +1314,8 @@
                     cancelButtonColor: '#717171',
                     confirmButtonText: 'نعم، خروج',
                     cancelButtonText: 'إلغاء'
-                }).then((result) => {
-                    if (result.isConfirmed) {
+                }).then(function (result) {
+                    if (result && result.isConfirmed) {
                         Swal.fire({
                             title: 'تم بنجاح',
                             text: 'تم تسجيل الخروج بنجاح',
@@ -1238,30 +1325,33 @@
                     }
                 });
             });
+        }
 
-            bottomNavItems.forEach(item => {
-                item.addEventListener('click', function(e) {
+        /* ---------------- 4) الشريط السفلي ---------------- */
+
+        for (var bi = 0; bi < bottomNavItems.length; bi++) {
+            (function (item) {
+                item.addEventListener('click', function (e) {
                     e.preventDefault();
-                    bottomNavItems.forEach(i => i.classList.remove('active'));
-                    this.classList.add('active');
-                    const tab = this.getAttribute('data-tab');
-                    let msg = '';
-                    if (tab === 'home') msg = 'أنت في الصفحة الرئيسية';
-                    else if (tab === 'offers') msg = 'عروض اليوم الخاصة بك';
-                    else if (tab === 'orders') msg = 'طلباتك الحالية والسابقة';
-                    else if (tab === 'favorites') msg = 'قائمة المفضلة الخاصة بك';
-                    else if (tab === 'profile') msg = 'حسابك الشخصي';
-                    if (tab !== 'home') {
-                        Swal.fire({
-                            title: msg,
-                            icon: 'info',
-                            confirmButtonColor: '#FF5A00'
-                        });
+                    for (var k = 0; k < bottomNavItems.length; k++) {
+                        bottomNavItems[k].classList.remove('active');
+                    }
+                    item.classList.add('active');
+                    var tab = item.getAttribute('data-tab');
+                    var msg = '';
+                    if (tab === 'offers') { msg = 'عروض اليوم الخاصة بك'; }
+                    else if (tab === 'orders') { msg = 'طلباتك الحالية والسابقة'; }
+                    else if (tab === 'favorites') { msg = 'قائمة المفضلة الخاصة بك'; }
+                    else if (tab === 'profile') { msg = 'حسابك الشخصي'; }
+                    if (msg) {
+                        Swal.fire({ title: msg, icon: 'info', confirmButtonColor: '#FF5A00' });
                     }
                 });
-            });
+            })(bottomNavItems[bi]);
+        }
 
-            notificationBtn.addEventListener('click', () => {
+        if (notificationBtn) {
+            notificationBtn.addEventListener('click', function () {
                 Swal.fire({
                     title: 'الإشعارات',
                     text: 'لديك 3 إشعارات جديدة',
@@ -1269,79 +1359,86 @@
                     confirmButtonColor: '#FF5A00'
                 });
             });
+        }
 
-            window.showRestaurantAlert = function(name, category, rating, time, fee) {
-                Swal.fire({
-                    title: name,
-                    html: '<p class="text-sm text-gray-500 mb-2">' + category + '</p>' +
-                        '<div class="flex items-center justify-center gap-4 text-sm text-gray-600">' +
-                        '<span><i class="las la-star" style="color:#FFB800;"></i> ' + rating + '</span>' +
-                        '<span>•</span>' +
-                        '<span><i class="las la-clock"></i> ' + time + '</span>' +
-                        '<span>•</span>' +
-                        '<span><i class="las la-money-bill"></i> ' + fee + '</span></div>',
-                    icon: 'info',
-                    confirmButtonColor: '#FF5A00',
-                    confirmButtonText: 'عرض القائمة'
-                });
-            };
+        /* ---------------- 5) الدوال العامة (inline onclick) ---------------- */
 
-            window.showOfferAlert = function() {
-                Swal.fire({
-                    title: 'كود الخصم',
-                    text: 'تم نسخ كود الخصم: SAVE60',
-                    icon: 'success',
-                    confirmButtonColor: '#FF5A00'
-                });
-            };
+        window.showRestaurantAlert = function (name, category, rating, time, fee) {
+            Swal.fire({
+                title: name,
+                html: '<p class="text-sm text-gray-500 mb-2">' + category + '</p>' +
+                    '<div class="flex items-center justify-center gap-4 text-sm text-gray-600">' +
+                    '<span><i class="las la-star" style="color:#FFB800;"></i> ' + rating + '</span>' +
+                    '<span>•</span>' +
+                    '<span><i class="las la-clock"></i> ' + time + '</span>' +
+                    '<span>•</span>' +
+                    '<span><i class="las la-money-bill"></i> ' + fee + '</span></div>',
+                icon: 'info',
+                confirmButtonColor: '#FF5A00',
+                confirmButtonText: 'عرض القائمة'
+            });
+        };
 
-            window.showServiceAlert = function(service) {
-                Swal.fire({
-                    title: 'تم اختيار: ' + service,
-                    icon: 'info',
-                    confirmButtonColor: '#FF5A00'
-                });
-            };
+        window.showOfferAlert = function () {
+            Swal.fire({
+                title: 'كود الخصم',
+                text: 'تم نسخ كود الخصم: SAVE60',
+                icon: 'success',
+                confirmButtonColor: '#FF5A00'
+            });
+        };
 
-            window.showPlusAlert = function() {
-                Swal.fire({
-                    title: 'FastOrder+',
-                    text: 'تم اختيار عضوية FastOrder+',
-                    icon: 'info',
-                    confirmButtonColor: '#FF5A00',
-                    confirmButtonText: 'اشترك الآن'
-                });
-            };
+        window.showServiceAlert = function (service) {
+            Swal.fire({
+                title: 'تم اختيار: ' + service,
+                icon: 'info',
+                confirmButtonColor: '#FF5A00'
+            });
+        };
 
-            const mainOfferBanner = document.getElementById('mainOfferBanner');
-            if (mainOfferBanner) {
-                mainOfferBanner.addEventListener('click', function(e) {
-                    if (e.target.tagName !== 'BUTTON') {
-                        Swal.fire({
-                            title: 'كود الخصم',
-                            text: 'استخدم كود WELCOME50 للحصول على خصم 50%',
-                            icon: 'success',
-                            confirmButtonColor: '#FF5A00'
-                        });
-                    }
-                });
-                const offerBtn = mainOfferBanner.querySelector('button');
-                if (offerBtn) {
-                    offerBtn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        Swal.fire({
-                            title: 'كود الخصم',
-                            text: 'تم نسخ كود الخصم: WELCOME50',
-                            icon: 'success',
-                            confirmButtonColor: '#FF5A00'
-                        });
+        window.showPlusAlert = function () {
+            Swal.fire({
+                title: 'FastOrder+',
+                text: 'تم اختيار عضوية FastOrder+',
+                icon: 'info',
+                confirmButtonColor: '#FF5A00',
+                confirmButtonText: 'اشترك الآن'
+            });
+        };
+
+        /* ---------------- 6) بانرات العروض ---------------- */
+
+        var mainOfferBanner = document.getElementById('mainOfferBanner');
+        if (mainOfferBanner) {
+            mainOfferBanner.addEventListener('click', function (e) {
+                if (e.target.tagName !== 'BUTTON') {
+                    Swal.fire({
+                        title: 'كود الخصم',
+                        text: 'استخدم كود WELCOME50 للحصول على خصم 50%',
+                        icon: 'success',
+                        confirmButtonColor: '#FF5A00'
                     });
                 }
+            });
+            var offerBtn = mainOfferBanner.querySelector('button');
+            if (offerBtn) {
+                offerBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    Swal.fire({
+                        title: 'كود الخصم',
+                        text: 'تم نسخ كود الخصم: WELCOME50',
+                        icon: 'success',
+                        confirmButtonColor: '#FF5A00'
+                    });
+                });
             }
+        }
 
-            document.querySelectorAll('.offer-banner button').forEach(btn => {
+        var allBannerBtns = document.querySelectorAll('.offer-banner button');
+        for (var ob = 0; ob < allBannerBtns.length; ob++) {
+            (function (btn) {
                 if (btn.closest('.offer-banner') !== mainOfferBanner) {
-                    btn.addEventListener('click', function(e) {
+                    btn.addEventListener('click', function (e) {
                         e.stopPropagation();
                         Swal.fire({
                             title: 'كود الخصم',
@@ -1351,377 +1448,312 @@
                         });
                     });
                 }
+            })(allBannerBtns[ob]);
+        }
+
+        /* ---------------- 7) البحث ---------------- */
+
+        var mobileSearchInput = document.getElementById('mobileSearchInput');
+        if (mobileSearchInput) {
+            mobileSearchInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && e.target.value.trim()) {
+                    Swal.fire({
+                        title: 'جاري البحث',
+                        text: 'جاري البحث عن: ' + e.target.value.trim(),
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00'
+                    });
+                    e.target.value = '';
+                }
             });
+        }
 
-            const mobileSearchInput = document.getElementById('mobileSearchInput');
-            if (mobileSearchInput) {
-                mobileSearchInput.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter' && e.target.value.trim()) {
-                        Swal.fire({
-                            title: 'جاري البحث',
-                            text: 'جاري البحث عن: ' + e.target.value.trim(),
-                            icon: 'info',
-                            confirmButtonColor: '#FF5A00'
-                        });
-                        e.target.value = '';
-                    }
-                });
-            }
+        /* ---------------- 8) بطاقة FastOrder+ ---------------- */
 
-            const plusCard = document.querySelector('.plus-card');
-            if (plusCard) {
-                plusCard.addEventListener('click', function(e) {
-                    if (e.target.tagName !== 'BUTTON') {
-                        showPlusAlert();
-                    }
-                });
-                const plusBtn = plusCard.querySelector('button');
-                if (plusBtn) {
-                    plusBtn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        Swal.fire({
-                            title: 'FastOrder+',
-                            text: 'تم الاشتراك في عضوية FastOrder+ بنجاح',
-                            icon: 'success',
-                            confirmButtonColor: '#FF5A00'
-                        });
+        var plusCard = document.getElementById('plusCard');
+        if (plusCard) {
+            plusCard.addEventListener('click', function (e) {
+                if (e.target.tagName !== 'BUTTON') {
+                    window.showPlusAlert();
+                }
+            });
+            var plusBtn = plusCard.querySelector('button');
+            if (plusBtn) {
+                plusBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    Swal.fire({
+                        title: 'FastOrder+',
+                        text: 'تم الاشتراك في عضوية FastOrder+ بنجاح',
+                        icon: 'success',
+                        confirmButtonColor: '#FF5A00'
                     });
-                }
+                });
             }
+        }
 
-            function saveLocationToStorage(lat, lng, address) {
-                localStorage.setItem('userLat', lat);
-                localStorage.setItem('userLng', lng);
-                localStorage.setItem('userAddress', address);
+        /* ---------------- 9) الموقع الجغرافي ---------------- */
+
+        function saveLocation(lat, lng, address) {
+            storageSet('userLat', lat);
+            storageSet('userLng', lng);
+            storageSet('userAddress', address);
+        }
+
+        function loadLocation() {
+            var lat = storageGet('userLat');
+            var lng = storageGet('userLng');
+            var address = storageGet('userAddress');
+            if (lat !== null && lng !== null) {
+                selectedLat = parseFloat(lat);
+                selectedLng = parseFloat(lng);
+                if (address) {
+                    userAddressText.textContent = address;
+                } else {
+                    userAddressText.textContent = selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6);
+                }
+                return true;
             }
+            return false;
+        }
 
-            function loadLocationFromStorage() {
-                const lat = localStorage.getItem('userLat');
-                const lng = localStorage.getItem('userLng');
-                const address = localStorage.getItem('userAddress');
-                if (lat && lng) {
-                    selectedLat = parseFloat(lat);
-                    selectedLng = parseFloat(lng);
-                    if (address) {
-                        userAddressText.textContent = address;
-                    } else {
-                        userAddressText.textContent = selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6);
-                    }
-                    return true;
-                }
-                return false;
+        function reverseGeocode(lat, lng, callback) {
+            var finished = false;
+            function finish(value) {
+                if (finished) { return; }
+                finished = true;
+                callback(value);
             }
+            setTimeout(function () { finish('غير معروف'); }, 7000);
 
-            function getCurrentLocation() {
-                if (isGeolocationInProgress) return;
-                isGeolocationInProgress = true;
+            var url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' +
+                lat + '&lon=' + lng + '&accept-language=ar&zoom=18';
 
-                if (!navigator.geolocation) {
-                    userAddressText.textContent = 'شرم الشيخ (افتراضي)';
-                    isGeolocationInProgress = false;
-                    return;
-                }
+            httpGetJson(url, function (data) {
+                if (data && data.display_name) { finish(data.display_name); }
+                else { finish('غير معروف'); }
+            });
+        }
 
-                userAddressText.textContent = 'جاري تحديد موقعك بدقة...';
+        function getCurrentLocation() {
+            if (isGeolocationInProgress) { return; }
+            if (!navigator.geolocation) {
+                userAddressText.textContent = 'شرم الشيخ (افتراضي)';
+                return;
+            }
+            isGeolocationInProgress = true;
+            userAddressText.textContent = 'جاري تحديد موقعك...';
 
-                const options = {
-                    enableHighAccuracy: true,
-                    timeout: 15000,
-                    maximumAge: 0
-                };
-
-                if (locationWatchId) {
-                    navigator.geolocation.clearWatch(locationWatchId);
-                }
-
-                navigator.geolocation.getCurrentPosition(
-                    function(position) {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        const accuracy = position.coords.accuracy;
-                        selectedLat = lat;
-                        selectedLng = lng;
-                        if (accuracy <= 50) {
-                            reverseGeocodeNominatim(lat, lng, function(address) {
-                                if (address && address !== 'غير معروف') {
-                                    userAddressText.textContent = address;
-                                    saveLocationToStorage(lat, lng, address);
-                                } else {
-                                    userAddressText.textContent = lat.toFixed(6) + ', ' + lng.toFixed(6);
-                                    saveLocationToStorage(lat, lng, userAddressText.textContent);
-                                }
-                                isGeolocationInProgress = false;
-                            });
-                        } else {
-                            locationWatchId = navigator.geolocation.watchPosition(
-                                function(pos) {
-                                    if (pos.coords.accuracy <= 30) {
-                                        selectedLat = pos.coords.latitude;
-                                        selectedLng = pos.coords.longitude;
-                                        reverseGeocodeNominatim(selectedLat, selectedLng, function(address) {
-                                            if (address && address !== 'غير معروف') {
-                                                userAddressText.textContent = address;
-                                                saveLocationToStorage(selectedLat, selectedLng, address);
-                                            } else {
-                                                userAddressText.textContent = selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6);
-                                                saveLocationToStorage(selectedLat, selectedLng, userAddressText.textContent);
-                                            }
-                                            isGeolocationInProgress = false;
-                                            if (locationWatchId) {
-                                                navigator.geolocation.clearWatch(locationWatchId);
-                                                locationWatchId = null;
-                                            }
-                                        });
-                                    }
-                                },
-                                function(error) {
-                                    reverseGeocodeNominatim(selectedLat, selectedLng, function(address) {
-                                        if (address && address !== 'غير معروف') {
-                                            userAddressText.textContent = address;
-                                            saveLocationToStorage(selectedLat, selectedLng, address);
-                                        } else {
-                                            userAddressText.textContent = selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6);
-                                            saveLocationToStorage(selectedLat, selectedLng, userAddressText.textContent);
-                                        }
-                                        isGeolocationInProgress = false;
-                                    });
-                                },
-                                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-                            );
-                        }
-                    },
-                    function(error) {
-                        let message = '';
-                        switch (error.code) {
-                            case error.PERMISSION_DENIED:
-                                message = 'تم رفض إذن الوصول للموقع. سيتم استخدام الموقع الافتراضي.';
-                                userAddressText.textContent = 'شرم الشيخ (افتراضي)';
-                                break;
-                            case error.POSITION_UNAVAILABLE:
-                                message = 'معلومات الموقع غير متوفرة حالياً.';
-                                userAddressText.textContent = 'شرم الشيخ (افتراضي)';
-                                break;
-                            case error.TIMEOUT:
-                                message = 'انتهت مهلة تحديد الموقع.';
-                                userAddressText.textContent = 'شرم الشيخ (افتراضي)';
-                                break;
-                            default:
-                                message = 'خطأ غير معروف في تحديد الموقع.';
-                                userAddressText.textContent = 'شرم الشيخ (افتراضي)';
-                        }
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    var lat = position.coords.latitude;
+                    var lng = position.coords.longitude;
+                    selectedLat = lat;
+                    selectedLng = lng;
+                    reverseGeocode(lat, lng, function (address) {
+                        var finalText = (address && address !== 'غير معروف')
+                            ? address
+                            : (lat.toFixed(6) + ', ' + lng.toFixed(6));
+                        userAddressText.textContent = finalText;
+                        saveLocation(lat, lng, finalText);
                         isGeolocationInProgress = false;
-                        Swal.fire({
-                            title: 'تنبيه',
-                            text: message + ' يمكنك تغيير موقعك يدوياً بالضغط على العنوان.',
-                            icon: 'warning',
-                            confirmButtonColor: '#FF5A00',
-                            timer: 4000,
-                            showConfirmButton: true
-                        });
-                    },
-                    options
-                );
-            }
-
-            function reverseGeocodeNominatim(lat, lng, callback) {
-                const url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng + '&accept-language=ar&zoom=18';
-                fetch(url, {
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                })
-                    .then(function(response) {
-                        if (!response.ok) throw new Error('Network error');
-                        return response.json();
-                    })
-                    .then(function(data) {
-                        if (data && data.display_name) {
-                            callback(data.display_name);
-                        } else {
-                            callback('غير معروف');
-                        }
-                    })
-                    .catch(function() {
-                        callback('غير معروف');
                     });
-            }
-
-            function initLeafletMap(lat, lng, onMarkerDrag) {
-                const mapContainer = document.getElementById('leafletMapContainer');
-                if (!mapContainer) return;
-
-                if (leafletMap) {
-                    leafletMap.remove();
-                    leafletMap = null;
-                    leafletMarker = null;
-                }
-
-                try {
-                    leafletMap = L.map(mapContainer, {
-                        zoomControl: true,
-                        minZoom: 2,
-                        maxZoom: 19
-                    }).setView([lat, lng], 15);
-
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        maxZoom: 19,
-                        attribution: '© OpenStreetMap'
-                    }).addTo(leafletMap);
-
-                    leafletMarker = L.marker([lat, lng], { draggable: true }).addTo(leafletMap);
-
-                    leafletMarker.on('dragend', function() {
-                        const pos = leafletMarker.getLatLng();
-                        selectedLat = pos.lat;
-                        selectedLng = pos.lng;
-                        if (onMarkerDrag) onMarkerDrag(selectedLat, selectedLng);
-                    });
-
-                    leafletMap.on('click', function(e) {
-                        selectedLat = e.latlng.lat;
-                        selectedLng = e.latlng.lng;
-                        leafletMarker.setLatLng([selectedLat, selectedLng]);
-                        if (onMarkerDrag) onMarkerDrag(selectedLat, selectedLng);
-                    });
-
-                    setTimeout(function() {
-                        leafletMap.invalidateSize();
-                    }, 150);
-                } catch (error) {
-                    mapContainer.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;">تعذر تحميل الخريطة</div>';
-                }
-            }
-
-            function updateCoordsBar(lat, lng) {
-                const coordsEl = document.getElementById('mapCoordsDisplay');
-                if (coordsEl) {
-                    coordsEl.textContent = 'خط العرض: ' + lat.toFixed(6) + ' | خط الطول: ' + lng.toFixed(6);
-                }
-            }
-
-            function openMapModal() {
-                if (isMapModalOpen) return;
-                isMapModalOpen = true;
-
-                let currentLat = selectedLat;
-                let currentLng = selectedLng;
-                const isMobile = window.innerWidth <= 768;
-
-                Swal.fire({
-                    title: 'حدد موقعك على الخريطة',
-                    html: '<div id="leafletMapContainer" style="flex:1;min-height:0;height:100%;width:100%;position:relative;z-index:1;background:#f0f0f0;"></div>' +
-                        '<div class="map-coords-bar">' +
-                        '<span id="mapCoordsDisplay">خط العرض: ' + currentLat.toFixed(6) + ' | خط الطول: ' + currentLng.toFixed(6) + '</span>' +
-                        '<button type="button" id="mapUseCurrentBtn" class="map-use-current-btn"><i class="las la-location-arrow"></i> تحديد موقعي</button>' +
-                        '</div>',
-                    showCancelButton: true,
-                    confirmButtonText: 'تأكيد الموقع',
-                    cancelButtonText: 'إلغاء',
-                    confirmButtonColor: '#FF5A00',
-                    cancelButtonColor: '#717171',
-                    customClass: {
-                        container: 'map-modal-container',
-                        popup: isMobile ? 'map-fullscreen' : ''
-                    },
-                    width: isMobile ? '100vw' : '720px',
-                    heightAuto: false,
-                    padding: '0',
-                    didOpen: function() {
-                        setTimeout(function() {
-                            initLeafletMap(currentLat, currentLng, function(lat, lng) {
-                                updateCoordsBar(lat, lng);
-                            });
-
-                            const useCurrentBtn = document.getElementById('mapUseCurrentBtn');
-                            if (useCurrentBtn) {
-                                useCurrentBtn.addEventListener('click', function() {
-                                    if (navigator.geolocation) {
-                                        Swal.showLoading();
-                                        navigator.geolocation.getCurrentPosition(
-                                            function(pos) {
-                                                Swal.hideLoading();
-                                                const lat = pos.coords.latitude;
-                                                const lng = pos.coords.longitude;
-                                                currentLat = lat;
-                                                currentLng = lng;
-                                                selectedLat = lat;
-                                                selectedLng = lng;
-                                                if (leafletMarker && leafletMap) {
-                                                    leafletMarker.setLatLng([lat, lng]);
-                                                    leafletMap.setView([lat, lng], 16);
-                                                }
-                                                updateCoordsBar(lat, lng);
-                                            },
-                                            function() {
-                                                Swal.hideLoading();
-                                                Swal.showValidationMessage('تعذر الحصول على موقعك الحالي');
-                                            },
-                                            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                                        );
-                                    } else {
-                                        Swal.showValidationMessage('المتصفح لا يدعم تحديد الموقع');
-                                    }
-                                });
-                            }
-                        }, 300);
-                    },
-                    preConfirm: function() {
-                        return new Promise(function(resolve) {
-                            reverseGeocodeNominatim(selectedLat, selectedLng, function(address) {
-                                if (address && address !== 'غير معروف') {
-                                    resolve(address);
-                                } else {
-                                    resolve(selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6));
-                                }
-                            });
-                        });
-                    },
-                    willClose: function() {
-                        isMapModalOpen = false;
-                        if (leafletMap) {
-                            leafletMap.remove();
-                            leafletMap = null;
-                            leafletMarker = null;
-                        }
+                },
+                function () {
+                    isGeolocationInProgress = false;
+                    if (!storageGet('userAddress')) {
+                        userAddressText.textContent = 'شرم الشيخ (افتراضي)';
                     }
-                }).then(function(result) {
-                    if (result.isConfirmed && result.value) {
-                        userAddressText.textContent = result.value;
-                        saveLocationToStorage(selectedLat, selectedLng, result.value);
-                        Swal.fire({
-                            title: 'تم تحديث العنوان',
-                            text: 'تم تغيير موقعك بنجاح',
-                            icon: 'success',
-                            confirmButtonColor: '#FF5A00',
-                            timer: 2000,
-                            showConfirmButton: true
-                        });
-                    }
-                }).catch(function() {
-                    isMapModalOpen = false;
+                },
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+            );
+        }
+
+        /* ---------------- 10) الخريطة ---------------- */
+
+        function initLeafletMap(lat, lng, onMove) {
+            var container = document.getElementById('leafletMapContainer');
+            if (!container) { return; }
+
+            if (typeof window.L === 'undefined') {
+                container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;text-align:center;padding:16px;">تعذر تحميل الخريطة<br>(تأكد من الاتصال بالإنترنت)</div>';
+                return;
+            }
+
+            if (leafletMap) {
+                try { leafletMap.remove(); } catch (e) {}
+                leafletMap = null;
+                leafletMarker = null;
+            }
+
+            try {
+                leafletMap = L.map(container, {
+                    zoomControl: true,
+                    minZoom: 2,
+                    maxZoom: 19
+                }).setView([lat, lng], 15);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap'
+                }).addTo(leafletMap);
+
+                leafletMarker = L.marker([lat, lng], { draggable: true }).addTo(leafletMap);
+
+                leafletMarker.on('dragend', function () {
+                    var pos = leafletMarker.getLatLng();
+                    selectedLat = pos.lat;
+                    selectedLng = pos.lng;
+                    if (onMove) { onMove(selectedLat, selectedLng); }
                 });
-            }
 
-            userAddressContainer.addEventListener('click', function(e) {
+                leafletMap.on('click', function (e) {
+                    selectedLat = e.latlng.lat;
+                    selectedLng = e.latlng.lng;
+                    leafletMarker.setLatLng([selectedLat, selectedLng]);
+                    if (onMove) { onMove(selectedLat, selectedLng); }
+                });
+
+                setTimeout(function () {
+                    try { leafletMap.invalidateSize(); } catch (e) {}
+                }, 250);
+            } catch (err) {
+                container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;">تعذر تحميل الخريطة</div>';
+            }
+        }
+
+        function updateCoordsBar(lat, lng) {
+            var el = document.getElementById('mapCoordsDisplay');
+            if (el) {
+                el.textContent = 'خط العرض: ' + lat.toFixed(6) + ' | خط الطول: ' + lng.toFixed(6);
+            }
+        }
+
+        function openMapModal() {
+            if (isMapModalOpen) { return; }
+            isMapModalOpen = true;
+
+            var currentLat = selectedLat;
+            var currentLng = selectedLng;
+            var isMobile = window.innerWidth <= 768;
+
+            var html = '<div id="leafletMapContainer" style="flex:1;min-height:200px;height:100%;width:100%;position:relative;z-index:1;background:#f0f0f0;"></div>' +
+                '<div class="map-coords-bar">' +
+                '<span id="mapCoordsDisplay">خط العرض: ' + currentLat.toFixed(6) + ' | خط الطول: ' + currentLng.toFixed(6) + '</span>' +
+                '<button type="button" id="mapUseCurrentBtn" class="map-use-current-btn"><i class="las la-location-arrow"></i> تحديد موقعي</button>' +
+                '</div>';
+
+            Swal.fire({
+                title: 'حدد موقعك على الخريطة',
+                html: html,
+                showCancelButton: true,
+                confirmButtonText: 'تأكيد الموقع',
+                cancelButtonText: 'إلغاء',
+                confirmButtonColor: '#FF5A00',
+                cancelButtonColor: '#717171',
+                customClass: {
+                    container: 'map-modal-container',
+                    popup: isMobile ? 'map-fullscreen' : ''
+                },
+                width: isMobile ? '100vw' : '720px',
+                heightAuto: false,
+                padding: '0',
+                didOpen: function () {
+                    setTimeout(function () {
+                        initLeafletMap(currentLat, currentLng, function (lat, lng) {
+                            updateCoordsBar(lat, lng);
+                        });
+
+                        var btn = document.getElementById('mapUseCurrentBtn');
+                        if (btn) {
+                            btn.addEventListener('click', function () {
+                                if (!navigator.geolocation) {
+                                    Swal.showValidationMessage('المتصفح لا يدعم تحديد الموقع');
+                                    return;
+                                }
+                                navigator.geolocation.getCurrentPosition(
+                                    function (pos) {
+                                        var la = pos.coords.latitude;
+                                        var ln = pos.coords.longitude;
+                                        currentLat = la;
+                                        currentLng = ln;
+                                        selectedLat = la;
+                                        selectedLng = ln;
+                                        if (leafletMarker && leafletMap) {
+                                            leafletMarker.setLatLng([la, ln]);
+                                            leafletMap.setView([la, ln], 16);
+                                        }
+                                        updateCoordsBar(la, ln);
+                                    },
+                                    function () {
+                                        Swal.showValidationMessage('تعذر الحصول على موقعك الحالي');
+                                    },
+                                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                                );
+                            });
+                        }
+                    }, 300);
+                },
+                preConfirm: function () {
+                    if (typeof window.Promise !== 'function') {
+                        return selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6);
+                    }
+                    return new Promise(function (resolve) {
+                        reverseGeocode(selectedLat, selectedLng, function (address) {
+                            if (address && address !== 'غير معروف') { resolve(address); }
+                            else { resolve(selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6)); }
+                        });
+                    });
+                },
+                willClose: function () {
+                    isMapModalOpen = false;
+                    if (leafletMap) {
+                        try { leafletMap.remove(); } catch (e) {}
+                        leafletMap = null;
+                        leafletMarker = null;
+                    }
+                }
+            }).then(function (result) {
+                if (result && result.isConfirmed && result.value) {
+                    userAddressText.textContent = result.value;
+                    saveLocation(selectedLat, selectedLng, result.value);
+                    Swal.fire({
+                        title: 'تم تحديث العنوان',
+                        text: 'تم تغيير موقعك بنجاح',
+                        icon: 'success',
+                        confirmButtonColor: '#FF5A00',
+                        timer: 2000,
+                        showConfirmButton: true
+                    });
+                }
+            })['catch'](function () {
+                isMapModalOpen = false;
+            });
+        }
+
+        if (userAddressContainer) {
+            userAddressContainer.addEventListener('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 openMapModal();
             });
             userAddressContainer.style.cursor = 'pointer';
 
-            const locationIcon = userAddressContainer.querySelector('i');
+            var locationIcon = userAddressContainer.querySelector('i');
             if (locationIcon) {
-                locationIcon.addEventListener('click', function(e) {
+                locationIcon.addEventListener('click', function (e) {
                     e.preventDefault();
                     e.stopPropagation();
                     openMapModal();
                 });
             }
+        }
 
-            if (!loadLocationFromStorage()) {
-                getCurrentLocation();
-            }
-        })();
+        /* ---------------- 11) التشغيل ---------------- */
+
+        if (!loadLocation()) {
+            getCurrentLocation();
+        }
+    })();
     </script>
 </body>
 </html>
