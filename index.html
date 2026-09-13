@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -1386,14 +1384,6 @@
             let isGeolocationInProgress = false;
             let locationWatchId = null;
 
-            const tabMessages = {
-                home: 'أنت في الصفحة الرئيسية',
-                offers: 'عروض اليوم الخاصة بك',
-                orders: 'طلباتك الحالية والسابقة',
-                favorites: 'قائمة المفضلة الخاصة بك',
-                profile: 'حسابك الشخصي'
-            };
-
             function activateTab(tab) {
                 bottomNavItems.forEach(function(i) {
                     i.classList.toggle('active', i.getAttribute('data-tab') === tab);
@@ -1401,16 +1391,6 @@
                 desktopNavItems.forEach(function(i) {
                     i.classList.toggle('active', i.getAttribute('data-nav') === tab);
                 });
-            }
-
-            function showTabMessage(tab) {
-                if (tab !== 'home') {
-                    Swal.fire({
-                        title: tabMessages[tab] || '',
-                        icon: 'info',
-                        confirmButtonColor: '#FF5A00'
-                    });
-                }
             }
 
             function openDropdown() {
@@ -1465,20 +1445,9 @@
             dropdownItems.forEach(function(item) {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
-                    const action = this.getAttribute('data-action');
                     dropdownItems.forEach(function(i) { i.classList.remove('active'); });
                     this.classList.add('active');
-                    const label = this.querySelector('span') ? this.querySelector('span').textContent : '';
                     closeDropdown();
-                    if (action && action !== 'home') {
-                        setTimeout(function() {
-                            Swal.fire({
-                                title: label || action,
-                                icon: 'info',
-                                confirmButtonColor: '#FF5A00'
-                            });
-                        }, 300);
-                    }
                 });
             });
 
@@ -1513,18 +1482,14 @@
             bottomNavItems.forEach(function(item) {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
-                    const tab = this.getAttribute('data-tab');
-                    activateTab(tab);
-                    showTabMessage(tab);
+                    activateTab(this.getAttribute('data-tab'));
                 });
             });
 
             desktopNavItems.forEach(function(item) {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
-                    const tab = this.getAttribute('data-nav');
-                    activateTab(tab);
-                    showTabMessage(tab);
+                    activateTab(this.getAttribute('data-nav'));
                 });
             });
 
