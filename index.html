@@ -1354,34 +1354,28 @@
         </div>
     </main>
 
-<div class="bottom-mobile-nav" id="bottomMobileNav">
-
-    <a href="index.html" class="bottom-nav-item active">
-        <i class="las la-home"></i>
-        <span>الرئيسية</span>
-    </a>
-
-    <a href="orders.html" class="bottom-nav-item">
-        <i class="las la-box"></i>
-        <span>الطلبات</span>
-    </a>
-
-    <a href="cart.html" class="bottom-nav-item bottom-nav-item-center">
-        <i class="las la-shopping-cart"></i>
-        <span>عربة التسوق</span>
-    </a>
-
-    <a href="favorites.html" class="bottom-nav-item">
-        <i class="las la-heart"></i>
-        <span>المفضلة</span>
-    </a>
-
-    <a href="setteing.html" class="bottom-nav-item">
-        <i class="las la-user"></i>
-        <span>حسابي</span>
-    </a>
-
-</div>
+    <div class="bottom-mobile-nav" id="bottomMobileNav">
+        <a href="index.html" class="bottom-nav-item active" data-tab="home">
+            <i class="las la-home"></i>
+            <span>الرئيسية</span>
+        </a>
+        <a href="orders.html" class="bottom-nav-item" data-tab="orders">
+            <i class="las la-box"></i>
+            <span>الطلبات</span>
+        </a>
+        <a href="cart.html" class="bottom-nav-item bottom-nav-item-center" data-tab="cart">
+            <i class="las la-shopping-cart"></i>
+            <span>عربة التسوق</span>
+        </a>
+        <a href="favorites.html" class="bottom-nav-item" data-tab="favorites">
+            <i class="las la-heart"></i>
+            <span>المفضلة</span>
+        </a>
+        <a href="settings.html" class="bottom-nav-item" data-tab="account">
+            <i class="las la-user"></i>
+            <span>حسابي</span>
+        </a>
+    </div>
 
     <script>
         (function() {
@@ -1501,8 +1495,7 @@
             }
 
             bottomNavItems.forEach(function(item) {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
+                item.addEventListener('click', function() {
                     activateTab(this.getAttribute('data-tab'));
                 });
             });
