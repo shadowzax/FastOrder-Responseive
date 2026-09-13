@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -390,7 +392,7 @@
             color: var(--color-muted);
             font-size: 0.68rem;
             font-weight: 600;
-            transition: color 0.25s ease, transform 0.15s ease;
+            transition: all 0.25s ease;
             position: relative;
             min-width: 0;
             -webkit-tap-highlight-color: transparent;
@@ -414,9 +416,6 @@
         }
         .bottom-nav-item.active i {
             font-size: 1.5rem;
-        }
-        .bottom-nav-item:active {
-            transform: scale(0.92);
         }
         .bottom-nav-item-center {
             position: relative;
@@ -837,15 +836,14 @@
             align-items: center;
             gap: 4px;
         }
-
-        /* ===== إصلاحات نافذة الخريطة ===== */
         .map-modal-container .swal2-html-container {
             padding: 0 !important;
             overflow: hidden !important;
             margin: 0 !important;
+            height: 100% !important;
+            max-height: 100% !important;
             display: flex !important;
             flex-direction: column !important;
-            min-height: 0 !important;
         }
         .map-coords-bar {
             padding: 10px 16px;
@@ -881,11 +879,13 @@
             box-shadow: 0 4px 12px rgba(255, 90, 0, 0.4);
         }
         #leafletMapContainer {
+            height: 100%;
             width: 100%;
-            height: 420px;
             position: relative;
             z-index: 1;
             background: #f0f0f0;
+            flex: 1;
+            min-height: 0;
         }
         .swal2-popup.map-fullscreen {
             width: 100vw !important;
@@ -916,18 +916,20 @@
             border-top: 1px solid #eee;
             flex-shrink: 0;
         }
-        .swal2-popup.map-fullscreen .swal2-html-container {
+        .swal2-popup.map-fullscreen .swal2-content {
             display: flex !important;
             flex-direction: column !important;
-            flex: 1 1 auto !important;
+            flex: 1 !important;
             overflow: hidden !important;
             height: auto !important;
             min-height: 0 !important;
         }
-        .swal2-popup.map-fullscreen #leafletMapContainer {
-            height: 100%;
-            flex: 1 1 auto;
-            min-height: 0;
+        .swal2-popup.map-fullscreen .swal2-html-container {
+            display: flex !important;
+            flex-direction: column !important;
+            flex: 1 !important;
+            overflow: hidden !important;
+            min-height: 0 !important;
         }
 
         @media (min-width: 1024px) {
@@ -1083,7 +1085,7 @@
             </div>
         </header>
 
-        <div class="container app-shell mx-auto px-4 py-6">
+        <div class="container app-shell mx-auto px-4 py-6 max-w-6xl">
             <div class="search-bar sm:hidden mb-4 w-full">
                 <i class="las la-search text-[var(--color-muted)] text-lg"></i>
                 <input type="text" class="search-input" placeholder="ابحث عن مطعم أو وجبة..." id="mobileSearchInput">
@@ -1364,8 +1366,6 @@
 
     <script>
         (function() {
-            'use strict';
-
             const headerAvatarWrapper = document.getElementById('headerAvatarWrapper');
             const dropdown = document.getElementById('profileDropdown');
             const dropdownOverlay = document.getElementById('dropdownOverlay');
@@ -1394,7 +1394,6 @@
                 profile: 'حسابك الشخصي'
             };
 
-            /* ============ التنقل ============ */
             function activateTab(tab) {
                 bottomNavItems.forEach(function(i) {
                     i.classList.toggle('active', i.getAttribute('data-tab') === tab);
@@ -1404,7 +1403,6 @@
                 });
             }
 
-            /* تبقى الرسائل للتنقل في الهيدر (الديسكتوب) فقط */
             function showTabMessage(tab) {
                 if (tab !== 'home') {
                     Swal.fire({
@@ -1415,7 +1413,6 @@
                 }
             }
 
-            /* ============ قائمة البروفايل ============ */
             function openDropdown() {
                 isDropdownOpen = true;
                 dropdown.classList.add('active');
@@ -1513,28 +1510,15 @@
                 });
             }
 
-            /* ============ الناف بار السفلي ============
-               نفس منطق زر الإشعارات: تبديل حالة فقط بدون أي رسائل
-               ولا يتم إظهار أي SweetAlert إطلاقاً من أزرار الناف بار السفلي.
-            ============================================ */
             bottomNavItems.forEach(function(item) {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
-                    e.stopPropagation();
-
-                    if (isDropdownOpen) {
-                        closeDropdown();
-                    }
-
                     const tab = this.getAttribute('data-tab');
-                    if (!tab) return;
-
                     activateTab(tab);
-                    /* لا رسائل ولا تنبيهات هنا */
+                    showTabMessage(tab);
                 });
             });
 
-            /* التنقل في الهيدر (ديسكتوب) — يبقى كما هو مع الرسائل */
             desktopNavItems.forEach(function(item) {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -1553,7 +1537,6 @@
                 });
             });
 
-            /* ============ الدوال العامة ============ */
             window.showRestaurantAlert = function(name, category, rating, time, fee) {
                 Swal.fire({
                     title: name,
@@ -1597,7 +1580,6 @@
                 });
             };
 
-            /* ============ بانرات العروض ============ */
             const mainOfferBanner = document.getElementById('mainOfferBanner');
             if (mainOfferBanner) {
                 mainOfferBanner.addEventListener('click', function(e) {
@@ -1638,7 +1620,6 @@
                 }
             });
 
-            /* ============ البحث ============ */
             document.querySelectorAll('.search-input').forEach(function(input) {
                 input.addEventListener('keydown', function(e) {
                     if (e.key === 'Enter' && e.target.value.trim()) {
@@ -1653,7 +1634,6 @@
                 });
             });
 
-            /* ============ بطاقة Plus ============ */
             const plusCard = document.querySelector('.plus-card');
             if (plusCard) {
                 plusCard.addEventListener('click', function(e) {
@@ -1675,24 +1655,16 @@
                 }
             }
 
-            /* ============ الموقع ============ */
             function saveLocationToStorage(lat, lng, address) {
-                try {
-                    localStorage.setItem('userLat', lat);
-                    localStorage.setItem('userLng', lng);
-                    localStorage.setItem('userAddress', address);
-                } catch (err) { /* تجاهل */ }
+                localStorage.setItem('userLat', lat);
+                localStorage.setItem('userLng', lng);
+                localStorage.setItem('userAddress', address);
             }
 
             function loadLocationFromStorage() {
-                let lat, lng, address;
-                try {
-                    lat = localStorage.getItem('userLat');
-                    lng = localStorage.getItem('userLng');
-                    address = localStorage.getItem('userAddress');
-                } catch (err) {
-                    return false;
-                }
+                const lat = localStorage.getItem('userLat');
+                const lng = localStorage.getItem('userLng');
+                const address = localStorage.getItem('userAddress');
                 if (lat && lng) {
                     selectedLat = parseFloat(lat);
                     selectedLng = parseFloat(lng);
@@ -1704,27 +1676,6 @@
                     return true;
                 }
                 return false;
-            }
-
-            function stopLocationWatch() {
-                if (locationWatchId !== null && navigator.geolocation) {
-                    navigator.geolocation.clearWatch(locationWatchId);
-                    locationWatchId = null;
-                }
-            }
-
-            function applyResolvedAddress(lat, lng) {
-                reverseGeocodeNominatim(lat, lng, function(address) {
-                    if (address && address !== 'غير معروف') {
-                        userAddressText.textContent = address;
-                        saveLocationToStorage(lat, lng, address);
-                    } else {
-                        const coords = lat.toFixed(6) + ', ' + lng.toFixed(6);
-                        userAddressText.textContent = coords;
-                        saveLocationToStorage(lat, lng, coords);
-                    }
-                    isGeolocationInProgress = false;
-                });
             }
 
             function getCurrentLocation() {
@@ -1739,7 +1690,15 @@
 
                 userAddressText.textContent = 'جاري تحديد موقعك بدقة...';
 
-                stopLocationWatch();
+                const options = {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 0
+                };
+
+                if (locationWatchId) {
+                    navigator.geolocation.clearWatch(locationWatchId);
+                }
 
                 navigator.geolocation.getCurrentPosition(
                     function(position) {
@@ -1748,22 +1707,50 @@
                         const accuracy = position.coords.accuracy;
                         selectedLat = lat;
                         selectedLng = lng;
-
                         if (accuracy <= 50) {
-                            applyResolvedAddress(lat, lng);
+                            reverseGeocodeNominatim(lat, lng, function(address) {
+                                if (address && address !== 'غير معروف') {
+                                    userAddressText.textContent = address;
+                                    saveLocationToStorage(lat, lng, address);
+                                } else {
+                                    userAddressText.textContent = lat.toFixed(6) + ', ' + lng.toFixed(6);
+                                    saveLocationToStorage(lat, lng, userAddressText.textContent);
+                                }
+                                isGeolocationInProgress = false;
+                            });
                         } else {
                             locationWatchId = navigator.geolocation.watchPosition(
                                 function(pos) {
                                     if (pos.coords.accuracy <= 30) {
                                         selectedLat = pos.coords.latitude;
                                         selectedLng = pos.coords.longitude;
-                                        stopLocationWatch();
-                                        applyResolvedAddress(selectedLat, selectedLng);
+                                        reverseGeocodeNominatim(selectedLat, selectedLng, function(address) {
+                                            if (address && address !== 'غير معروف') {
+                                                userAddressText.textContent = address;
+                                                saveLocationToStorage(selectedLat, selectedLng, address);
+                                            } else {
+                                                userAddressText.textContent = selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6);
+                                                saveLocationToStorage(selectedLat, selectedLng, userAddressText.textContent);
+                                            }
+                                            isGeolocationInProgress = false;
+                                            if (locationWatchId) {
+                                                navigator.geolocation.clearWatch(locationWatchId);
+                                                locationWatchId = null;
+                                            }
+                                        });
                                     }
                                 },
                                 function() {
-                                    stopLocationWatch();
-                                    applyResolvedAddress(selectedLat, selectedLng);
+                                    reverseGeocodeNominatim(selectedLat, selectedLng, function(address) {
+                                        if (address && address !== 'غير معروف') {
+                                            userAddressText.textContent = address;
+                                            saveLocationToStorage(selectedLat, selectedLng, address);
+                                        } else {
+                                            userAddressText.textContent = selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6);
+                                            saveLocationToStorage(selectedLat, selectedLng, userAddressText.textContent);
+                                        }
+                                        isGeolocationInProgress = false;
+                                    });
                                 },
                                 { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
                             );
@@ -1774,17 +1761,20 @@
                         switch (error.code) {
                             case error.PERMISSION_DENIED:
                                 message = 'تم رفض إذن الوصول للموقع. سيتم استخدام الموقع الافتراضي.';
+                                userAddressText.textContent = 'شرم الشيخ (افتراضي)';
                                 break;
                             case error.POSITION_UNAVAILABLE:
                                 message = 'معلومات الموقع غير متوفرة حالياً.';
+                                userAddressText.textContent = 'شرم الشيخ (افتراضي)';
                                 break;
                             case error.TIMEOUT:
                                 message = 'انتهت مهلة تحديد الموقع.';
+                                userAddressText.textContent = 'شرم الشيخ (افتراضي)';
                                 break;
                             default:
                                 message = 'خطأ غير معروف في تحديد الموقع.';
+                                userAddressText.textContent = 'شرم الشيخ (افتراضي)';
                         }
-                        userAddressText.textContent = 'شرم الشيخ (افتراضي)';
                         isGeolocationInProgress = false;
                         Swal.fire({
                             title: 'تنبيه',
@@ -1795,14 +1785,16 @@
                             showConfirmButton: true
                         });
                     },
-                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+                    options
                 );
             }
 
             function reverseGeocodeNominatim(lat, lng, callback) {
                 const url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng + '&accept-language=ar&zoom=18';
                 fetch(url, {
-                    headers: { 'Accept': 'application/json' }
+                    headers: {
+                        'Accept': 'application/json'
+                    }
                 })
                     .then(function(response) {
                         if (!response.ok) throw new Error('Network error');
@@ -1820,7 +1812,7 @@
                     });
             }
 
-            function initLeafletMap(lat, lng, onMarkerMove) {
+            function initLeafletMap(lat, lng, onMarkerDrag) {
                 const mapContainer = document.getElementById('leafletMapContainer');
                 if (!mapContainer) return;
 
@@ -1828,11 +1820,6 @@
                     leafletMap.remove();
                     leafletMap = null;
                     leafletMarker = null;
-                }
-
-                if (typeof L === 'undefined') {
-                    mapContainer.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;">تعذر تحميل الخريطة</div>';
-                    return;
                 }
 
                 try {
@@ -1853,19 +1840,19 @@
                         const pos = leafletMarker.getLatLng();
                         selectedLat = pos.lat;
                         selectedLng = pos.lng;
-                        if (onMarkerMove) onMarkerMove(selectedLat, selectedLng);
+                        if (onMarkerDrag) onMarkerDrag(selectedLat, selectedLng);
                     });
 
                     leafletMap.on('click', function(e) {
                         selectedLat = e.latlng.lat;
                         selectedLng = e.latlng.lng;
                         leafletMarker.setLatLng([selectedLat, selectedLng]);
-                        if (onMarkerMove) onMarkerMove(selectedLat, selectedLng);
+                        if (onMarkerDrag) onMarkerDrag(selectedLat, selectedLng);
                     });
 
                     setTimeout(function() {
-                        if (leafletMap) leafletMap.invalidateSize();
-                    }, 200);
+                        leafletMap.invalidateSize();
+                    }, 150);
                 } catch (error) {
                     mapContainer.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;">تعذر تحميل الخريطة</div>';
                 }
@@ -1888,7 +1875,7 @@
 
                 Swal.fire({
                     title: 'حدد موقعك على الخريطة',
-                    html: '<div id="leafletMapContainer"></div>' +
+                    html: '<div id="leafletMapContainer" style="flex:1;min-height:0;height:100%;width:100%;position:relative;z-index:1;background:#f0f0f0;"></div>' +
                         '<div class="map-coords-bar">' +
                         '<span id="mapCoordsDisplay">خط العرض: ' + currentLat.toFixed(6) + ' | خط الطول: ' + currentLng.toFixed(6) + '</span>' +
                         '<button type="button" id="mapUseCurrentBtn" class="map-use-current-btn"><i class="las la-location-arrow"></i> تحديد موقعي</button>' +
@@ -1914,33 +1901,33 @@
                             const useCurrentBtn = document.getElementById('mapUseCurrentBtn');
                             if (useCurrentBtn) {
                                 useCurrentBtn.addEventListener('click', function() {
-                                    if (!navigator.geolocation) {
+                                    if (navigator.geolocation) {
+                                        Swal.showLoading();
+                                        navigator.geolocation.getCurrentPosition(
+                                            function(pos) {
+                                                Swal.hideLoading();
+                                                const lat = pos.coords.latitude;
+                                                const lng = pos.coords.longitude;
+                                                selectedLat = lat;
+                                                selectedLng = lng;
+                                                if (leafletMarker && leafletMap) {
+                                                    leafletMarker.setLatLng([lat, lng]);
+                                                    leafletMap.setView([lat, lng], 16);
+                                                }
+                                                updateCoordsBar(lat, lng);
+                                            },
+                                            function() {
+                                                Swal.hideLoading();
+                                                Swal.showValidationMessage('تعذر الحصول على موقعك الحالي');
+                                            },
+                                            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                                        );
+                                    } else {
                                         Swal.showValidationMessage('المتصفح لا يدعم تحديد الموقع');
-                                        return;
                                     }
-                                    Swal.showLoading();
-                                    navigator.geolocation.getCurrentPosition(
-                                        function(pos) {
-                                            Swal.hideLoading();
-                                            const lat = pos.coords.latitude;
-                                            const lng = pos.coords.longitude;
-                                            selectedLat = lat;
-                                            selectedLng = lng;
-                                            if (leafletMarker && leafletMap) {
-                                                leafletMarker.setLatLng([lat, lng]);
-                                                leafletMap.setView([lat, lng], 16);
-                                            }
-                                            updateCoordsBar(lat, lng);
-                                        },
-                                        function() {
-                                            Swal.hideLoading();
-                                            Swal.showValidationMessage('تعذر الحصول على موقعك الحالي');
-                                        },
-                                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                                    );
                                 });
                             }
-                        }, 250);
+                        }, 300);
                     },
                     preConfirm: function() {
                         return new Promise(function(resolve) {
@@ -1955,7 +1942,6 @@
                     },
                     willClose: function() {
                         isMapModalOpen = false;
-                        stopLocationWatch();
                         if (leafletMap) {
                             leafletMap.remove();
                             leafletMap = null;
@@ -1996,7 +1982,6 @@
                 });
             }
 
-            /* ============ التهيئة ============ */
             if (!loadLocationFromStorage()) {
                 getCurrentLocation();
             }
