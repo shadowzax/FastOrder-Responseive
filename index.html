@@ -88,6 +88,9 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #FF5A00;
         }
+        body.map-page-open {
+            overflow: hidden;
+        }
         .dropdown-overlay {
             position: fixed;
             inset: 0;
@@ -768,47 +771,70 @@
             align-items: center;
             gap: 4px;
         }
-        .map-modal-container .swal2-html-container {
-            padding: 0 !important;
-            overflow: hidden !important;
-            margin: 0 !important;
-            height: 100% !important;
-            max-height: 100% !important;
-            display: flex !important;
-            flex-direction: column !important;
-        }
-        .map-coords-bar {
-            padding: 10px 16px;
-            background: #fafafa;
-            border-top: 1px solid #eee;
-            font-size: 0.75rem;
-            color: #666;
+        .map-page {
+            position: fixed;
+            inset: 0;
+            background: #fff;
+            z-index: 200;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+        .map-page.active {
+            transform: translateX(0);
+        }
+        .map-page-header {
+            display: flex;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 6px;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #fff;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+            padding-top: max(12px, env(safe-area-inset-top, 12px));
+            min-height: 64px;
+        }
+        .map-back-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: none;
+            background: var(--darker-bg);
+            color: var(--color-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .map-back-btn:hover {
+            background: rgba(255, 90, 0, 0.1);
+            color: var(--color-primary);
+        }
+        .map-back-btn:active {
+            transform: scale(0.94);
+        }
+        .map-page-title {
+            flex: 1;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--color-white);
+            margin: 0;
+        }
+        .map-page-spacer {
+            width: 42px;
             flex-shrink: 0;
         }
-        .map-use-current-btn {
-            background: #FF5A00;
-            border: none;
-            border-radius: 10px;
-            padding: 10px 18px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            color: #fff;
-            font-family: 'Noto Sans Arabic', system-ui, sans-serif;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-weight: 600;
-            box-shadow: 0 2px 8px rgba(255, 90, 0, 0.3);
-        }
-        .map-use-current-btn:hover {
-            background: #e04e00;
-            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.4);
+        .map-page-body {
+            flex: 1;
+            position: relative;
+            min-height: 0;
         }
         #leafletMapContainer {
             height: 100%;
@@ -816,60 +842,74 @@
             position: relative;
             z-index: 1;
             background: #f0f0f0;
-            flex: 1;
-            min-height: 0;
         }
-        .swal2-popup:not(.map-fullscreen) #leafletMapContainer {
-            height: 60vh;
-            min-height: 360px;
-        }
-        .swal2-popup.map-fullscreen {
-            width: 100vw !important;
-            height: 100vh !important;
-            height: 100dvh !important;
-            max-width: 100vw !important;
-            max-height: 100vh !important;
-            max-height: 100dvh !important;
-            border-radius: 0 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            display: flex !important;
-            flex-direction: column !important;
-        }
-        .swal2-popup.map-fullscreen .swal2-title {
-            padding: 12px 16px;
-            font-size: 1rem;
+        .map-page-footer {
             background: #fff;
-            border-bottom: 1px solid #eee;
-            margin: 0;
-            text-align: center;
+            border-top: 1px solid var(--border-color);
             flex-shrink: 0;
-        }
-        .swal2-popup.map-fullscreen .swal2-actions {
-            margin: 0;
             padding: 12px 16px;
-            background: #fff;
-            border-top: 1px solid #eee;
-            flex-shrink: 0;
+            padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-        .swal2-popup.map-fullscreen .swal2-content {
-            display: flex !important;
-            flex-direction: column !important;
-            flex: 1 !important;
-            overflow: hidden !important;
-            height: auto !important;
-            min-height: 0 !important;
+        .map-coords-bar {
+            font-size: 0.72rem;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
         }
-        .swal2-popup.map-fullscreen .swal2-html-container {
-            display: flex !important;
-            flex-direction: column !important;
-            flex: 1 !important;
-            overflow: hidden !important;
-            min-height: 0 !important;
+        .map-use-current-btn {
+            background: rgba(255, 90, 0, 0.1);
+            border: 1px solid rgba(255, 90, 0, 0.25);
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            color: #FF5A00;
+            font-family: 'Noto Sans Arabic', system-ui, sans-serif;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 700;
         }
-        .swal2-popup.map-fullscreen #leafletMapContainer {
-            height: auto !important;
-            min-height: 0 !important;
+        .map-use-current-btn:hover {
+            background: rgba(255, 90, 0, 0.18);
+        }
+        .map-use-current-btn:active {
+            transform: scale(0.97);
+        }
+        .map-confirm-btn {
+            background: #FF5A00;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            color: #fff;
+            font-family: 'Noto Sans Arabic', system-ui, sans-serif;
+            font-weight: 700;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .map-confirm-btn:hover {
+            background: #e04e00;
+        }
+        .map-confirm-btn:active {
+            transform: scale(0.98);
+        }
+        .map-confirm-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
         @media (min-width: 1024px) {
             :root {
@@ -951,6 +991,30 @@
                 margin-left: auto;
                 margin-right: auto;
             }
+            .map-page-body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: var(--color-background);
+                padding: 24px;
+            }
+            .map-page-body-inner {
+                width: 100%;
+                max-width: 1000px;
+                height: 100%;
+                max-height: 600px;
+                border-radius: 20px;
+                overflow: hidden;
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+                background: #fff;
+                position: relative;
+            }
+            .map-page-footer {
+                max-width: 1000px;
+                margin: 0 auto;
+                width: 100%;
+                border-radius: 0 0 20px 20px;
+            }
         }
         @media (min-width: 1280px) {
             .scroll-row.scroll-row {
@@ -992,6 +1056,32 @@
         <a href="#" class="dropdown-item" data-action="about"><i class="las la-info-circle"></i><span>من نحن</span></a>
         <div class="dropdown-divider"></div>
         <a href="#" class="dropdown-item logout" id="logoutBtn"><i class="las la-sign-out-alt"></i><span>تسجيل الخروج</span></a>
+    </div>
+
+    <div class="map-page" id="mapPage">
+        <div class="map-page-header">
+            <button type="button" class="map-back-btn" id="mapBackBtn" aria-label="رجوع">
+                <i class="las la-arrow-right"></i>
+            </button>
+            <h2 class="map-page-title">حدد موقعك على الخريطة</h2>
+            <div class="map-page-spacer"></div>
+        </div>
+        <div class="map-page-body">
+            <div class="map-page-body-inner">
+                <div id="leafletMapContainer"></div>
+            </div>
+        </div>
+        <div class="map-page-footer">
+            <div class="map-coords-bar">
+                <span id="mapCoordsDisplay">خط العرض: -- | خط الطول: --</span>
+                <button type="button" id="mapUseCurrentBtn" class="map-use-current-btn">
+                    <i class="las la-location-arrow"></i> تحديد موقعي
+                </button>
+            </div>
+            <button type="button" id="mapConfirmBtn" class="map-confirm-btn">
+                <i class="las la-check-circle"></i> تأكيد الموقع
+            </button>
+        </div>
     </div>
 
     <main>
@@ -1331,11 +1421,19 @@
             var logoutBtn = document.getElementById('logoutBtn');
             var isDropdownOpen = false;
 
+            var mapPage = document.getElementById('mapPage');
+            var mapBackBtn = document.getElementById('mapBackBtn');
+            var mapConfirmBtn = document.getElementById('mapConfirmBtn');
+            var mapUseCurrentBtn = document.getElementById('mapUseCurrentBtn');
+            var mapCoordsDisplay = document.getElementById('mapCoordsDisplay');
+
             var leafletMap = null;
             var leafletMarker = null;
             var selectedLat = 27.9158;
             var selectedLng = 34.3300;
-            var isMapModalOpen = false;
+            var tempLat = 27.9158;
+            var tempLng = 34.3300;
+            var isMapPageOpen = false;
             var isLocating = false;
             var DEFAULT_LAT = 27.9158;
             var DEFAULT_LNG = 34.3300;
@@ -1343,6 +1441,7 @@
             var STORAGE_KEY_LAT = 'fastorder_lat';
             var STORAGE_KEY_LNG = 'fastorder_lng';
             var STORAGE_KEY_ADDR = 'fastorder_address';
+            var MAP_HISTORY_STATE = { mapPage: true };
 
             function activateTab(tab) {
                 bottomNavItems.forEach(function(i) {
@@ -1364,7 +1463,9 @@
                 isDropdownOpen = false;
                 dropdown.classList.remove('active');
                 dropdownOverlay.classList.remove('active');
-                document.body.style.overflow = '';
+                if (!isMapPageOpen) {
+                    document.body.style.overflow = '';
+                }
             }
 
             function toggleDropdown() {
@@ -1827,6 +1928,12 @@
                     });
             }
 
+            function updateCoordsBar(lat, lng) {
+                if (mapCoordsDisplay) {
+                    mapCoordsDisplay.textContent = 'خط العرض: ' + lat.toFixed(6) + ' | خط الطول: ' + lng.toFixed(6);
+                }
+            }
+
             function initLeafletMap(lat, lng, onMove) {
                 var container = document.getElementById('leafletMapContainer');
                 if (!container || typeof L === 'undefined') return;
@@ -1842,134 +1949,89 @@
                         zoomControl: true,
                         minZoom: 2,
                         maxZoom: 19,
-                        attributionControl: false
+                        attributionControl: true
                     }).setView([lat, lng], 16);
 
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        maxZoom: 19
+                        maxZoom: 19,
+                        attribution: '© OpenStreetMap'
                     }).addTo(leafletMap);
 
                     leafletMarker = L.marker([lat, lng], { draggable: true }).addTo(leafletMap);
 
                     leafletMarker.on('dragend', function() {
                         var p = leafletMarker.getLatLng();
-                        selectedLat = p.lat;
-                        selectedLng = p.lng;
+                        tempLat = p.lat;
+                        tempLng = p.lng;
                         if (onMove) onMove(p.lat, p.lng);
                     });
 
                     leafletMap.on('click', function(e) {
-                        selectedLat = e.latlng.lat;
-                        selectedLng = e.latlng.lng;
-                        leafletMarker.setLatLng([selectedLat, selectedLng]);
-                        if (onMove) onMove(selectedLat, selectedLng);
+                        tempLat = e.latlng.lat;
+                        tempLng = e.latlng.lng;
+                        leafletMarker.setLatLng([tempLat, tempLng]);
+                        if (onMove) onMove(tempLat, tempLng);
                     });
 
                     setTimeout(function() {
                         if (leafletMap) leafletMap.invalidateSize();
-                    }, 250);
+                    }, 100);
                     setTimeout(function() {
                         if (leafletMap) leafletMap.invalidateSize();
-                    }, 600);
+                    }, 400);
+                    setTimeout(function() {
+                        if (leafletMap) leafletMap.invalidateSize();
+                    }, 800);
                 } catch (e) {
                     container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;">تعذر تحميل الخريطة</div>';
                 }
             }
 
-            function updateCoordsBar(lat, lng) {
-                var el = document.getElementById('mapCoordsDisplay');
-                if (el) {
-                    el.textContent = 'خط العرض: ' + lat.toFixed(6) + ' | خط الطول: ' + lng.toFixed(6);
+            function destroyLeafletMap() {
+                if (leafletMap) {
+                    try { leafletMap.remove(); } catch (e) {}
+                    leafletMap = null;
+                    leafletMarker = null;
                 }
             }
 
-            function openMapModal() {
-                if (isMapModalOpen) return;
-                isMapModalOpen = true;
+            function openMapPage() {
+                if (isMapPageOpen) return;
+                isMapPageOpen = true;
+                tempLat = selectedLat;
+                tempLng = selectedLng;
+                updateCoordsBar(tempLat, tempLng);
+                mapPage.classList.add('active');
+                document.body.classList.add('map-page-open');
+                document.body.style.overflow = 'hidden';
 
-                var startLat = selectedLat;
-                var startLng = selectedLng;
-                var isMobile = window.innerWidth <= 768;
+                try {
+                    history.pushState(MAP_HISTORY_STATE, '', '#location');
+                } catch (e) {}
 
-                Swal.fire({
-                    title: 'حدد موقعك على الخريطة',
-                    html: '<div id="leafletMapContainer"></div>' +
-                        '<div class="map-coords-bar">' +
-                        '<span id="mapCoordsDisplay">خط العرض: ' + startLat.toFixed(6) + ' | خط الطول: ' + startLng.toFixed(6) + '</span>' +
-                        '<button type="button" id="mapUseCurrentBtn" class="map-use-current-btn"><i class="las la-location-arrow"></i> تحديد موقعي</button>' +
-                        '</div>',
-                    showCancelButton: true,
-                    confirmButtonText: 'تأكيد الموقع',
-                    cancelButtonText: 'إلغاء',
-                    confirmButtonColor: '#FF5A00',
-                    cancelButtonColor: '#717171',
-                    customClass: {
-                        container: 'map-modal-container',
-                        popup: isMobile ? 'map-fullscreen' : ''
-                    },
-                    width: isMobile ? '100vw' : '720px',
-                    heightAuto: false,
-                    padding: '0',
-                    didOpen: function() {
-                        setTimeout(function() {
-                            initLeafletMap(startLat, startLng, function(lat, lng) {
-                                updateCoordsBar(lat, lng);
-                            });
+                setTimeout(function() {
+                    initLeafletMap(tempLat, tempLng, function(lat, lng) {
+                        updateCoordsBar(lat, lng);
+                    });
+                }, 380);
+            }
 
-                            var btn = document.getElementById('mapUseCurrentBtn');
-                            if (btn) {
-                                btn.addEventListener('click', function() {
-                                    if (!navigator.geolocation) {
-                                        Swal.showValidationMessage('المتصفح لا يدعم تحديد الموقع');
-                                        return;
-                                    }
-                                    Swal.showLoading();
-                                    navigator.geolocation.getCurrentPosition(
-                                        function(pos) {
-                                            Swal.hideLoading();
-                                            var lat = pos.coords.latitude;
-                                            var lng = pos.coords.longitude;
-                                            selectedLat = lat;
-                                            selectedLng = lng;
-                                            if (leafletMarker && leafletMap) {
-                                                leafletMarker.setLatLng([lat, lng]);
-                                                leafletMap.setView([lat, lng], 17);
-                                            }
-                                            updateCoordsBar(lat, lng);
-                                        },
-                                        function() {
-                                            Swal.hideLoading();
-                                            Swal.showValidationMessage('تعذر الحصول على موقعك الحالي، تأكد من تفعيل GPS والسماح بالوصول');
-                                        },
-                                        { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
-                                    );
-                                });
-                            }
-                        }, 300);
-                    },
-                    preConfirm: function() {
-                        return new Promise(function(resolve) {
-                            geocodeAddress(selectedLat, selectedLng, function(address) {
-                                if (address) {
-                                    resolve(address);
-                                } else {
-                                    resolve(formatCoords(selectedLat, selectedLng));
-                                }
-                            });
-                        });
-                    },
-                    willClose: function() {
-                        isMapModalOpen = false;
-                        if (leafletMap) {
-                            try { leafletMap.remove(); } catch (e) {}
-                            leafletMap = null;
-                            leafletMarker = null;
-                        }
-                    }
-                }).then(function(result) {
-                    if (result.isConfirmed && result.value) {
-                        userAddressText.textContent = result.value;
-                        saveLocation(selectedLat, selectedLng, result.value);
+            function closeMapPage(saveChanges) {
+                if (!isMapPageOpen) return;
+                isMapPageOpen = false;
+                mapPage.classList.remove('active');
+                document.body.classList.remove('map-page-open');
+                document.body.style.overflow = '';
+                setTimeout(destroyLeafletMap, 400);
+
+                if (saveChanges) {
+                    selectedLat = tempLat;
+                    selectedLng = tempLng;
+                    userAddressText.textContent = 'جاري تحديث العنوان...';
+                    geocodeAddress(tempLat, tempLng, function(address) {
+                        var finalAddress = address ? address : formatCoords(tempLat, tempLng);
+                        userAddressText.textContent = finalAddress;
+                        saveLocation(tempLat, tempLng, finalAddress);
                         Swal.fire({
                             title: 'تم تحديث العنوان',
                             text: 'تم تغيير موقعك بنجاح',
@@ -1978,18 +2040,98 @@
                             timer: 2000,
                             showConfirmButton: true
                         });
+                    });
+                }
+            }
+
+            function closeMapPageFromHistory() {
+                if (!isMapPageOpen) return;
+                isMapPageOpen = false;
+                mapPage.classList.remove('active');
+                document.body.classList.remove('map-page-open');
+                document.body.style.overflow = '';
+                setTimeout(destroyLeafletMap, 400);
+            }
+
+            if (mapBackBtn) {
+                mapBackBtn.addEventListener('click', function() {
+                    try {
+                        history.back();
+                    } catch (e) {
+                        closeMapPageFromHistory();
                     }
-                }).catch(function() {
-                    isMapModalOpen = false;
                 });
             }
+
+            if (mapConfirmBtn) {
+                mapConfirmBtn.addEventListener('click', function() {
+                    mapConfirmBtn.disabled = true;
+                    closeMapPage(true);
+                    try {
+                        history.back();
+                    } catch (e) {}
+                    setTimeout(function() {
+                        mapConfirmBtn.disabled = false;
+                    }, 800);
+                });
+            }
+
+            if (mapUseCurrentBtn) {
+                mapUseCurrentBtn.addEventListener('click', function() {
+                    if (!navigator.geolocation) {
+                        Swal.fire({
+                            title: 'تنبيه',
+                            text: 'المتصفح لا يدعم تحديد الموقع',
+                            icon: 'warning',
+                            confirmButtonColor: '#FF5A00'
+                        });
+                        return;
+                    }
+                    var originalHtml = mapUseCurrentBtn.innerHTML;
+                    mapUseCurrentBtn.disabled = true;
+                    mapUseCurrentBtn.innerHTML = '<i class="las la-spinner la-spin"></i> جاري التحديد...';
+
+                    navigator.geolocation.getCurrentPosition(
+                        function(pos) {
+                            var lat = pos.coords.latitude;
+                            var lng = pos.coords.longitude;
+                            tempLat = lat;
+                            tempLng = lng;
+                            if (leafletMarker && leafletMap) {
+                                leafletMarker.setLatLng([lat, lng]);
+                                leafletMap.setView([lat, lng], 17);
+                            }
+                            updateCoordsBar(lat, lng);
+                            mapUseCurrentBtn.disabled = false;
+                            mapUseCurrentBtn.innerHTML = originalHtml;
+                        },
+                        function() {
+                            mapUseCurrentBtn.disabled = false;
+                            mapUseCurrentBtn.innerHTML = originalHtml;
+                            Swal.fire({
+                                title: 'تنبيه',
+                                text: 'تعذر الحصول على موقعك الحالي، تأكد من تفعيل GPS والسماح بالوصول',
+                                icon: 'warning',
+                                confirmButtonColor: '#FF5A00'
+                            });
+                        },
+                        { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+                    );
+                });
+            }
+
+            window.addEventListener('popstate', function() {
+                if (isMapPageOpen) {
+                    closeMapPageFromHistory();
+                }
+            });
 
             if (userAddressContainer) {
                 userAddressContainer.style.cursor = 'pointer';
                 userAddressContainer.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    openMapModal();
+                    openMapPage();
                 });
             }
 
