@@ -1,0 +1,1898 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#FF5A00">
+    <title>المستندات</title>
+    <meta name="description" content="مستندات سائق التوصيل">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF5A00',
+                        secondary: '#FF8C38',
+                        accent: '#FFB800',
+                        dark: '#1A1A1A',
+                        muted: '#717171',
+                        success: '#00B14F',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --color-primary: #FF5A00;
+            --color-secondary: #FF8C38;
+            --color-accent: #FFB800;
+            --color-background: #F7F9F8;
+            --color-card: #FFFFFF;
+            --color-darker: #F0F4F3;
+            --color-white: #1A1A1A;
+            --color-muted: #717171;
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --card-bg: #FFFFFF;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --darker-bg: #F0F4F3;
+            --header-height: 70px;
+            --sidebar-width: 280px;
+            --bottom-nav-height: 68px;
+            --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            width: 100%;
+            overscroll-behavior: none;
+        }
+        body {
+            font-family: 'Noto Sans Arabic', system-ui, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-white);
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: var(--color-background); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #FF8C38; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FF5A00; }
+        .dashboard-sidebar {
+            width: var(--sidebar-width);
+            background: var(--card-bg);
+            border-left: 1px solid var(--border-color);
+            position: fixed;
+            right: 0;
+            top: var(--header-height);
+            bottom: 0;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 30;
+            padding: 20px 16px;
+            transform: translateX(0);
+        }
+        .dashboard-sidebar.mobile-closed { transform: translateX(100%); }
+        @media (max-width: 1024px) {
+            .dashboard-sidebar.mobile-open { z-index: 105; transform: translateX(0); }
+            .dashboard-sidebar.mobile-closed { transform: translateX(100%); z-index: 45; }
+        }
+        @media (min-width: 1025px) {
+            .dashboard-sidebar { transform: translateX(0) !important; z-index: 30; }
+            .dashboard-sidebar.mobile-open,
+            .dashboard-sidebar.mobile-closed { transform: translateX(0) !important; }
+        }
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--color-muted);
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+        .sidebar-item i { font-size: 22px; width: 28px; flex-shrink: 0; }
+        .sidebar-item:hover { background: rgba(255, 90, 0, 0.08); color: var(--color-primary); }
+        .sidebar-item.active {
+            background: rgba(255, 90, 0, 0.12);
+            color: var(--color-primary);
+            border-right: 3px solid var(--color-primary);
+            font-weight: 600;
+        }
+        .sidebar-section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--color-muted);
+            padding: 16px 16px 8px;
+            font-weight: 700;
+        }
+        #mainHeader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--color-background);
+            z-index: 110;
+            transition: background-color 0.3s;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+        .header-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--color-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .menu-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--color-white);
+            font-size: 1.6rem;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .notification-btn {
+            position: relative;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--color-muted);
+            font-size: 1.5rem;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+            flex-shrink: 0;
+        }
+        .notification-btn:hover { color: #FF5A00; }
+        .notification-btn .notification-dot {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #FF5A00;
+            border: 2px solid var(--card-bg);
+        }
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border: 1px solid transparent;
+        }
+        .status-pill.online {
+            background: rgba(0, 177, 79, 0.1);
+            color: #00B14F;
+            border-color: rgba(0, 177, 79, 0.3);
+        }
+        .status-pill.offline {
+            background: rgba(113, 113, 113, 0.1);
+            color: #717171;
+            border-color: rgba(113, 113, 113, 0.3);
+        }
+        .status-pill .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        main {
+            padding-top: var(--header-height);
+            padding-bottom: 0;
+        }
+        @media (max-width: 1024px) {
+            main { padding-bottom: calc(var(--bottom-nav-height) + 20px); }
+        }
+        .bottom-mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--bottom-nav-height);
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            z-index: 100;
+            padding: 6px 8px;
+            padding-bottom: max(6px, env(safe-area-inset-bottom, 6px));
+            box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+            align-items: center;
+            justify-content: space-around;
+            gap: 4px;
+        }
+        @media (max-width: 1024px) {
+            .bottom-mobile-nav { display: flex; }
+        }
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            flex: 1;
+            padding: 8px 4px;
+            border-radius: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--color-muted);
+            font-size: 0.68rem;
+            font-weight: 600;
+            transition: all 0.25s ease;
+            position: relative;
+            min-width: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .bottom-nav-item i { font-size: 1.35rem; transition: all 0.25s ease; flex-shrink: 0; }
+        .bottom-nav-item span {
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            max-width: 100%;
+            font-size: 0.65rem;
+            letter-spacing: 0.2px;
+        }
+        .bottom-nav-item.active { color: var(--color-primary); }
+        .bottom-nav-item.active i { font-size: 1.5rem; }
+        .bottom-nav-item-center {
+            position: relative;
+            top: -20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.4);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            flex: none;
+            margin: 0 4px;
+        }
+        .bottom-nav-item-center i { font-size: 2rem; }
+        .bottom-nav-item-center span { display: none; }
+        .bottom-nav-item-center.active { background: #e04e00; color: #fff; }
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--color-white);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title i { color: #FF5A00; }
+        .docs-hero {
+            background: linear-gradient(135deg, #1A1A1A, #333333);
+            border-radius: 24px;
+            padding: 24px;
+            color: #fff;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 18px;
+        }
+        .docs-hero::before {
+            content: "";
+            position: absolute;
+            top: -70px;
+            left: -60px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: rgba(255, 90, 0, 0.18);
+        }
+        .docs-hero::after {
+            content: "";
+            position: absolute;
+            bottom: -90px;
+            right: -50px;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: rgba(255, 140, 56, 0.12);
+        }
+        .docs-hero-top {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+            z-index: 2;
+        }
+        .docs-icon-wrap {
+            position: relative;
+            flex-shrink: 0;
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #FF5A00;
+            border: 3px solid #FF5A00;
+            box-shadow: 0 6px 18px rgba(255, 90, 0, 0.35);
+        }
+        .docs-verified {
+            position: absolute;
+            bottom: 2px;
+            left: 2px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #00B14F;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            border: 2px solid #1A1A1A;
+        }
+        .docs-hero-info { min-width: 0; flex: 1; }
+        .docs-name {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 4px;
+            line-height: 1.2;
+        }
+        .docs-role {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.75);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .docs-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .docs-meta-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 5px 11px;
+            border-radius: 30px;
+        }
+        .docs-meta-item i { color: #FFB800; font-size: 0.9rem; }
+        .docs-hero-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+            position: relative;
+            z-index: 2;
+        }
+        .hero-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 12px;
+            border: none;
+            border-radius: 14px;
+            font-family: inherit;
+            font-weight: 800;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hero-btn.primary { background: #fff; color: #FF5A00; }
+        .hero-btn.primary:hover { background: #FFF3E8; }
+        .hero-btn.ghost {
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.45);
+        }
+        .hero-btn.ghost:hover { background: rgba(255, 255, 255, 0.28); }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        @media (min-width: 640px) {
+            .stats-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+        .stat-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 14px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+        .stat-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 90, 0, 0.1);
+        }
+        .stat-box .stat-ic {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .stat-box .stat-lbl {
+            font-size: 0.7rem;
+            color: var(--color-muted);
+            font-weight: 700;
+        }
+        .stat-box .stat-val {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--color-white);
+        }
+        .info-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-bottom: 1px dashed var(--border-color);
+            transition: background 0.2s ease;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-row:hover { background: rgba(255, 90, 0, 0.03); }
+        .info-ic {
+            width: 44px;
+            height: 44px;
+            border-radius: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .info-main { flex: 1; min-width: 0; }
+        .info-lbl {
+            font-size: 0.7rem;
+            color: var(--color-muted);
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+        .info-val {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: var(--color-white);
+            word-break: break-word;
+            line-height: 1.4;
+        }
+        .docs-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        @media (min-width: 640px) {
+            .docs-grid { grid-template-columns: 1fr 1fr; }
+        }
+        .doc-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 15px;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+        .doc-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 26px rgba(0, 0, 0, 0.08);
+            border-color: rgba(255, 90, 0, 0.25);
+        }
+        .doc-ic {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+        .doc-main { flex: 1; min-width: 0; }
+        .doc-title {
+            font-size: 0.86rem;
+            font-weight: 800;
+            color: var(--color-white);
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .doc-sub {
+            font-size: 0.7rem;
+            color: var(--color-muted);
+            font-weight: 600;
+        }
+        .doc-status {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .doc-status.ok { background: rgba(0, 177, 79, 0.12); color: #00B14F; }
+        .doc-status.warn { background: rgba(255, 184, 0, 0.18); color: #B37F00; }
+        .doc-status.bad { background: rgba(239, 68, 68, 0.12); color: #EF4444; }
+        .switch {
+            position: relative;
+            width: 46px;
+            height: 26px;
+            flex-shrink: 0;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            position: absolute;
+        }
+        .switch .slider {
+            position: absolute;
+            inset: 0;
+            background: #D1D5DB;
+            border-radius: 40px;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .switch .slider::before {
+            content: "";
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            left: 3px;
+            top: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: 0.3s;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+        }
+        .switch input:checked + .slider { background: #FF5A00; }
+        .switch input:checked + .slider::before { transform: translateX(20px); }
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .quick-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 12px;
+            border-radius: 14px;
+            font-family: inherit;
+            font-weight: 800;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            -webkit-tap-highlight-color: transparent;
+            background: var(--card-bg);
+            box-shadow: var(--shadow-card);
+        }
+        .quick-btn.orange {
+            color: #FF5A00;
+            border-color: rgba(255, 90, 0, 0.25);
+        }
+        .quick-btn.orange:hover { background: rgba(255, 90, 0, 0.08); }
+        .quick-btn.orange.active {
+            background: linear-gradient(135deg, #FF5A00, #FF8C38);
+            color: #fff;
+            border-color: transparent;
+        }
+        .quick-btn.blue {
+            color: #3B82F6;
+            border-color: rgba(59, 130, 246, 0.25);
+        }
+        .quick-btn.blue:hover { background: rgba(59, 130, 246, 0.08); }
+        .quick-btn.blue.active {
+            background: linear-gradient(135deg, #3B82F6, #60A5FA);
+            color: #fff;
+            border-color: transparent;
+        }
+        .quick-btn.green {
+            color: #00B14F;
+            border-color: rgba(0, 177, 79, 0.25);
+        }
+        .quick-btn.green:hover { background: rgba(0, 177, 79, 0.08); }
+        .quick-btn.green.active {
+            background: linear-gradient(135deg, #00B14F, #00C853);
+            color: #fff;
+            border-color: transparent;
+        }
+        .quick-btn.red {
+            color: #EF4444;
+            border-color: rgba(239, 68, 68, 0.25);
+        }
+        .quick-btn.red:hover { background: rgba(239, 68, 68, 0.08); }
+        .quick-btn.red.active {
+            background: linear-gradient(135deg, #EF4444, #F87171);
+            color: #fff;
+            border-color: transparent;
+        }
+        .inline-panel {
+            display: none;
+            margin-bottom: 20px;
+            animation: slideDown 0.35s ease;
+        }
+        .inline-panel.active { display: block; }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-12px);
+                max-height: 0;
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+                max-height: 3000px;
+            }
+        }
+        .inline-panel-inner {
+            background: var(--card-bg);
+            border: 2px solid rgba(255, 90, 0, 0.25);
+            border-radius: 22px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(255, 90, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .inline-panel-inner::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(180deg, #FF5A00, #FF8C38);
+        }
+        .inline-panel-inner.blue-panel {
+            border-color: rgba(59, 130, 246, 0.3);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.1);
+        }
+        .inline-panel-inner.blue-panel::before {
+            background: linear-gradient(180deg, #3B82F6, #60A5FA);
+        }
+        .inline-panel-inner.green-panel {
+            border-color: rgba(0, 177, 79, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 177, 79, 0.1);
+        }
+        .inline-panel-inner.green-panel::before {
+            background: linear-gradient(180deg, #00B14F, #00C853);
+        }
+        .inline-panel-inner.red-panel {
+            border-color: rgba(239, 68, 68, 0.3);
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.1);
+        }
+        .inline-panel-inner.red-panel::before {
+            background: linear-gradient(180deg, #EF4444, #F87171);
+        }
+        .inline-panel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding-bottom: 14px;
+            margin-bottom: 16px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        .inline-panel-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--color-white);
+            min-width: 0;
+        }
+        .inline-panel-title .title-ic {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(255, 90, 0, 0.15), rgba(255, 140, 56, 0.08));
+            color: #FF5A00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .inline-panel-title .title-ic.blue {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(96, 165, 250, 0.08));
+            color: #3B82F6;
+        }
+        .inline-panel-title .title-ic.green {
+            background: linear-gradient(135deg, rgba(0, 177, 79, 0.15), rgba(0, 200, 83, 0.08));
+            color: #00B14F;
+        }
+        .inline-panel-title .title-ic.red {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(248, 113, 113, 0.08));
+            color: #EF4444;
+        }
+        .inline-panel-title .title-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+        .inline-panel-title .title-text strong {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--color-white);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .inline-panel-title .title-text small {
+            font-size: 0.7rem;
+            color: var(--color-muted);
+            font-weight: 600;
+        }
+        .inline-panel-close {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.1);
+            color: #EF4444;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .inline-panel-close:hover {
+            background: rgba(239, 68, 68, 0.2);
+            transform: scale(1.05);
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+        @media (min-width: 640px) {
+            .form-grid { grid-template-columns: 1fr 1fr; }
+        }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group.full { grid-column: 1 / -1; }
+        .form-label {
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: var(--color-muted);
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 700;
+            background: var(--card-bg);
+            color: var(--color-white);
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .form-input:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(255, 90, 0, 0.1);
+        }
+        .form-input.select-input {
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23717171' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: left 12px center;
+            background-size: 16px;
+            padding-left: 38px;
+        }
+        .file-upload-box {
+            border: 2px dashed rgba(255, 90, 0, 0.35);
+            border-radius: 14px;
+            padding: 22px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: rgba(255, 90, 0, 0.03);
+        }
+        .file-upload-box:hover {
+            border-color: #FF5A00;
+            background: rgba(255, 90, 0, 0.07);
+        }
+        .file-upload-box i {
+            font-size: 2rem;
+            color: #FF5A00;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .file-upload-box .upload-title {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--color-white);
+            margin-bottom: 4px;
+        }
+        .file-upload-box .upload-sub {
+            font-size: 0.7rem;
+            color: var(--color-muted);
+            font-weight: 600;
+        }
+        .file-upload-box input[type="file"] {
+            display: none;
+        }
+        .file-name-display {
+            margin-top: 10px;
+            font-size: 0.76rem;
+            font-weight: 800;
+            color: #00B14F;
+            display: none;
+        }
+        .file-name-display.show { display: block; }
+        .support-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 14px;
+            border-radius: 14px;
+            background: rgba(0, 177, 79, 0.06);
+            border: 1px solid rgba(0, 177, 79, 0.15);
+            margin-bottom: 10px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .support-item:hover {
+            background: rgba(0, 177, 79, 0.12);
+            transform: translateX(-3px);
+        }
+        .support-item:last-child { margin-bottom: 0; }
+        .support-ic {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: rgba(0, 177, 79, 0.15);
+            color: #00B14F;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .support-main { flex: 1; min-width: 0; }
+        .support-lbl {
+            font-size: 0.7rem;
+            color: var(--color-muted);
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+        .support-val {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: var(--color-white);
+            word-break: break-word;
+        }
+        .support-arrow {
+            color: var(--color-muted);
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .danger-warning {
+            background: rgba(239, 68, 68, 0.06);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 14px;
+            padding: 14px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .danger-warning i {
+            color: #EF4444;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .danger-warning p {
+            font-size: 0.8rem;
+            color: var(--color-white);
+            font-weight: 700;
+            line-height: 1.6;
+        }
+        .danger-warning p span {
+            color: #EF4444;
+            font-weight: 800;
+        }
+        .form-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 18px;
+        }
+        .form-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 13px;
+            border-radius: 14px;
+            font-family: inherit;
+            font-weight: 800;
+            font-size: 0.84rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .form-btn.save {
+            background: linear-gradient(135deg, #FF5A00, #FF8C38);
+            color: #fff;
+            box-shadow: 0 6px 18px rgba(255, 90, 0, 0.3);
+        }
+        .form-btn.save:hover { box-shadow: 0 8px 22px rgba(255, 90, 0, 0.4); }
+        .form-btn.save.blue {
+            background: linear-gradient(135deg, #3B82F6, #60A5FA);
+            box-shadow: 0 6px 18px rgba(59, 130, 246, 0.3);
+        }
+        .form-btn.save.blue:hover { box-shadow: 0 8px 22px rgba(59, 130, 246, 0.4); }
+        .form-btn.save.green {
+            background: linear-gradient(135deg, #00B14F, #00C853);
+            box-shadow: 0 6px 18px rgba(0, 177, 79, 0.3);
+        }
+        .form-btn.save.green:hover { box-shadow: 0 8px 22px rgba(0, 177, 79, 0.4); }
+        .form-btn.save.red {
+            background: linear-gradient(135deg, #EF4444, #F87171);
+            box-shadow: 0 6px 18px rgba(239, 68, 68, 0.3);
+        }
+        .form-btn.save.red:hover { box-shadow: 0 8px 22px rgba(239, 68, 68, 0.4); }
+        .form-btn.cancel {
+            background: rgba(113, 113, 113, 0.1);
+            color: var(--color-muted);
+            border: 1px solid var(--border-color);
+        }
+        .form-btn.cancel:hover { background: rgba(113, 113, 113, 0.18); }
+        .success-toast {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 177, 79, 0.1);
+            border: 1px solid rgba(0, 177, 79, 0.3);
+            border-radius: 14px;
+            padding: 12px 14px;
+            margin-top: 14px;
+            animation: slideDown 0.3s ease;
+        }
+        .success-toast.show { display: flex; }
+        .success-toast i {
+            color: #00B14F;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .success-toast span {
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: #00B14F;
+        }
+        @media (max-width: 480px) {
+            .stat-box .stat-val { font-size: 0.95rem; }
+            .docs-name { font-size: 1.15rem; }
+            .docs-icon-wrap { width: 74px; height: 74px; font-size: 2.5rem; }
+            .docs-hero { padding: 18px; }
+            .hero-btn { font-size: 0.75rem; padding: 11px 8px; }
+            .info-val { font-size: 0.82rem; }
+            .info-ic { width: 40px; height: 40px; font-size: 1.15rem; }
+            .doc-title { font-size: 0.8rem; }
+            .quick-btn { font-size: 0.74rem; padding: 12px 8px; }
+            .form-btn { font-size: 0.78rem; padding: 12px 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="relative min-h-screen">
+        <aside class="dashboard-sidebar mobile-closed" id="dashboardSidebar">
+            <div class="mb-4 px-2 mt-2">
+                <div class="flex items-center gap-3 pb-4 border-b" style="border-color: var(--border-color);">
+                    <img id="userAvatar" src="https://i.ibb.co/3mZjjp1T/548212938-1338267831079244-6599431839367735090-n.jpg" class="w-14 h-14 rounded-full border-2 shadow object-cover" alt="avatar" style="border-color: var(--color-primary);">
+                    <div class="min-w-0">
+                        <p class="font-bold text-[var(--color-white)] truncate">محمد عبدالله</p>
+                        <p class="text-xs text-[var(--color-muted)]">سائق توصيل معتمد</p>
+                        <div class="flex items-center gap-1 mt-1">
+                            <i class="las la-star" style="color:#FFB800; font-size:0.85rem;"></i>
+                            <span class="text-xs font-bold text-[var(--color-white)]">4.9</span>
+                            <span class="text-xs text-[var(--color-muted)]">• 1,248 توصيلة</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <nav class="flex-1">
+                <div class="sidebar-section-title">القائمة الرئيسية</div>
+                <a href="#" class="sidebar-item" data-section="home"><i class="las la-home"></i><span>الرئيسية</span></a>
+                <a href="#" class="sidebar-item" data-section="available"><i class="las la-box-open"></i><span>الطلبات المتاحة</span><span class="mr-auto text-[10px] font-bold px-2 py-0.5 rounded-full" style="background: rgba(255,90,0,0.12); color: #FF5A00;">6</span></a>
+                <a href="#" class="sidebar-item" data-section="active"><i class="las la-motorcycle"></i><span>طلباتي النشطة</span><span class="mr-auto text-[10px] font-bold px-2 py-0.5 rounded-full" style="background: rgba(0,177,79,0.15); color: #00B14F;">2</span></a>
+                <a href="#" class="sidebar-item" data-section="history"><i class="las la-history"></i><span>سجل التوصيلات</span></a>
+                <a href="#" class="sidebar-item" data-section="earnings"><i class="las la-wallet"></i><span>الأرباح والمحفظة</span></a>
+                <div class="sidebar-section-title">الحساب</div>
+                <a href="#" class="sidebar-item" data-section="profile"><i class="las la-user-circle"></i><span>الملف الشخصي</span></a>
+                <a href="#" class="sidebar-item" data-section="vehicle"><i class="las la-motorcycle"></i><span>بيانات المركبة</span></a>
+                <a href="#" class="sidebar-item active" data-section="documents"><i class="las la-id-card"></i><span>المستندات</span></a>
+                <a href="#" class="sidebar-item" data-section="settings"><i class="las la-cog"></i><span>الإعدادات</span></a>
+                <div class="sidebar-section-title">الدعم</div>
+                <a href="#" class="sidebar-item" data-section="help"><i class="las la-headset"></i><span>مركز المساعدة</span></a>
+                <a href="#" class="sidebar-item" data-section="about"><i class="las la-info-circle"></i><span>من نحن</span></a>
+                <div class="mt-6 pt-4 border-t" style="border-color: var(--border-color);">
+                    <a href="#" id="logoutBtn" class="sidebar-item" style="color: #EF4444;"><i class="las la-sign-out-alt"></i><span>تسجيل الخروج</span></a>
+                </div>
+            </nav>
+            <div class="mt-4 text-center text-xs text-[var(--color-muted)]">
+                <p>© 2025</p>
+                <p class="mt-1 opacity-70">الإصدار 2.1.0</p>
+            </div>
+        </aside>
+
+        <main class="lg:mr-[280px] transition-all">
+            <header id="mainHeader">
+                <div class="flex items-center gap-2 flex-1 min-w-0">
+                    <button class="menu-toggle lg:hidden" id="menuToggleBtn"><i class="las la-bars"></i></button>
+                    <div class="status-pill online" id="headerStatusPill">
+                        <span class="dot"></span>
+                        <span id="headerStatusText">متصل</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <button class="notification-btn" id="notificationBtn">
+                        <i class="las la-bell"></i>
+                        <span class="notification-dot"></span>
+                    </button>
+                    <img id="headerAvatar" src="https://i.ibb.co/3mZjjp1T/548212938-1338267831079244-6599431839367735090-n.jpg" class="header-avatar" alt="avatar">
+                </div>
+            </header>
+
+            <div class="container mx-auto px-4 py-6 max-w-3xl">
+
+                <div class="docs-hero">
+                    <div class="docs-hero-top">
+                        <div class="docs-icon-wrap">
+                            <i class="las la-folder-open"></i>
+                            <span class="docs-verified"><i class="las la-check"></i></span>
+                        </div>
+                        <div class="docs-hero-info">
+                            <h1 class="docs-name" id="heroDocsName">المستندات والوثائق</h1>
+                            <p class="docs-role">إدارة وتوثيق مستنداتك</p>
+                            <div class="docs-meta">
+                                <span class="docs-meta-item"><i class="las la-file-alt"></i> 4 مستندات</span>
+                                <span class="docs-meta-item"><i class="las la-check-circle"></i> 2 موثقة</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="docs-hero-actions">
+                        <button class="hero-btn primary" id="uploadDocHeroBtn"><i class="las la-cloud-upload-alt"></i> رفع مستند</button>
+                        <button class="hero-btn ghost" id="requestVerificationHeroBtn"><i class="las la-check-double"></i> طلب توثيق</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-ic" style="background: rgba(255, 90, 0, 0.12); color: #FF5A00;"><i class="las la-file-alt"></i></div>
+                        <div class="stat-lbl">إجمالي المستندات</div>
+                        <div class="stat-val">4</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-ic" style="background: rgba(0, 177, 79, 0.12); color: #00B14F;"><i class="las la-check-circle"></i></div>
+                        <div class="stat-lbl">موثقة</div>
+                        <div class="stat-val">2</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-ic" style="background: rgba(255, 184, 0, 0.15); color: #B37F00;"><i class="las la-clock"></i></div>
+                        <div class="stat-lbl">قيد المراجعة</div>
+                        <div class="stat-val">1</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-ic" style="background: rgba(239, 68, 68, 0.12); color: #EF4444;"><i class="las la-exclamation-triangle"></i></div>
+                        <div class="stat-lbl">منتهية</div>
+                        <div class="stat-val">1</div>
+                    </div>
+                </div>
+
+                <h2 class="section-title"><i class="las la-list-alt"></i> قائمة المستندات</h2>
+                <div class="docs-grid">
+                    <div class="doc-card" data-doc="البطاقة الشخصية">
+                        <div class="doc-ic" style="background: rgba(0, 177, 79, 0.12); color: #00B14F;"><i class="las la-id-card"></i></div>
+                        <div class="doc-main">
+                            <p class="doc-title">البطاقة الشخصية</p>
+                            <p class="doc-sub">تم التحقق • 2024/03/12</p>
+                        </div>
+                        <span class="doc-status ok"><i class="las la-check-circle"></i></span>
+                    </div>
+                    <div class="doc-card" data-doc="رخصة القيادة">
+                        <div class="doc-ic" style="background: rgba(0, 177, 79, 0.12); color: #00B14F;"><i class="las la-car"></i></div>
+                        <div class="doc-main">
+                            <p class="doc-title">رخصة القيادة</p>
+                            <p class="doc-sub">تم التحقق • 2024/01/20</p>
+                        </div>
+                        <span class="doc-status ok"><i class="las la-check-circle"></i></span>
+                    </div>
+                    <div class="doc-card" data-doc="رخصة المركبة">
+                        <div class="doc-ic" style="background: rgba(255, 184, 0, 0.15); color: #B37F00;"><i class="las la-file-alt"></i></div>
+                        <div class="doc-main">
+                            <p class="doc-title">رخصة المركبة</p>
+                            <p class="doc-sub">قيد المراجعة • 2024/04/01</p>
+                        </div>
+                        <span class="doc-status warn"><i class="las la-clock"></i></span>
+                    </div>
+                    <div class="doc-card" data-doc="الفيش والتشبيه">
+                        <div class="doc-ic" style="background: rgba(239, 68, 68, 0.12); color: #EF4444;"><i class="las la-file-shield"></i></div>
+                        <div class="doc-main">
+                            <p class="doc-title">الفيش والتشبيه</p>
+                            <p class="doc-sub">منتهي • مطلوب تحديث</p>
+                        </div>
+                        <span class="doc-status bad"><i class="las la-times-circle"></i></span>
+                    </div>
+                </div>
+
+                <h2 class="section-title"><i class="las la-sliders-h"></i> إعدادات المستندات</h2>
+                <div class="info-card">
+                    <div class="info-row">
+                        <div class="info-ic" style="background: rgba(255, 90, 0, 0.12); color: #FF5A00;"><i class="las la-bell"></i></div>
+                        <div class="info-main">
+                            <p class="info-lbl">تنبيهات انتهاء الصلاحية</p>
+                            <p class="info-val" style="font-size:0.78rem; font-weight:600; color:var(--color-muted);">استقبال تنبيه قبل انتهاء المستند</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" checked data-label="تنبيهات انتهاء الصلاحية">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-ic" style="background: rgba(0, 177, 79, 0.12); color: #00B14F;"><i class="las la-sync-alt"></i></div>
+                        <div class="info-main">
+                            <p class="info-lbl">التجديد التلقائي</p>
+                            <p class="info-val" style="font-size:0.78rem; font-weight:600; color:var(--color-muted);">تذكير تلقائي بتجديد المستندات</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" checked data-label="التجديد التلقائي">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-ic" style="background: rgba(59, 130, 246, 0.12); color: #3B82F6;"><i class="las la-shield-alt"></i></div>
+                        <div class="info-main">
+                            <p class="info-lbl">التحقق التلقائي</p>
+                            <p class="info-val" style="font-size:0.78rem; font-weight:600; color:var(--color-muted);">محاولة التحقق التلقائي من المستندات</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" checked data-label="التحقق التلقائي">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-ic" style="background: rgba(255, 184, 0, 0.15); color: #B37F00;"><i class="las la-volume-up"></i></div>
+                        <div class="info-main">
+                            <p class="info-lbl">أصوات التنبيه</p>
+                            <p class="info-val" style="font-size:0.78rem; font-weight:600; color:var(--color-muted);">تشغيل صوت عند وصول إشعار</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" data-label="أصوات التنبيه">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <h2 class="section-title"><i class="las la-bolt"></i> إجراءات سريعة</h2>
+                <div class="quick-actions">
+                    <button class="quick-btn orange" id="uploadDocBtn" data-panel="uploadPanel"><i class="las la-cloud-upload-alt"></i> رفع مستند</button>
+                    <button class="quick-btn blue" id="requestVerificationBtn" data-panel="verificationPanel"><i class="las la-check-double"></i> طلب توثيق</button>
+                    <button class="quick-btn green" id="supportBtn" data-panel="supportPanel"><i class="las la-headset"></i> تواصل مع الدعم</button>
+                    <button class="quick-btn red" id="deleteDocBtn" data-panel="deletePanel"><i class="las la-trash-alt"></i> حذف مستند</button>
+                </div>
+
+                <div class="inline-panel" id="uploadPanel">
+                    <div class="inline-panel-inner blue-panel">
+                        <div class="inline-panel-head">
+                            <div class="inline-panel-title">
+                                <div class="title-ic blue"><i class="las la-cloud-upload-alt"></i></div>
+                                <div class="title-text">
+                                    <strong>رفع مستند جديد</strong>
+                                    <small>اختر نوع المستند ثم ارفع الملف</small>
+                                </div>
+                            </div>
+                            <button class="inline-panel-close" data-close="uploadPanel"><i class="las la-times"></i></button>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group full">
+                                <label class="form-label" for="docType">نوع المستند</label>
+                                <select class="form-input select-input" id="docType">
+                                    <option value="">اختر نوع المستند</option>
+                                    <option value="id">البطاقة الشخصية</option>
+                                    <option value="license">رخصة القيادة</option>
+                                    <option value="vehicle">رخصة المركبة</option>
+                                    <option value="criminal">الفيش والتشبيه</option>
+                                </select>
+                            </div>
+                            <div class="form-group full">
+                                <label class="form-label">ملف المستند</label>
+                                <label class="file-upload-box" for="docFile">
+                                    <i class="las la-cloud-upload-alt"></i>
+                                    <div class="upload-title">اضغط لاختيار ملف</div>
+                                    <div class="upload-sub">PDF, JPG, PNG - الحجم الأقصى 5 ميجا</div>
+                                    <input type="file" id="docFile" accept=".pdf,.jpg,.jpeg,.png">
+                                </label>
+                                <div class="file-name-display" id="fileNameDisplay"></div>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button class="form-btn save blue" type="button" id="confirmUploadBtn"><i class="las la-upload"></i> رفع المستند</button>
+                            <button class="form-btn cancel" type="button" data-close="uploadPanel"><i class="las la-times"></i> إلغاء</button>
+                        </div>
+                        <div class="success-toast" id="uploadToast">
+                            <i class="las la-check-circle"></i>
+                            <span>تم رفع المستند بنجاح وسيتم مراجعته</span>
+                        </div>
+                        <div class="success-toast" id="uploadErrorToast" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3);">
+                            <i class="las la-exclamation-circle" style="color:#EF4444;"></i>
+                            <span id="uploadErrorText" style="color:#EF4444;">حدث خطأ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="inline-panel" id="verificationPanel">
+                    <div class="inline-panel-inner">
+                        <div class="inline-panel-head">
+                            <div class="inline-panel-title">
+                                <div class="title-ic"><i class="las la-check-double"></i></div>
+                                <div class="title-text">
+                                    <strong>طلب توثيق مستند</strong>
+                                    <small>اختر المستند المطلوب توثيقه</small>
+                                </div>
+                            </div>
+                            <button class="inline-panel-close" data-close="verificationPanel"><i class="las la-times"></i></button>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group full">
+                                <label class="form-label" for="verifyDocType">المستند</label>
+                                <select class="form-input select-input" id="verifyDocType">
+                                    <option value="">اختر المستند</option>
+                                    <option value="id">البطاقة الشخصية</option>
+                                    <option value="license">رخصة القيادة</option>
+                                    <option value="vehicle">رخصة المركبة</option>
+                                    <option value="criminal">الفيش والتشبيه</option>
+                                </select>
+                            </div>
+                            <div class="form-group full">
+                                <label class="form-label" for="verifyNotes">ملاحظات (اختياري)</label>
+                                <input class="form-input" type="text" id="verifyNotes" placeholder="أي ملاحظات إضافية">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button class="form-btn save" type="button" id="confirmVerificationBtn"><i class="las la-paper-plane"></i> إرسال الطلب</button>
+                            <button class="form-btn cancel" type="button" data-close="verificationPanel"><i class="las la-times"></i> إلغاء</button>
+                        </div>
+                        <div class="success-toast" id="verificationToast">
+                            <i class="las la-check-circle"></i>
+                            <span>تم إرسال طلب التوثيق بنجاح</span>
+                        </div>
+                        <div class="success-toast" id="verificationErrorToast" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3);">
+                            <i class="las la-exclamation-circle" style="color:#EF4444;"></i>
+                            <span id="verificationErrorText" style="color:#EF4444;">حدث خطأ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="inline-panel" id="supportPanel">
+                    <div class="inline-panel-inner green-panel">
+                        <div class="inline-panel-head">
+                            <div class="inline-panel-title">
+                                <div class="title-ic green"><i class="las la-headset"></i></div>
+                                <div class="title-text">
+                                    <strong>تواصل مع الدعم</strong>
+                                    <small>نحن هنا لمساعدتك على مدار الساعة</small>
+                                </div>
+                            </div>
+                            <button class="inline-panel-close" data-close="supportPanel"><i class="las la-times"></i></button>
+                        </div>
+                        <div class="support-item">
+                            <div class="support-ic"><i class="las la-phone-volume"></i></div>
+                            <div class="support-main">
+                                <p class="support-lbl">الخط الساخن</p>
+                                <p class="support-val">19XXX</p>
+                            </div>
+                            <i class="las la-chevron-left support-arrow"></i>
+                        </div>
+                        <div class="support-item">
+                            <div class="support-ic"><i class="lab la-whatsapp"></i></div>
+                            <div class="support-main">
+                                <p class="support-lbl">واتساب</p>
+                                <p class="support-val">+20 100 000 0000</p>
+                            </div>
+                            <i class="las la-chevron-left support-arrow"></i>
+                        </div>
+                        <div class="support-item">
+                            <div class="support-ic"><i class="las la-envelope"></i></div>
+                            <div class="support-main">
+                                <p class="support-lbl">البريد الإلكتروني</p>
+                                <p class="support-val">support@shadowza.space</p>
+                            </div>
+                            <i class="las la-chevron-left support-arrow"></i>
+                        </div>
+                        <div class="form-actions">
+                            <button class="form-btn cancel" type="button" data-close="supportPanel" style="grid-column: 1 / -1;"><i class="las la-times"></i> إغلاق</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="inline-panel" id="deletePanel">
+                    <div class="inline-panel-inner red-panel">
+                        <div class="inline-panel-head">
+                            <div class="inline-panel-title">
+                                <div class="title-ic red"><i class="las la-trash-alt"></i></div>
+                                <div class="title-text">
+                                    <strong>حذف مستند</strong>
+                                    <small>إجراء نهائي لا يمكن التراجع عنه</small>
+                                </div>
+                            </div>
+                            <button class="inline-panel-close" data-close="deletePanel"><i class="las la-times"></i></button>
+                        </div>
+                        <div class="danger-warning">
+                            <i class="las la-exclamation-triangle"></i>
+                            <p>سيتم حذف المستند المحدد <span>نهائياً</span>. لا يمكن استرجاع البيانات بعد الحذف.</p>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group full">
+                                <label class="form-label" for="deleteDocType">المستند المطلوب حذفه</label>
+                                <select class="form-input select-input" id="deleteDocType">
+                                    <option value="">اختر المستند</option>
+                                    <option value="id">البطاقة الشخصية</option>
+                                    <option value="license">رخصة القيادة</option>
+                                    <option value="vehicle">رخصة المركبة</option>
+                                    <option value="criminal">الفيش والتشبيه</option>
+                                </select>
+                            </div>
+                            <div class="form-group full">
+                                <label class="form-label" for="deleteConfirmText">اكتب كلمة <span style="color:#EF4444;">حذف</span> للتأكيد</label>
+                                <input class="form-input" type="text" id="deleteConfirmText" placeholder="حذف">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button class="form-btn save red" type="button" id="confirmDeleteBtn"><i class="las la-trash-alt"></i> تأكيد الحذف</button>
+                            <button class="form-btn cancel" type="button" data-close="deletePanel"><i class="las la-times"></i> إلغاء</button>
+                        </div>
+                        <div class="success-toast" id="deleteToast">
+                            <i class="las la-check-circle"></i>
+                            <span>تم إرسال طلب حذف المستند وسيتم مراجعته خلال 48 ساعة</span>
+                        </div>
+                        <div class="success-toast" id="deleteErrorToast" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3);">
+                            <i class="las la-exclamation-circle" style="color:#EF4444;"></i>
+                            <span id="deleteErrorText" style="color:#EF4444;">يرجى كتابة كلمة حذف للتأكيد</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <div class="bottom-mobile-nav" id="bottomMobileNav">
+        <a href="#" class="bottom-nav-item" data-tab="home"><i class="las la-home"></i><span>الرئيسية</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="available"><i class="las la-box-open"></i><span>المتاحة</span></a>
+        <a href="#" class="bottom-nav-item bottom-nav-item-center" data-tab="active"><i class="las la-motorcycle"></i><span>النشطة</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="earnings"><i class="las la-wallet"></i><span>المحفظة</span></a>
+        <a href="#" class="bottom-nav-item active" data-tab="documents"><i class="las la-id-card"></i><span>المستندات</span></a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        (function () {
+            const sidebar = document.getElementById('dashboardSidebar');
+            const headerAvatar = document.getElementById('headerAvatar');
+            const menuToggleBtn = document.getElementById('menuToggleBtn');
+            const notificationBtn = document.getElementById('notificationBtn');
+            const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
+            const sidebarItems = document.querySelectorAll('.sidebar-item[data-section]');
+            const headerStatusPill = document.getElementById('headerStatusPill');
+            const headerStatusText = document.getElementById('headerStatusText');
+            const uploadPanel = document.getElementById('uploadPanel');
+            const verificationPanel = document.getElementById('verificationPanel');
+            const supportPanel = document.getElementById('supportPanel');
+            const deletePanel = document.getElementById('deletePanel');
+
+            const panelIds = ['uploadPanel', 'verificationPanel', 'supportPanel', 'deletePanel'];
+
+            let isOnline = true;
+
+            function openSidebar() {
+                sidebar.classList.add('mobile-open');
+                sidebar.classList.remove('mobile-closed');
+            }
+
+            function closeSidebar() {
+                sidebar.classList.remove('mobile-open');
+                sidebar.classList.add('mobile-closed');
+            }
+
+            function closeAllPanels(exceptId) {
+                panelIds.forEach(function (pid) {
+                    if (pid !== exceptId) {
+                        const el = document.getElementById(pid);
+                        if (el) el.classList.remove('active');
+                    }
+                });
+                document.querySelectorAll('.quick-btn').forEach(function (btn) {
+                    if (exceptId && btn.getAttribute('data-panel') === exceptId) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            function togglePanel(panelId, btnElement) {
+                const panel = document.getElementById(panelId);
+                if (!panel) return;
+                const isActive = panel.classList.contains('active');
+                if (isActive) {
+                    panel.classList.remove('active');
+                    if (btnElement) btnElement.classList.remove('active');
+                } else {
+                    closeAllPanels(panelId);
+                    panel.classList.add('active');
+                    if (btnElement) btnElement.classList.add('active');
+                    setTimeout(function () {
+                        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
+                }
+            }
+
+            if (window.innerWidth < 1025) {
+                sidebar.classList.add('mobile-closed');
+            }
+
+            window.addEventListener('resize', function () {
+                if (window.innerWidth >= 1025) {
+                    sidebar.classList.remove('mobile-open', 'mobile-closed');
+                } else {
+                    if (!sidebar.classList.contains('mobile-open')) {
+                        sidebar.classList.add('mobile-closed');
+                    }
+                }
+            });
+
+            menuToggleBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (sidebar.classList.contains('mobile-open')) closeSidebar();
+                else openSidebar();
+            });
+
+            headerAvatar.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (window.innerWidth < 1025) {
+                    if (sidebar.classList.contains('mobile-open')) closeSidebar();
+                    else openSidebar();
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+
+            document.addEventListener('click', function (e) {
+                if (window.innerWidth < 1025 && sidebar.classList.contains('mobile-open')) {
+                    if (!sidebar.contains(e.target) && e.target !== menuToggleBtn && !menuToggleBtn.contains(e.target) && e.target !== headerAvatar && !headerAvatar.contains(e.target)) {
+                        closeSidebar();
+                    }
+                }
+            });
+
+            sidebarItems.forEach(function (item) {
+                item.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    sidebarItems.forEach(function (i) { i.classList.remove('active'); });
+                    this.classList.add('active');
+                    const section = this.getAttribute('data-section');
+                    handleSectionChange(section);
+                    if (window.innerWidth < 1025) closeSidebar();
+                });
+            });
+
+            document.getElementById('logoutBtn').addEventListener('click', function (e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'تسجيل الخروج',
+                    text: 'هل أنت متأكد من تسجيل الخروج من حساب السائق؟',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#FF5A00',
+                    cancelButtonColor: '#717171',
+                    confirmButtonText: 'نعم، خروج',
+                    cancelButtonText: 'إلغاء'
+                }).then(function (result) {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'تم بنجاح',
+                            text: 'تم تسجيل الخروج بنجاح',
+                            icon: 'success',
+                            confirmButtonColor: '#FF5A00',
+                            confirmButtonText: 'حسناً'
+                        });
+                    }
+                });
+            });
+
+            bottomNavItems.forEach(function (item) {
+                item.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    bottomNavItems.forEach(function (i) { i.classList.remove('active'); });
+                    this.classList.add('active');
+                    const tab = this.getAttribute('data-tab');
+                    handleSectionChange(tab);
+                });
+            });
+
+            notificationBtn.addEventListener('click', function () {
+                Swal.fire({
+                    title: 'الإشعارات',
+                    html: '<div style="text-align:right;font-size:0.85rem;">' +
+                        '<p style="margin-bottom:8px; padding:8px; border-radius:8px; background:#FFF3E8;">📄 تم التحقق من البطاقة الشخصية بنجاح</p>' +
+                        '<p style="margin-bottom:8px; padding:8px; border-radius:8px; background:#FFF3E8;">⚠️ الفيش والتشبيه منتهي - مطلوب تحديث</p>' +
+                        '<p style="padding:8px; border-radius:8px; background:#FFF3E8;">🔄 رخصة المركبة قيد المراجعة</p>' +
+                        '</div>',
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00',
+                    confirmButtonText: 'حسناً'
+                });
+            });
+
+            function handleSectionChange(section) {
+                if (section === 'documents') {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else if (section === 'home') {
+                    Swal.fire({
+                        title: 'الرئيسية',
+                        text: 'جاري الانتقال للصفحة الرئيسية',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'حسناً'
+                    });
+                } else if (section === 'available') {
+                    Swal.fire({
+                        title: 'الطلبات المتاحة',
+                        text: 'جاري الانتقال للطلبات المتاحة',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'حسناً'
+                    });
+                } else if (section === 'active') {
+                    Swal.fire({
+                        title: 'طلباتي النشطة',
+                        text: 'جاري الانتقال لطلباتك النشطة',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'حسناً'
+                    });
+                } else if (section === 'earnings') {
+                    Swal.fire({
+                        title: 'الأرباح والمحفظة',
+                        text: 'جاري الانتقال لصفحة المحفظة',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'حسناً'
+                    });
+                } else if (section === 'history') {
+                    Swal.fire({
+                        title: 'سجل التوصيلات',
+                        text: 'جاري الانتقال لسجل التوصيلات',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'حسناً'
+                    });
+                } else if (section === 'profile' || section === 'vehicle') {
+                    Swal.fire({
+                        title: section === 'profile' ? 'الملف الشخصي' : 'بيانات المركبة',
+                        text: 'جاري الانتقال للصفحة المطلوبة',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'حسناً'
+                    });
+                } else if (section === 'settings') {
+                    const target = document.querySelectorAll('.section-title')[1];
+                    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    const labels = {
+                        help: 'مركز المساعدة',
+                        about: 'من نحن'
+                    };
+                    Swal.fire({
+                        title: labels[section] || 'قسم',
+                        text: 'هذا القسم قيد التطوير',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'حسناً'
+                    });
+                }
+            }
+
+            document.getElementById('uploadDocHeroBtn').addEventListener('click', function () {
+                togglePanel('uploadPanel', document.getElementById('uploadDocBtn'));
+            });
+
+            document.getElementById('requestVerificationHeroBtn').addEventListener('click', function () {
+                togglePanel('verificationPanel', document.getElementById('requestVerificationBtn'));
+            });
+
+            document.querySelectorAll('[data-close]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    const id = this.getAttribute('data-close');
+                    const el = document.getElementById(id);
+                    if (el) el.classList.remove('active');
+                    document.querySelectorAll('.quick-btn').forEach(function (b) {
+                        if (b.getAttribute('data-panel') === id) b.classList.remove('active');
+                    });
+                });
+            });
+
+            document.querySelectorAll('.switch input').forEach(function (input) {
+                input.addEventListener('change', function () {
+                    const label = this.getAttribute('data-label') || 'الإعداد';
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 1600,
+                        timerProgressBar: true
+                    });
+                    Toast.fire({
+                        icon: this.checked ? 'success' : 'info',
+                        title: label + (this.checked ? ' مُفعّل' : ' مُعطّل')
+                    });
+                });
+            });
+
+            document.querySelectorAll('.doc-card').forEach(function (card) {
+                card.addEventListener('click', function () {
+                    const name = this.getAttribute('data-doc');
+                    Swal.fire({
+                        title: name,
+                        text: 'سيتم فتح تفاصيل المستند قريباً',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'حسناً'
+                    });
+                });
+            });
+
+            document.querySelectorAll('.quick-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    const panelId = this.getAttribute('data-panel');
+                    togglePanel(panelId, this);
+                });
+            });
+
+            document.getElementById('docFile').addEventListener('change', function () {
+                const fileNameDisplay = document.getElementById('fileNameDisplay');
+                if (this.files && this.files.length > 0) {
+                    fileNameDisplay.textContent = '📎 ' + this.files[0].name;
+                    fileNameDisplay.classList.add('show');
+                } else {
+                    fileNameDisplay.classList.remove('show');
+                }
+            });
+
+            document.getElementById('confirmUploadBtn').addEventListener('click', function () {
+                const docType = document.getElementById('docType').value;
+                const docFile = document.getElementById('docFile').files;
+                const errorToast = document.getElementById('uploadErrorToast');
+                const errorText = document.getElementById('uploadErrorText');
+                const successToast = document.getElementById('uploadToast');
+
+                errorToast.classList.remove('show');
+                successToast.classList.remove('show');
+
+                if (!docType) {
+                    errorText.textContent = 'يجب اختيار نوع المستند';
+                    errorToast.classList.add('show');
+                    return;
+                }
+                if (!docFile || docFile.length === 0) {
+                    errorText.textContent = 'يجب اختيار ملف المستند';
+                    errorToast.classList.add('show');
+                    return;
+                }
+
+                successToast.classList.add('show');
+                document.getElementById('docType').value = '';
+                document.getElementById('docFile').value = '';
+                document.getElementById('fileNameDisplay').classList.remove('show');
+
+                setTimeout(function () {
+                    successToast.classList.remove('show');
+                    uploadPanel.classList.remove('active');
+                    document.querySelectorAll('.quick-btn').forEach(function (b) {
+                        if (b.getAttribute('data-panel') === 'uploadPanel') b.classList.remove('active');
+                    });
+                }, 2000);
+            });
+
+            document.getElementById('confirmVerificationBtn').addEventListener('click', function () {
+                const verifyDocType = document.getElementById('verifyDocType').value;
+                const verifyNotes = document.getElementById('verifyNotes').value.trim();
+                const errorToast = document.getElementById('verificationErrorToast');
+                const errorText = document.getElementById('verificationErrorText');
+                const successToast = document.getElementById('verificationToast');
+
+                errorToast.classList.remove('show');
+                successToast.classList.remove('show');
+
+                if (!verifyDocType) {
+                    errorText.textContent = 'يجب اختيار المستند المطلوب توثيقه';
+                    errorToast.classList.add('show');
+                    return;
+                }
+
+                successToast.classList.add('show');
+                document.getElementById('verifyDocType').value = '';
+                document.getElementById('verifyNotes').value = '';
+
+                setTimeout(function () {
+                    successToast.classList.remove('show');
+                    verificationPanel.classList.remove('active');
+                    document.querySelectorAll('.quick-btn').forEach(function (b) {
+                        if (b.getAttribute('data-panel') === 'verificationPanel') b.classList.remove('active');
+                    });
+                }, 2000);
+            });
+
+            document.querySelectorAll('.support-item').forEach(function (item) {
+                item.addEventListener('click', function () {
+                    const label = this.querySelector('.support-lbl').textContent;
+                    const value = this.querySelector('.support-val').textContent;
+                    Swal.fire({
+                        title: label,
+                        html: '<p style="font-size:1.1rem; font-weight:800; color:#FF5A00; direction:ltr;">' + value + '</p>' +
+                            '<p style="font-size:0.8rem; color:#717171; margin-top:8px;">اضغط للاتصال أو النسخ</p>',
+                        icon: 'info',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'نسخ',
+                        showCancelButton: true,
+                        cancelButtonColor: '#717171',
+                        cancelButtonText: 'إغلاق'
+                    });
+                });
+            });
+
+            document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
+                const deleteDocType = document.getElementById('deleteDocType').value;
+                const confirmText = document.getElementById('deleteConfirmText').value.trim();
+                const errorToast = document.getElementById('deleteErrorToast');
+                const errorText = document.getElementById('deleteErrorText');
+                const successToast = document.getElementById('deleteToast');
+
+                errorToast.classList.remove('show');
+                successToast.classList.remove('show');
+
+                if (!deleteDocType) {
+                    errorText.textContent = 'يجب اختيار المستند المطلوب حذفه';
+                    errorToast.classList.add('show');
+                    return;
+                }
+
+                if (confirmText !== 'حذف') {
+                    errorText.textContent = 'يرجى كتابة كلمة "حذف" للتأكيد';
+                    errorToast.classList.add('show');
+                    return;
+                }
+
+                successToast.classList.add('show');
+                document.getElementById('deleteConfirmText').value = '';
+                document.getElementById('deleteDocType').value = '';
+
+                setTimeout(function () {
+                    successToast.classList.remove('show');
+                    deletePanel.classList.remove('active');
+                    document.querySelectorAll('.quick-btn').forEach(function (b) {
+                        if (b.getAttribute('data-panel') === 'deletePanel') b.classList.remove('active');
+                    });
+                }, 2500);
+            });
+
+            headerStatusPill.addEventListener('click', function () {
+                isOnline = !isOnline;
+                if (isOnline) {
+                    headerStatusPill.classList.add('online');
+                    headerStatusPill.classList.remove('offline');
+                    headerStatusText.textContent = 'متصل';
+                    Swal.fire({
+                        title: 'أنت متصل الآن',
+                        text: 'ستصلك الطلبات الجديدة',
+                        icon: 'success',
+                        confirmButtonColor: '#FF5A00',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    headerStatusPill.classList.add('offline');
+                    headerStatusPill.classList.remove('online');
+                    headerStatusText.textContent = 'غير متصل';
+                    Swal.fire({
+                        title: 'أنت غير متصل',
+                        text: 'لن تصلك طلبات جديدة',
+                        icon: 'warning',
+                        confirmButtonColor: '#FF5A00',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
