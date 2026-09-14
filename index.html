@@ -443,40 +443,6 @@
             background: #e04e00;
             color: #fff;
         }
-        .category-icon {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            background: var(--darker-bg);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: 2px solid transparent;
-            color: #65655c;
-        }
-        .category-icon:hover {
-            border-color: var(--color-primary);
-            transform: scale(1.06);
-            box-shadow: 0 6px 20px rgba(255, 90, 0, 0.15);
-            color: #FF5A00;
-        }
-        .restaurant-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow-card);
-        }
-        .restaurant-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 32px rgba(255, 90, 0, 0.12);
-            border-color: var(--color-primary);
-        }
         .search-bar {
             display: flex;
             align-items: center;
@@ -523,34 +489,6 @@
             transform: translateY(-2px);
             box-shadow: 0 12px 32px rgba(255, 90, 0, 0.3);
         }
-        .badge-offer {
-            background: rgba(255, 90, 0, 0.1);
-            border: 1px solid rgba(255, 90, 0, 0.3);
-            padding: 4px 12px;
-            border-radius: 40px;
-            font-size: 0.72rem;
-            font-weight: 700;
-            color: #FF5A00;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .badge-free {
-            background: rgba(0, 177, 79, 0.1);
-            border: 1px solid rgba(0, 177, 79, 0.3);
-            padding: 4px 12px;
-            border-radius: 40px;
-            font-size: 0.72rem;
-            font-weight: 700;
-            color: #00B14F;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .rating-star {
-            color: #FFB800;
-            font-size: 0.85rem;
-        }
         .section-title {
             font-size: 1.3rem;
             font-weight: 800;
@@ -566,11 +504,6 @@
         @media (max-width: 640px) {
             .section-title {
                 font-size: 1.1rem;
-            }
-            .category-icon {
-                width: 60px;
-                height: 60px;
-                font-size: 1.6rem;
             }
             .offer-banner {
                 padding: 18px;
@@ -938,7 +871,6 @@
             height: auto !important;
             min-height: 0 !important;
         }
-
         @media (min-width: 1024px) {
             :root {
                 --header-height: 76px;
@@ -1404,8 +1336,13 @@
             var selectedLat = 27.9158;
             var selectedLng = 34.3300;
             var isMapModalOpen = false;
-            var isGeolocationInProgress = false;
+            var isLocating = false;
+            var DEFAULT_LAT = 27.9158;
+            var DEFAULT_LNG = 34.3300;
             var DEFAULT_ADDRESS = 'شرم الشيخ (افتراضي)';
+            var STORAGE_KEY_LAT = 'fastorder_lat';
+            var STORAGE_KEY_LNG = 'fastorder_lng';
+            var STORAGE_KEY_ADDR = 'fastorder_address';
 
             function activateTab(tab) {
                 bottomNavItems.forEach(function(i) {
@@ -1633,232 +1570,316 @@
                 }
             }
 
-            function saveLocationToStorage(lat, lng, address) {
+            function saveLocation(lat, lng, address) {
                 try {
-                    localStorage.setItem('userLat', lat);
-                    localStorage.setItem('userLng', lng);
-                    localStorage.setItem('userAddress', address);
+                    localStorage.setItem(STORAGE_KEY_LAT, String(lat));
+                    localStorage.setItem(STORAGE_KEY_LNG, String(lng));
+                    localStorage.setItem(STORAGE_KEY_ADDR, address);
                 } catch (err) {}
             }
 
-            function loadLocationFromStorage() {
+            function loadStoredLocation() {
                 try {
-                    var lat = localStorage.getItem('userLat');
-                    var lng = localStorage.getItem('userLng');
-                    var address = localStorage.getItem('userAddress');
-                    if (lat && lng) {
-                        selectedLat = parseFloat(lat);
-                        selectedLng = parseFloat(lng);
-                        if (isNaN(selectedLat) || isNaN(selectedLng)) {
-                            return false;
+                    var lat = localStorage.getItem(STORAGE_KEY_LAT);
+                    var lng = localStorage.getItem(STORAGE_KEY_LNG);
+                    var addr = localStorage.getItem(STORAGE_KEY_ADDR);
+                    if (lat !== null && lng !== null) {
+                        var parsedLat = parseFloat(lat);
+                        var parsedLng = parseFloat(lng);
+                        if (!isNaN(parsedLat) && !isNaN(parsedLng) && parsedLat !== 0 && parsedLng !== 0) {
+                            selectedLat = parsedLat;
+                            selectedLng = parsedLng;
+                            if (addr && addr.length > 0) {
+                                userAddressText.textContent = addr;
+                            } else {
+                                userAddressText.textContent = parsedLat.toFixed(5) + ', ' + parsedLng.toFixed(5);
+                            }
+                            return true;
                         }
-                        if (address) {
-                            userAddressText.textContent = address;
-                        } else {
-                            userAddressText.textContent = selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6);
-                        }
-                        return true;
                     }
                 } catch (err) {}
                 return false;
             }
 
-            function setDefaultLocation() {
-                selectedLat = 27.9158;
-                selectedLng = 34.3300;
+            function applyDefaultLocation() {
+                selectedLat = DEFAULT_LAT;
+                selectedLng = DEFAULT_LNG;
                 userAddressText.textContent = DEFAULT_ADDRESS;
-                saveLocationToStorage(selectedLat, selectedLng, DEFAULT_ADDRESS);
-                isGeolocationInProgress = false;
             }
 
-            function applyPosition(lat, lng) {
-                selectedLat = lat;
-                selectedLng = lng;
-                reverseGeocode(lat, lng, function(address) {
-                    var finalAddress = (address && address !== 'غير معروف')
-                        ? address
-                        : (lat.toFixed(6) + ', ' + lng.toFixed(6));
+            function formatCoords(lat, lng) {
+                return lat.toFixed(5) + ', ' + lng.toFixed(5);
+            }
+
+            function extractAddressFromNominatim(data) {
+                if (!data) return null;
+                if (data.display_name && data.display_name.length > 0) {
+                    var parts = data.display_name.split(',').map(function(s) { return s.trim(); });
+                    if (parts.length > 4) {
+                        parts = parts.slice(0, 4);
+                    }
+                    return parts.join('، ');
+                }
+                if (data.address) {
+                    var a = data.address;
+                    var pieces = [];
+                    if (a.road) pieces.push(a.road);
+                    if (a.neighbourhood) pieces.push(a.neighbourhood);
+                    if (a.suburb) pieces.push(a.suburb);
+                    if (a.city || a.town || a.village) pieces.push(a.city || a.town || a.village);
+                    if (a.state) pieces.push(a.state);
+                    if (pieces.length) return pieces.join('، ');
+                }
+                return null;
+            }
+
+            function extractAddressFromBigData(data) {
+                if (!data) return null;
+                var pieces = [];
+                if (data.locality) pieces.push(data.locality);
+                if (data.city && data.city !== data.locality) pieces.push(data.city);
+                if (data.principalSubdivision) pieces.push(data.principalSubdivision);
+                if (data.countryName) pieces.push(data.countryName);
+                if (pieces.length) return pieces.join('، ');
+                return null;
+            }
+
+            function geocodeNominatim(lat, lng, callback) {
+                var url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng + '&accept-language=ar&zoom=18&addressdetails=1';
+                var controller = null;
+                var timer = null;
+                var opts = { headers: { 'Accept': 'application/json' } };
+                if (typeof AbortController !== 'undefined') {
+                    controller = new AbortController();
+                    opts.signal = controller.signal;
+                    timer = setTimeout(function() {
+                        try { controller.abort(); } catch (e) {}
+                    }, 7000);
+                }
+                fetch(url, opts)
+                    .then(function(r) {
+                        if (timer) clearTimeout(timer);
+                        if (!r.ok) throw new Error('bad');
+                        return r.json();
+                    })
+                    .then(function(data) {
+                        callback(extractAddressFromNominatim(data));
+                    })
+                    .catch(function() {
+                        if (timer) clearTimeout(timer);
+                        callback(null);
+                    });
+            }
+
+            function geocodeBigData(lat, lng, callback) {
+                var url = 'https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=' + lat + '&longitude=' + lng + '&localityLanguage=ar';
+                var controller = null;
+                var timer = null;
+                var opts = {};
+                if (typeof AbortController !== 'undefined') {
+                    controller = new AbortController();
+                    opts.signal = controller.signal;
+                    timer = setTimeout(function() {
+                        try { controller.abort(); } catch (e) {}
+                    }, 7000);
+                }
+                fetch(url, opts)
+                    .then(function(r) {
+                        if (timer) clearTimeout(timer);
+                        if (!r.ok) throw new Error('bad');
+                        return r.json();
+                    })
+                    .then(function(data) {
+                        callback(extractAddressFromBigData(data));
+                    })
+                    .catch(function() {
+                        if (timer) clearTimeout(timer);
+                        callback(null);
+                    });
+            }
+
+            function geocodeAddress(lat, lng, callback) {
+                geocodeNominatim(lat, lng, function(addr) {
+                    if (addr) {
+                        callback(addr);
+                        return;
+                    }
+                    geocodeBigData(lat, lng, function(addr2) {
+                        if (addr2) {
+                            callback(addr2);
+                        } else {
+                            callback(null);
+                        }
+                    });
+                });
+            }
+
+            function updateAddressFromCoords(lat, lng, isAuto) {
+                geocodeAddress(lat, lng, function(address) {
+                    var finalAddress = address ? address : formatCoords(lat, lng);
                     userAddressText.textContent = finalAddress;
-                    saveLocationToStorage(lat, lng, finalAddress);
-                    isGeolocationInProgress = false;
+                    saveLocation(lat, lng, finalAddress);
+                    if (isAuto) {
+                        isLocating = false;
+                    }
+                });
+            }
+
+            function requestSinglePosition(options) {
+                return new Promise(function(resolve, reject) {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, options);
                 });
             }
 
             function getCurrentLocation() {
-                if (isGeolocationInProgress) return;
-                isGeolocationInProgress = true;
+                if (isLocating) return;
+                isLocating = true;
                 userAddressText.textContent = 'جاري تحديد موقعك...';
 
                 if (!navigator.geolocation) {
-                    setDefaultLocation();
+                    applyDefaultLocation();
+                    saveLocation(DEFAULT_LAT, DEFAULT_LNG, DEFAULT_ADDRESS);
+                    isLocating = false;
                     return;
                 }
 
-                var bestPosition = null;
-                var watchId = null;
-                var finished = false;
+                var highAccuracyOptions = {
+                    enableHighAccuracy: true,
+                    timeout: 12000,
+                    maximumAge: 0
+                };
 
-                var timeoutId = setTimeout(function() {
-                    finish();
-                }, 12000);
+                requestSinglePosition(highAccuracyOptions)
+                    .then(function(pos) {
+                        var lat = pos.coords.latitude;
+                        var lng = pos.coords.longitude;
+                        var acc = pos.coords.accuracy || 9999;
+                        selectedLat = lat;
+                        selectedLng = lng;
 
-                function cleanup() {
-                    if (watchId !== null) {
-                        try {
-                            navigator.geolocation.clearWatch(watchId);
-                        } catch (err) {}
-                        watchId = null;
-                    }
-                    clearTimeout(timeoutId);
-                }
-
-                function finish() {
-                    if (finished) return;
-                    finished = true;
-                    cleanup();
-
-                    if (bestPosition) {
-                        applyPosition(bestPosition.coords.latitude, bestPosition.coords.longitude);
-                    } else {
-                        setDefaultLocation();
-                    }
-                }
-
-                function onSuccess(pos) {
-                    if (!bestPosition || pos.coords.accuracy < bestPosition.coords.accuracy) {
-                        bestPosition = pos;
-                    }
-                    if (pos.coords.accuracy <= 50) {
-                        finish();
-                    }
-                }
-
-                function onError() {
-                    if (!bestPosition) {
-                        finish();
-                    }
-                }
-
-                try {
-                    watchId = navigator.geolocation.watchPosition(
-                        onSuccess,
-                        onError,
-                        { enableHighAccuracy: true, timeout: 11000, maximumAge: 0 }
-                    );
-                } catch (err) {
-                    finish();
-                }
-            }
-
-            function reverseGeocode(lat, lng, callback) {
-                var url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng + '&accept-language=ar&zoom=18';
-                var controller = null;
-                var timer = null;
-                var options = { headers: { 'Accept': 'application/json' } };
-
-                if (typeof AbortController !== 'undefined') {
-                    controller = new AbortController();
-                    options.signal = controller.signal;
-                    timer = setTimeout(function() {
-                        try { controller.abort(); } catch (err) {}
-                    }, 8000);
-                }
-
-                fetch(url, options)
-                    .then(function(response) {
-                        if (timer) clearTimeout(timer);
-                        if (!response.ok) throw new Error('network');
-                        return response.json();
-                    })
-                    .then(function(data) {
-                        if (data && data.display_name) {
-                            callback(data.display_name);
+                        if (acc <= 80) {
+                            updateAddressFromCoords(lat, lng, true);
                         } else {
-                            fallbackGeocode(lat, lng, callback);
+                            var watchId = null;
+                            var bestPos = pos;
+                            var finished = false;
+                            var watchTimer = setTimeout(function() {
+                                if (finished) return;
+                                finished = true;
+                                if (watchId !== null) {
+                                    try { navigator.geolocation.clearWatch(watchId); } catch (e) {}
+                                }
+                                updateAddressFromCoords(
+                                    bestPos.coords.latitude,
+                                    bestPos.coords.longitude,
+                                    true
+                                );
+                            }, 7000);
+
+                            try {
+                                watchId = navigator.geolocation.watchPosition(
+                                    function(newPos) {
+                                        if (finished) return;
+                                        if (newPos.coords.accuracy < bestPos.coords.accuracy) {
+                                            bestPos = newPos;
+                                        }
+                                        if (newPos.coords.accuracy <= 40) {
+                                            finished = true;
+                                            clearTimeout(watchTimer);
+                                            try { navigator.geolocation.clearWatch(watchId); } catch (e) {}
+                                            selectedLat = newPos.coords.latitude;
+                                            selectedLng = newPos.coords.longitude;
+                                            updateAddressFromCoords(
+                                                newPos.coords.latitude,
+                                                newPos.coords.longitude,
+                                                true
+                                            );
+                                        }
+                                    },
+                                    function() {},
+                                    { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+                                );
+                            } catch (e) {
+                                finished = true;
+                                clearTimeout(watchTimer);
+                                updateAddressFromCoords(lat, lng, true);
+                            }
                         }
                     })
                     .catch(function() {
-                        if (timer) clearTimeout(timer);
-                        fallbackGeocode(lat, lng, callback);
+                        requestSinglePosition({
+                            enableHighAccuracy: false,
+                            timeout: 8000,
+                            maximumAge: 60000
+                        })
+                            .then(function(pos) {
+                                var lat = pos.coords.latitude;
+                                var lng = pos.coords.longitude;
+                                selectedLat = lat;
+                                selectedLng = lng;
+                                updateAddressFromCoords(lat, lng, true);
+                            })
+                            .catch(function() {
+                                applyDefaultLocation();
+                                saveLocation(DEFAULT_LAT, DEFAULT_LNG, DEFAULT_ADDRESS);
+                                isLocating = false;
+                            });
                     });
             }
 
-            function fallbackGeocode(lat, lng, callback) {
-                var url = 'https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=' + lat + '&longitude=' + lng + '&localityLanguage=ar';
-                fetch(url)
-                    .then(function(response) {
-                        if (!response.ok) throw new Error('network');
-                        return response.json();
-                    })
-                    .then(function(data) {
-                        var parts = [];
-                        if (data) {
-                            if (data.locality) parts.push(data.locality);
-                            if (data.city && data.city !== data.locality) parts.push(data.city);
-                            if (data.principalSubdivision) parts.push(data.principalSubdivision);
-                            if (data.countryName) parts.push(data.countryName);
-                        }
-                        if (parts.length) {
-                            callback(parts.join(', '));
-                        } else {
-                            callback('غير معروف');
-                        }
-                    })
-                    .catch(function() {
-                        callback('غير معروف');
-                    });
-            }
-
-            function initLeafletMap(lat, lng, onMarkerMove) {
-                var mapContainer = document.getElementById('leafletMapContainer');
-                if (!mapContainer || typeof L === 'undefined') return;
+            function initLeafletMap(lat, lng, onMove) {
+                var container = document.getElementById('leafletMapContainer');
+                if (!container || typeof L === 'undefined') return;
 
                 if (leafletMap) {
-                    try { leafletMap.remove(); } catch (err) {}
+                    try { leafletMap.remove(); } catch (e) {}
                     leafletMap = null;
                     leafletMarker = null;
                 }
 
                 try {
-                    leafletMap = L.map(mapContainer, {
+                    leafletMap = L.map(container, {
                         zoomControl: true,
                         minZoom: 2,
-                        maxZoom: 19
-                    }).setView([lat, lng], 15);
+                        maxZoom: 19,
+                        attributionControl: false
+                    }).setView([lat, lng], 16);
 
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        maxZoom: 19,
-                        attribution: '© OpenStreetMap'
+                        maxZoom: 19
                     }).addTo(leafletMap);
 
                     leafletMarker = L.marker([lat, lng], { draggable: true }).addTo(leafletMap);
 
                     leafletMarker.on('dragend', function() {
-                        var pos = leafletMarker.getLatLng();
-                        selectedLat = pos.lat;
-                        selectedLng = pos.lng;
-                        if (onMarkerMove) onMarkerMove(selectedLat, selectedLng);
+                        var p = leafletMarker.getLatLng();
+                        selectedLat = p.lat;
+                        selectedLng = p.lng;
+                        if (onMove) onMove(p.lat, p.lng);
                     });
 
                     leafletMap.on('click', function(e) {
                         selectedLat = e.latlng.lat;
                         selectedLng = e.latlng.lng;
                         leafletMarker.setLatLng([selectedLat, selectedLng]);
-                        if (onMarkerMove) onMarkerMove(selectedLat, selectedLng);
+                        if (onMove) onMove(selectedLat, selectedLng);
                     });
 
                     setTimeout(function() {
                         if (leafletMap) leafletMap.invalidateSize();
-                    }, 200);
-                } catch (err) {
-                    mapContainer.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;">تعذر تحميل الخريطة</div>';
+                    }, 250);
+                    setTimeout(function() {
+                        if (leafletMap) leafletMap.invalidateSize();
+                    }, 600);
+                } catch (e) {
+                    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;">تعذر تحميل الخريطة</div>';
                 }
             }
 
             function updateCoordsBar(lat, lng) {
-                var coordsEl = document.getElementById('mapCoordsDisplay');
-                if (coordsEl) {
-                    coordsEl.textContent = 'خط العرض: ' + lat.toFixed(6) + ' | خط الطول: ' + lng.toFixed(6);
+                var el = document.getElementById('mapCoordsDisplay');
+                if (el) {
+                    el.textContent = 'خط العرض: ' + lat.toFixed(6) + ' | خط الطول: ' + lng.toFixed(6);
                 }
             }
 
@@ -1866,15 +1887,15 @@
                 if (isMapModalOpen) return;
                 isMapModalOpen = true;
 
-                var currentLat = selectedLat;
-                var currentLng = selectedLng;
+                var startLat = selectedLat;
+                var startLng = selectedLng;
                 var isMobile = window.innerWidth <= 768;
 
                 Swal.fire({
                     title: 'حدد موقعك على الخريطة',
                     html: '<div id="leafletMapContainer"></div>' +
                         '<div class="map-coords-bar">' +
-                        '<span id="mapCoordsDisplay">خط العرض: ' + currentLat.toFixed(6) + ' | خط الطول: ' + currentLng.toFixed(6) + '</span>' +
+                        '<span id="mapCoordsDisplay">خط العرض: ' + startLat.toFixed(6) + ' | خط الطول: ' + startLng.toFixed(6) + '</span>' +
                         '<button type="button" id="mapUseCurrentBtn" class="map-use-current-btn"><i class="las la-location-arrow"></i> تحديد موقعي</button>' +
                         '</div>',
                     showCancelButton: true,
@@ -1891,13 +1912,13 @@
                     padding: '0',
                     didOpen: function() {
                         setTimeout(function() {
-                            initLeafletMap(currentLat, currentLng, function(lat, lng) {
+                            initLeafletMap(startLat, startLng, function(lat, lng) {
                                 updateCoordsBar(lat, lng);
                             });
 
-                            var useCurrentBtn = document.getElementById('mapUseCurrentBtn');
-                            if (useCurrentBtn) {
-                                useCurrentBtn.addEventListener('click', function() {
+                            var btn = document.getElementById('mapUseCurrentBtn');
+                            if (btn) {
+                                btn.addEventListener('click', function() {
                                     if (!navigator.geolocation) {
                                         Swal.showValidationMessage('المتصفح لا يدعم تحديد الموقع');
                                         return;
@@ -1912,15 +1933,15 @@
                                             selectedLng = lng;
                                             if (leafletMarker && leafletMap) {
                                                 leafletMarker.setLatLng([lat, lng]);
-                                                leafletMap.setView([lat, lng], 16);
+                                                leafletMap.setView([lat, lng], 17);
                                             }
                                             updateCoordsBar(lat, lng);
                                         },
                                         function() {
                                             Swal.hideLoading();
-                                            Swal.showValidationMessage('تعذر الحصول على موقعك الحالي');
+                                            Swal.showValidationMessage('تعذر الحصول على موقعك الحالي، تأكد من تفعيل GPS والسماح بالوصول');
                                         },
-                                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                                        { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
                                     );
                                 });
                             }
@@ -1928,11 +1949,11 @@
                     },
                     preConfirm: function() {
                         return new Promise(function(resolve) {
-                            reverseGeocode(selectedLat, selectedLng, function(address) {
-                                if (address && address !== 'غير معروف') {
+                            geocodeAddress(selectedLat, selectedLng, function(address) {
+                                if (address) {
                                     resolve(address);
                                 } else {
-                                    resolve(selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6));
+                                    resolve(formatCoords(selectedLat, selectedLng));
                                 }
                             });
                         });
@@ -1940,7 +1961,7 @@
                     willClose: function() {
                         isMapModalOpen = false;
                         if (leafletMap) {
-                            try { leafletMap.remove(); } catch (err) {}
+                            try { leafletMap.remove(); } catch (e) {}
                             leafletMap = null;
                             leafletMarker = null;
                         }
@@ -1948,7 +1969,7 @@
                 }).then(function(result) {
                     if (result.isConfirmed && result.value) {
                         userAddressText.textContent = result.value;
-                        saveLocationToStorage(selectedLat, selectedLng, result.value);
+                        saveLocation(selectedLat, selectedLng, result.value);
                         Swal.fire({
                             title: 'تم تحديث العنوان',
                             text: 'تم تغيير موقعك بنجاح',
@@ -1972,7 +1993,7 @@
                 });
             }
 
-            if (!loadLocationFromStorage()) {
+            if (!loadStoredLocation()) {
                 getCurrentLocation();
             }
         })();
