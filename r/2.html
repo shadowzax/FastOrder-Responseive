@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#FF5A00">
+    <title>سجل الطلبات - مطعم ابن حميدو</title>
+    <meta name="description" content="سجل الطلبات - مطعم ابن حميدو">
+    <link rel="icon" type="image/png" href="https://sys.shadowza.space/logos/1.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF5A00',
+                        secondary: '#FF8C38',
+                        accent: '#FFB800',
+                        dark: '#1A1A1A',
+                        muted: '#717171',
+                        success: '#00B14F'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --color-primary: #FF5A00;
+            --color-secondary: #FF8C38;
+            --color-accent: #FFB800;
+            --color-background: #F7F9F8;
+            --color-card: #FFFFFF;
+            --color-darker: #F0F4F3;
+            --color-white: #1A1A1A;
+            --color-muted: #717171;
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --card-bg: #FFFFFF;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --darker-bg: #F0F4F3;
+            --header-height: 70px;
+            --bottom-nav-height: 68px;
+            --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06);
+            --c-new: #FF5A00;
+            --c-accepted: #8B5CF6;
+            --c-preparing: #F59E0B;
+            --c-ready: #00B14F;
+            --c-onway: #3B82F6;
+            --c-delivered: #14B8A6;
+            --c-reject: #EF4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; width: 100%; overscroll-behavior: none; }
+        body {
+            font-family: 'Noto Sans Arabic', system-ui, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-white);
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: var(--color-background); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #FF8C38; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FF5A00; }
+
+        #mainHeader {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--color-background);
+            z-index: 110;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+        .header-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .brand-logo {
+            width: 42px; height: 42px; border-radius: 12px;
+            object-fit: cover; border: 2px solid var(--color-primary);
+            flex-shrink: 0; background: #fff;
+        }
+        .brand-name {
+            font-size: 1rem; font-weight: 800; color: var(--color-white);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .brand-sub { font-size: 0.68rem; color: var(--color-muted); font-weight: 600; }
+        .header-actions { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+        .notification-btn {
+            position: relative; background: none; border: none; cursor: pointer;
+            color: var(--color-muted); font-size: 1.5rem; padding: 0;
+            display: flex; align-items: center; justify-content: center;
+            transition: color 0.2s; flex-shrink: 0;
+        }
+        .notification-btn:hover { color: #FF5A00; }
+        .notification-btn .notification-dot {
+            position: absolute; top: 2px; right: 2px; width: 8px; height: 8px;
+            border-radius: 50%; background: #FF5A00;
+            border: 2px solid var(--color-background);
+        }
+        .header-avatar-btn {
+            width: 42px; height: 42px; border-radius: 50%;
+            object-fit: cover; border: 2px solid var(--color-primary);
+            cursor: pointer; transition: all 0.2s; flex-shrink: 0; background: #fff;
+        }
+        .header-avatar-btn:hover { transform: scale(1.05); }
+
+        .status-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 7px 14px; border-radius: 40px;
+            font-size: 0.75rem; font-weight: 700; cursor: pointer;
+            transition: all 0.25s ease; border: 1px solid transparent; flex-shrink: 0;
+        }
+        .status-pill.open {
+            background: rgba(0, 177, 79, 0.1); color: #00B14F;
+            border-color: rgba(0, 177, 79, 0.3);
+        }
+        .status-pill.closed {
+            background: rgba(239, 68, 68, 0.1); color: #EF4444;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        .status-pill .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: currentColor; animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        .profile-dropdown {
+            position: fixed; top: calc(var(--header-height) + 8px); left: 12px;
+            width: 300px; max-width: calc(100vw - 24px);
+            max-height: calc(100vh - var(--header-height) - 24px);
+            overflow-y: auto; background: var(--card-bg);
+            border: 1px solid var(--border-color); border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15); padding: 10px;
+            z-index: 200; opacity: 0; visibility: hidden;
+            transform: translateY(-12px) scale(0.97); transform-origin: top left;
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .profile-dropdown.active {
+            opacity: 1; visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+        .dropdown-user-header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px; border-radius: 14px;
+            background: linear-gradient(135deg, rgba(255,90,0,0.08), rgba(255,140,56,0.08));
+            margin-bottom: 6px;
+        }
+        .dropdown-user-header img {
+            width: 52px; height: 52px; border-radius: 50%;
+            object-fit: cover; border: 2px solid var(--color-primary);
+            flex-shrink: 0; background: #fff;
+        }
+        .dropdown-user-header .user-info { min-width: 0; flex: 1; }
+        .dropdown-user-header .user-name {
+            font-size: 0.92rem; font-weight: 800; color: var(--color-white);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .dropdown-user-header .user-role {
+            font-size: 0.72rem; color: var(--color-muted);
+            font-weight: 600; margin-top: 2px;
+        }
+        .dropdown-section-title {
+            font-size: 0.65rem; text-transform: uppercase;
+            letter-spacing: 1.5px; color: var(--color-muted);
+            padding: 12px 12px 6px; font-weight: 700;
+        }
+        .dropdown-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 11px 14px; border-radius: 12px; cursor: pointer;
+            transition: all 0.18s ease; color: var(--color-muted);
+            font-weight: 600; text-decoration: none; font-size: 0.88rem;
+        }
+        .dropdown-item i { font-size: 20px; width: 24px; flex-shrink: 0; }
+        .dropdown-item:hover { background: rgba(255, 90, 0, 0.08); color: var(--color-primary); }
+        .dropdown-item.active {
+            background: rgba(255, 90, 0, 0.12);
+            color: var(--color-primary); font-weight: 700;
+        }
+        .dropdown-item.logout { color: #EF4444; }
+        .dropdown-item.logout:hover { background: rgba(239, 68, 68, 0.08); color: #EF4444; }
+        .dropdown-divider { height: 1px; background: var(--border-color); margin: 6px 12px; }
+
+        main { padding-top: var(--header-height); padding-bottom: 0; }
+        @media (max-width: 1024px) {
+            main { padding-bottom: calc(var(--bottom-nav-height) + 20px); }
+        }
+
+        .bottom-mobile-nav {
+            display: none; position: fixed; bottom: 0; left: 0; right: 0;
+            height: var(--bottom-nav-height); background: var(--card-bg);
+            border-top: 1px solid var(--border-color); z-index: 100;
+            padding: 6px 8px;
+            padding-bottom: max(6px, env(safe-area-inset-bottom, 6px));
+            box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+            align-items: center; justify-content: space-around; gap: 4px;
+        }
+        @media (max-width: 1024px) { .bottom-mobile-nav { display: flex; } }
+        .bottom-nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; gap: 2px; flex: 1; padding: 8px 4px;
+            border-radius: 12px; cursor: pointer; text-decoration: none;
+            color: var(--color-muted); font-size: 0.68rem; font-weight: 600;
+            transition: all 0.25s ease; position: relative; min-width: 0;
+            -webkit-tap-highlight-color: transparent; user-select: none;
+        }
+        .bottom-nav-item i { font-size: 1.35rem; transition: all 0.25s ease; flex-shrink: 0; }
+        .bottom-nav-item span {
+            white-space: nowrap; text-overflow: ellipsis; overflow: hidden;
+            max-width: 100%; font-size: 0.65rem; letter-spacing: 0.2px;
+        }
+        .bottom-nav-item.active { color: var(--color-primary); }
+        .bottom-nav-item.active i { font-size: 1.5rem; }
+        .bottom-nav-item-center {
+            position: relative; top: -20px; width: 60px; height: 60px;
+            border-radius: 50%; background: var(--color-primary); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.4);
+            transition: all 0.3s ease; flex-shrink: 0; flex: none; margin: 0 4px;
+        }
+        .bottom-nav-item-center i { font-size: 2rem; }
+        .bottom-nav-item-center span { display: none; }
+        .bottom-nav-item-center.active { background: #e04e00; color: #fff; }
+        .nav-badge {
+            position: absolute; top: 4px; left: 50%; transform: translateX(-50%);
+            min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px;
+            background: #EF4444; color: #fff; font-size: 0.62rem; font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .bottom-nav-item-center .nav-badge {
+            top: -4px; left: 2px; transform: none; background: #1A1A1A;
+        }
+
+        .section-title {
+            font-size: 1.2rem; font-weight: 800; color: var(--color-white);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .section-title i { color: #FF5A00; }
+
+        .order-card {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 18px; padding: 16px; box-shadow: var(--shadow-card);
+            transition: all 0.3s ease; display: flex;
+            flex-direction: column; gap: 12px; position: relative; overflow: hidden;
+            cursor: pointer; -webkit-tap-highlight-color: transparent;
+        }
+        .order-card::before {
+            content: ""; position: absolute; top: 0; right: 0;
+            width: 5px; height: 100%;
+        }
+        .order-card.s-new::before { background: var(--c-new); }
+        .order-card.s-accepted::before { background: var(--c-accepted); }
+        .order-card.s-preparing::before { background: var(--c-preparing); }
+        .order-card.s-ready::before { background: var(--c-ready); }
+        .order-card.s-onway::before { background: var(--c-onway); }
+        .order-card.s-delivered::before { background: var(--c-delivered); }
+        .order-card.s-cancelled::before { background: var(--c-reject); }
+        .order-card:hover {
+            box-shadow: 0 10px 28px rgba(255, 90, 0, 0.12);
+            border-color: rgba(255, 90, 0, 0.35);
+            transform: translateY(-2px);
+        }
+        .order-card:active { transform: scale(0.99); }
+        .order-card.urgent {
+            border-color: rgba(239, 68, 68, 0.4);
+            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.12);
+        }
+        .order-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 12px; border-radius: 30px;
+            font-size: 0.72rem; font-weight: 700;
+        }
+        .badge-new { background: rgba(255, 90, 0, 0.12); color: var(--c-new); }
+        .badge-accepted { background: rgba(139, 92, 246, 0.12); color: var(--c-accepted); }
+        .badge-preparing { background: rgba(245, 158, 11, 0.15); color: var(--c-preparing); }
+        .badge-ready { background: rgba(0, 177, 79, 0.12); color: var(--c-ready); }
+        .badge-onway { background: rgba(59, 130, 246, 0.12); color: var(--c-onway); }
+        .badge-delivered { background: rgba(20, 184, 166, 0.12); color: var(--c-delivered); }
+        .badge-cancelled { background: rgba(239, 68, 68, 0.12); color: var(--c-reject); }
+
+        .name-row {
+            display: flex; align-items: center; gap: 8px;
+            flex-wrap: nowrap; min-width: 0;
+        }
+        .name-row .customer-name {
+            font-size: 0.92rem; font-weight: 800;
+            color: var(--color-white);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            min-width: 0; flex-shrink: 1;
+        }
+        .name-row .type-chip {
+            font-size: 0.62rem; font-weight: 700;
+            padding: 3px 8px; border-radius: 999px;
+            background: rgba(59, 130, 246, 0.12); color: #3B82F6;
+            flex-shrink: 0; white-space: nowrap;
+        }
+        .name-row .name-actions {
+            display: flex; align-items: center; gap: 6px;
+            margin-right: auto; flex-shrink: 0;
+        }
+        .icon-btn {
+            width: 32px; height: 32px; border-radius: 10px;
+            display: inline-flex; align-items: center; justify-content: center;
+            cursor: pointer; border: none; font-size: 1rem;
+            transition: all 0.2s ease; flex-shrink: 0;
+            background: transparent; padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .icon-btn-call {
+            background: rgba(59, 130, 246, 0.12); color: var(--c-onway);
+        }
+        .icon-btn-call:hover {
+            background: var(--c-onway); color: #fff;
+            transform: translateY(-2px);
+        }
+        .icon-btn-view {
+            background: rgba(255, 90, 0, 0.12); color: var(--c-new);
+        }
+        .icon-btn-view:hover {
+            background: var(--c-new); color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .btn {
+            border: none; border-radius: 12px; padding: 10px 16px;
+            font-family: inherit; font-weight: 700; font-size: 0.82rem;
+            cursor: pointer; transition: all 0.2s ease;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 6px; color: #fff;
+        }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-primary { background: var(--c-new); box-shadow: 0 2px 8px rgba(255, 90, 0, 0.3); }
+        .btn-primary:hover:not(:disabled) { background: #e04e00; box-shadow: 0 4px 12px rgba(255, 90, 0, 0.4); }
+        .btn-outline {
+            background: transparent; color: var(--color-muted);
+            border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 10px 16px; font-family: inherit; font-weight: 700;
+            font-size: 0.82rem; cursor: pointer; transition: all 0.2s ease;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 6px; text-decoration: none;
+        }
+        .btn-outline:hover { background: var(--darker-bg); color: var(--color-white); }
+
+        .empty-state {
+            background: var(--card-bg); border: 2px dashed var(--border-color);
+            border-radius: 20px; padding: 34px 20px;
+            text-align: center; color: var(--color-muted);
+        }
+        .empty-state i {
+            font-size: 3rem; color: #FF8C38; opacity: 0.5;
+            display: block; margin-bottom: 12px;
+        }
+
+        .filter-tab {
+            padding: 9px 16px; border-radius: 12px;
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            font-size: 0.8rem; font-weight: 700; color: var(--color-muted);
+            cursor: pointer; transition: all 0.2s ease;
+            white-space: nowrap; -webkit-tap-highlight-color: transparent;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .filter-tab .dot-color {
+            width: 10px; height: 10px; border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .filter-tab[data-filter="delivered"] .dot-color { background: var(--c-delivered); }
+        .filter-tab[data-filter="cancelled"] .dot-color { background: var(--c-reject); }
+        .filter-tab:hover { border-color: rgba(255, 90, 0, 0.4); }
+        .filter-tab.active {
+            background: #FF5A00; color: #fff; border-color: #FF5A00;
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.28);
+        }
+        .filter-tab.active .dot-color { background: #fff; }
+        .filter-tab .count {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 20px; height: 20px; padding: 0 6px;
+            border-radius: 10px; background: rgba(0, 0, 0, 0.06);
+            font-size: 0.68rem;
+        }
+        .filter-tab.active .count {
+            background: rgba(255, 255, 255, 0.22); color: #fff;
+        }
+
+        .scroll-x { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+
+        .order-card-items {
+            background: var(--darker-bg);
+            border-radius: 14px; padding: 10px 12px;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 200px;
+            max-width: 340px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 10px 40px 10px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--color-white);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .search-box input:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(255, 90, 0, 0.1);
+        }
+        .search-box i {
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            transform: translateY(-50%);
+            color: var(--color-muted);
+            font-size: 1.1rem;
+            pointer-events: none;
+        }
+
+        .restaurant-banner {
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #FF5A00 0%, #FF8C38 100%);
+            color: #fff;
+            box-shadow: 0 10px 28px rgba(255,90,0,0.28);
+            position: relative;
+            overflow: hidden;
+        }
+        .restaurant-banner::before {
+            content: "";
+            position: absolute;
+            top: -50px; left: -50px;
+            width: 200px; height: 200px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
+        }
+        .restaurant-banner::after {
+            content: "";
+            position: absolute;
+            bottom: -80px; right: -30px;
+            width: 180px; height: 180px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 50%;
+        }
+        .restaurant-banner .rb-inner { position: relative; z-index: 2; }
+        .rb-logo {
+            width: 64px; height: 64px; border-radius: 50%;
+            object-fit: cover; border: 3px solid rgba(255,255,255,0.4);
+            background: #fff; flex-shrink: 0;
+        }
+        .rb-name { font-size: 1.15rem; font-weight: 800; margin-bottom: 4px; }
+        .rb-meta {
+            display: flex; flex-wrap: wrap; gap: 12px;
+            font-size: 0.75rem; color: rgba(255,255,255,0.9);
+            font-weight: 600;
+        }
+        .rb-meta span { display: inline-flex; align-items: center; gap: 4px; }
+        .rb-quick-actions {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;
+        }
+        .rb-action {
+            background: rgba(255,255,255,0.18);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: #fff; font-family: inherit; font-weight: 700;
+            font-size: 0.75rem; padding: 8px 14px; border-radius: 12px;
+            cursor: pointer; transition: all 0.2s ease;
+            display: inline-flex; align-items: center; gap: 6px;
+            backdrop-filter: blur(10px);
+            text-decoration: none;
+        }
+        .rb-action:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        .rb-action i { font-size: 1rem; }
+
+        /* ===== صفحة تفاصيل الطلب ===== */
+        .order-details-page {
+            position: fixed;
+            inset: 0;
+            background: var(--color-background);
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(-100%);
+            visibility: hidden;
+            transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.32s;
+            will-change: transform;
+        }
+        .order-details-page.active {
+            transform: translateX(0);
+            visibility: visible;
+        }
+        .od-header {
+            height: var(--header-height);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 14px;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+        .od-back {
+            width: 42px; height: 42px; border-radius: 13px;
+            display: inline-flex; align-items: center; justify-content: center;
+            background: rgba(255, 90, 0, 0.1);
+            color: var(--color-primary);
+            border: none; cursor: pointer; font-size: 1.4rem;
+            flex-shrink: 0; transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .od-back:hover { background: var(--color-primary); color: #fff; }
+        .od-title { font-size: 1rem; font-weight: 800; color: var(--color-white); line-height: 1.2; }
+        .od-sub { font-size: 0.68rem; color: var(--color-muted); font-weight: 600; margin-top: 2px; }
+
+        .od-body { flex: 1; overflow-y: auto; padding: 16px; -webkit-overflow-scrolling: touch; }
+        .od-wrap {
+            max-width: 860px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            padding-bottom: 34px;
+        }
+
+        .od-hero {
+            border-radius: 20px;
+            padding: 18px;
+            color: #fff;
+            background: linear-gradient(135deg, #FF5A00 0%, #FF8C38 100%);
+            box-shadow: 0 10px 26px rgba(255, 90, 0, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+        .od-hero::before {
+            content: "";
+            position: absolute;
+            top: -60px; left: -50px;
+            width: 180px; height: 180px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+        .od-hero-inner { position: relative; z-index: 2; }
+        .od-hero-top {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 10px; flex-wrap: wrap; margin-bottom: 12px;
+        }
+        .od-hero-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(255, 255, 255, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff; padding: 6px 14px; border-radius: 30px;
+            font-size: 0.75rem; font-weight: 800;
+        }
+        .od-hero-id {
+            font-size: 0.78rem; font-weight: 800;
+            background: rgba(0, 0, 0, 0.15);
+            padding: 5px 12px; border-radius: 30px;
+        }
+        .od-hero-total { font-size: 1.7rem; font-weight: 800; line-height: 1.1; }
+        .od-hero-meta {
+            display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px;
+            font-size: 0.74rem; font-weight: 600; color: rgba(255, 255, 255, 0.92);
+        }
+        .od-hero-meta span { display: inline-flex; align-items: center; gap: 5px; }
+
+        .od-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 16px;
+            box-shadow: var(--shadow-card);
+        }
+        .od-card-title {
+            font-size: 0.85rem; font-weight: 800; color: var(--color-white);
+            display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+        }
+        .od-card-title i { color: var(--color-primary); font-size: 1.2rem; }
+
+        .od-row {
+            display: flex; align-items: flex-start; justify-content: space-between;
+            gap: 12px; padding: 9px 0;
+            border-bottom: 1px dashed var(--border-color);
+            font-size: 0.83rem;
+        }
+        .od-row:last-child { border-bottom: none; padding-bottom: 0; }
+        .od-row:first-child { padding-top: 0; }
+        .od-row .k { color: var(--color-muted); font-weight: 700; flex-shrink: 0; }
+        .od-row .v { font-weight: 800; color: var(--color-white); text-align: left; word-break: break-word; }
+
+        .od-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 0; border-bottom: 1px solid var(--border-color);
+        }
+        .od-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .od-item:first-child { padding-top: 0; }
+        .od-item img {
+            width: 56px; height: 56px; border-radius: 13px;
+            object-fit: cover; flex-shrink: 0; background: var(--darker-bg);
+        }
+        .od-item-name { font-size: 0.85rem; font-weight: 800; color: var(--color-white); }
+        .od-item-price { font-size: 0.7rem; color: var(--color-muted); font-weight: 700; margin-top: 2px; }
+        .od-item-note { font-size: 0.68rem; color: #B37F00; font-weight: 700; margin-top: 3px; }
+        .od-item-total {
+            font-size: 0.8rem; font-weight: 800; color: var(--color-primary);
+            background: rgba(255, 90, 0, 0.1);
+            padding: 5px 10px; border-radius: 10px; flex-shrink: 0; white-space: nowrap;
+        }
+
+        .od-total-box {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #FFF3E8; border-radius: 14px; padding: 14px 16px;
+            margin-top: 12px;
+        }
+        .od-total-box .lbl { font-size: 0.85rem; font-weight: 800; color: var(--color-white); }
+        .od-total-box .val { font-size: 1.25rem; font-weight: 800; color: var(--color-primary); }
+
+        .od-note-box {
+            background: rgba(255, 184, 0, 0.12);
+            border: 1px solid rgba(255, 184, 0, 0.25);
+            border-radius: 14px; padding: 12px 14px;
+            font-size: 0.78rem; font-weight: 700; color: #B37F00;
+            display: flex; align-items: flex-start; gap: 8px;
+        }
+        .od-note-box i { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+
+        .od-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .od-actions .btn, .od-actions .btn-outline { flex: 1; min-width: 140px; padding: 12px 16px; }
+
+        .od-driver-header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(59,130,246,0.04));
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            margin-bottom: 12px;
+        }
+        .od-driver-avatar {
+            width: 52px; height: 52px; border-radius: 50%;
+            background: linear-gradient(135deg, #3B82F6, #60A5FA);
+            color: #fff; display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; font-weight: 800; flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .od-driver-info { min-width: 0; flex: 1; }
+        .od-driver-name {
+            font-size: 0.9rem; font-weight: 800; color: var(--color-white);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .od-driver-role {
+            font-size: 0.7rem; color: var(--c-onway); font-weight: 700; margin-top: 3px;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .od-driver-phone {
+            font-size: 0.72rem; color: var(--color-muted); font-weight: 700;
+            margin-top: 3px; direction: ltr; text-align: right;
+        }
+
+        @media (max-width: 640px) {
+            .section-title { font-size: 1rem; }
+            .brand-name { font-size: 0.88rem; }
+            .brand-sub { font-size: 0.62rem; }
+            .profile-dropdown { left: 8px; right: 8px; width: auto; }
+            .rb-logo { width: 52px; height: 52px; }
+            .rb-name { font-size: 1rem; }
+            .rb-action { font-size: 0.7rem; padding: 7px 11px; }
+            .name-row .customer-name { font-size: 0.85rem; }
+            .icon-btn { width: 30px; height: 30px; font-size: 0.95rem; }
+            .search-box { min-width: 100%; max-width: 100%; }
+            .od-body { padding: 12px; }
+            .od-hero-total { font-size: 1.45rem; }
+            .od-item img { width: 50px; height: 50px; }
+        }
+    </style>
+</head>
+<body>
+    <header id="mainHeader">
+        <div class="header-brand">
+            <img src="https://sys.shadowza.space/logos/1.png" class="brand-logo" alt="logo">
+            <div class="min-w-0">
+                <p class="brand-name">مطعم ابن حميدو</p>
+                <p class="brand-sub">سجل الطلبات</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <div class="status-pill open" id="headerStatusPill">
+                <span class="dot"></span>
+                <span id="headerStatusText">مفتوح</span>
+            </div>
+            <button class="notification-btn" id="notificationBtn">
+                <i class="las la-bell"></i>
+                <span class="notification-dot"></span>
+            </button>
+            <img id="headerAvatar" src="https://sys.shadowza.space/logos/1.png" class="header-avatar-btn" alt="avatar">
+        </div>
+    </header>
+
+    <div class="profile-dropdown" id="profileDropdown" role="menu" aria-label="قائمة المستخدم">
+        <div class="dropdown-user-header">
+            <img id="dropdownUserAvatar" src="https://sys.shadowza.space/logos/1.png" alt="avatar">
+            <div class="user-info">
+                <p class="user-name">مطعم ابن حميدو</p>
+                <p class="user-role">حساب المطعم</p>
+            </div>
+        </div>
+        <div class="dropdown-section-title">القائمة</div>
+        <a href="#" class="dropdown-item" data-action="dashboard"><i class="las la-chart-pie"></i><span>لوحة التحكم</span></a>
+        <a href="#" class="dropdown-item" data-action="orders"><i class="las la-receipt"></i><span>الطلبات الجديدة</span></a>
+        <a href="#" class="dropdown-item active" data-action="history"><i class="las la-history"></i><span>سجل الطلبات</span></a>
+        <a href="#" class="dropdown-item" data-action="categories"><i class="las la-th-large"></i><span>الأقسام</span></a>
+        <a href="#" class="dropdown-item" data-action="offers"><i class="las la-percent"></i><span>العروض والخصومات</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section-title">المالية</div>
+        <a href="#" class="dropdown-item" data-action="earnings"><i class="las la-wallet"></i><span>الأرباح</span></a>
+        <a href="#" class="dropdown-item" data-action="payouts"><i class="las la-money-check-alt"></i><span>طلبات السحب</span></a>
+        <a href="#" class="dropdown-item" data-action="reports"><i class="las la-chart-line"></i><span>التقارير</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section-title">الإعدادات</div>
+        <a href="#" class="dropdown-item" data-action="profile"><i class="las la-store"></i><span>بيانات المطعم</span></a>
+        <a href="#" class="dropdown-item" data-action="hours"><i class="las la-clock"></i><span>ساعات العمل</span></a>
+        <a href="#" class="dropdown-item" data-action="delivery"><i class="las la-truck"></i><span>مناطق التوصيل</span></a>
+        <a href="#" class="dropdown-item" data-action="staff"><i class="las la-users"></i><span>فريق العمل</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section-title">الدعم</div>
+        <a href="#" class="dropdown-item" data-action="help"><i class="las la-headset"></i><span>مركز المساعدة</span></a>
+        <a href="#" class="dropdown-item" data-action="settings"><i class="las la-cog"></i><span>إعدادات الحساب</span></a>
+        <div class="dropdown-divider"></div>
+        <a href="#" class="dropdown-item logout" id="logoutBtn"><i class="las la-sign-out-alt"></i><span>تسجيل الخروج</span></a>
+    </div>
+
+    <main>
+        <div class="container mx-auto px-4 py-6 max-w-7xl">
+
+            <div class="restaurant-banner">
+                <div class="rb-inner">
+                    <div class="flex items-center gap-4 flex-wrap">
+                        <img src="https://sys.shadowza.space/logos/1.png" class="rb-logo" alt="logo">
+                        <div class="min-w-0">
+                            <h2 class="rb-name">سجل الطلبات</h2>
+                            <div class="rb-meta">
+                                <span><i class="las la-history"></i> آخر 30 يوم</span>
+                                <span><i class="las la-check-double"></i> 128 طلب مكتمل</span>
+                                <span><i class="las la-star" style="color:#FFD700;"></i> متوسط التقييم 4.9</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rb-quick-actions">
+                        <a href="#" class="rb-action"><i class="las la-receipt"></i> الطلبات الجديدة</a>
+                        <a href="#" class="rb-action"><i class="las la-chart-line"></i> التقارير</a>
+                        <a href="#" class="rb-action"><i class="las la-wallet"></i> الأرباح</a>
+                        <a href="#" class="rb-action"><i class="las la-file-export"></i> تصدير السجل</a>
+                        <a href="#" class="rb-action"><i class="las la-calendar"></i> تحديد الفترة</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+                    <h3 class="section-title"><i class="las la-history"></i> سجل الطلبات</h3>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <a href="#" class="btn-outline"><i class="las la-receipt"></i> الطلبات الجديدة</a>
+                        <button class="btn-outline" id="refreshOrdersBtn"><i class="las la-sync-alt"></i> تحديث</button>
+                    </div>
+                </div>
+
+                <div class="search-box mb-4">
+                    <input type="text" id="searchInput" placeholder="ابحث برقم الطلب أو اسم العميل أو رقم الهاتف...">
+                    <i class="las la-search"></i>
+                </div>
+
+                <div class="scroll-x hide-scrollbar mb-4" style="gap:8px;" id="orderFilters">
+                    <button class="filter-tab active" data-filter="all">الكل <span class="count">0</span></button>
+                    <button class="filter-tab" data-filter="delivered"><span class="dot-color"></span> تم التسليم <span class="count">0</span></button>
+                    <button class="filter-tab" data-filter="cancelled"><span class="dot-color"></span> ملغي <span class="count">0</span></button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" id="ordersContainer"></div>
+            </div>
+
+        </div>
+    </main>
+
+    <div class="bottom-mobile-nav" id="bottomMobileNav">
+        <a href="#" class="bottom-nav-item" data-tab="dashboard"><i class="las la-chart-pie"></i><span>الرئيسية</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="orders"><i class="las la-receipt"></i><span>الطلبات</span></a>
+        <a href="#" class="bottom-nav-item bottom-nav-item-center" data-tab="newOrder"><i class="las la-plus"></i><span>جديد</span></a>
+        <a href="#" class="bottom-nav-item active" data-tab="history"><i class="las la-history"></i><span>السجل</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="profile"><i class="las la-store"></i><span>المطعم</span></a>
+    </div>
+
+    <div class="order-details-page" id="orderDetailsPage" role="dialog" aria-modal="true" aria-label="تفاصيل الطلب">
+        <header class="od-header">
+            <button class="od-back" id="odBack" aria-label="رجوع"><i class="las la-arrow-right"></i></button>
+            <div class="min-w-0">
+                <p class="od-title">تفاصيل الطلب</p>
+                <p class="od-sub" id="odHeaderSub">—</p>
+            </div>
+        </header>
+        <div class="od-body" id="odBody"></div>
+    </div>
+
+    <script>
+        (function() {
+            const profileDropdown = document.getElementById('profileDropdown');
+            const headerAvatar = document.getElementById('headerAvatar');
+            const notificationBtn = document.getElementById('notificationBtn');
+            const ordersContainer = document.getElementById('ordersContainer');
+            const orderFilters = document.getElementById('orderFilters');
+            const headerStatusPill = document.getElementById('headerStatusPill');
+            const headerStatusText = document.getElementById('headerStatusText');
+            const refreshOrdersBtn = document.getElementById('refreshOrdersBtn');
+            const searchInput = document.getElementById('searchInput');
+            const orderDetailsPage = document.getElementById('orderDetailsPage');
+            const odBody = document.getElementById('odBody');
+            const odBack = document.getElementById('odBack');
+            const odHeaderSub = document.getElementById('odHeaderSub');
+
+            let isOpen = true;
+            let activeFilter = 'all';
+            let searchQuery = '';
+
+            let orders = [
+                {
+                    id: 'ORD-5021', customer: 'أحمد محمد', phone: '+20 123 456 7890',
+                    address: 'فندق ريكسوس سيزونز، خليج نعمة، شرم الشيخ',
+                    landmark: 'بجوار مقهى ستاربكس، الدور الثالث',
+                    items: [
+                        { name: 'سمك مشوي طازج', qty: 2, price: 180, image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=200&q=70', notes: 'بدون شطة' },
+                        { name: 'رز صيادية', qty: 1, price: 45, image: 'https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&w=200&q=70', notes: 'كمية إضافية' }
+                    ],
+                    total: 405, subtotal: 405, deliveryFee: 0,
+                    status: 'delivered', time: 'اليوم - 2:30 م', type: 'delivery',
+                    paymentMethod: 'نقدي عند التسليم', notes: '',
+                    driver: 'محمد عبد الرحمن', driverPhone: '+20 100 111 2233'
+                },
+                {
+                    id: 'ORD-5020', customer: 'سارة علي', phone: '+20 123 456 7891',
+                    address: 'كمبنسكي شرم الشيخ، السوق القديم، شرم الشيخ',
+                    landmark: 'مدخل المارينا، الدور الثاني',
+                    items: [
+                        { name: 'جمبري مقلي', qty: 1, price: 220, image: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=200&q=70', notes: 'مقرمش جداً' },
+                        { name: 'سلطة طحينة', qty: 2, price: 35, image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 290, subtotal: 290, deliveryFee: 0,
+                    status: 'delivered', time: 'اليوم - 1:15 م', type: 'delivery',
+                    paymentMethod: 'فيزا كارد', notes: '',
+                    driver: 'حسن إبراهيم', driverPhone: '+20 100 222 3344'
+                },
+                {
+                    id: 'ORD-5019', customer: 'محمود حسن', phone: '+20 123 456 7892',
+                    address: 'منتجع سيرافيتا، نبق، شرم الشيخ',
+                    landmark: 'الشاطئ الخاص، فيلا 12',
+                    items: [
+                        { name: 'كاليماري مقلي', qty: 2, price: 145, image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=200&q=70', notes: 'مع صوص الثوم' }
+                    ],
+                    total: 290, subtotal: 290, deliveryFee: 0,
+                    status: 'cancelled', time: 'اليوم - 12:45 م', type: 'delivery',
+                    paymentMethod: 'نقدي عند التسليم', notes: 'تم الرفض - نفاذ كمية',
+                    driver: '—', driverPhone: '—'
+                },
+                {
+                    id: 'ORD-5018', customer: 'ليلى أحمد', phone: '+20 123 456 7893',
+                    address: 'فندق شيراتون شرم الشيخ، طريق السلام',
+                    landmark: 'اللوبي الرئيسي، غرفة 305',
+                    items: [
+                        { name: 'سمك فيليه مشوي', qty: 1, price: 165, image: 'https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?auto=format&fit=crop&w=200&q=70', notes: 'مع ليمون' },
+                        { name: 'شوربة سيفود', qty: 2, price: 55, image: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=200&q=70', notes: 'ساخنة' }
+                    ],
+                    total: 275, subtotal: 275, deliveryFee: 0,
+                    status: 'delivered', time: 'اليوم - 11:20 ص', type: 'pickup',
+                    paymentMethod: 'دفع عند الاستلام', notes: '',
+                    driver: null, driverPhone: null
+                },
+                {
+                    id: 'ORD-5017', customer: 'خالد يوسف', phone: '+20 123 456 7894',
+                    address: 'حي الرويسات، شرم الشيخ',
+                    landmark: 'بجوار مسجد الرويسات',
+                    items: [
+                        { name: 'سمك مشوي طازج', qty: 2, price: 180, image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=200&q=70', notes: 'واحد مشوي وواحد مقلي' },
+                        { name: 'بطاطس مقلية', qty: 1, price: 25, image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 385, subtotal: 385, deliveryFee: 0,
+                    status: 'delivered', time: 'أمس - 9:30 م', type: 'delivery',
+                    paymentMethod: 'فيزا كارد', notes: '',
+                    driver: 'عبد الله سعيد', driverPhone: '+20 100 333 4455'
+                },
+                {
+                    id: 'ORD-5016', customer: 'منى إبراهيم', phone: '+20 123 456 7895',
+                    address: 'خليج نعمة، شارع الملك، شرم الشيخ',
+                    landmark: 'برج الخليج، الدور الخامس',
+                    items: [
+                        { name: 'جمبري مشوي', qty: 3, price: 190, image: 'https://images.unsplash.com/photo-1625943553852-781c6dd46faa?auto=format&fit=crop&w=200&q=70', notes: 'بدون ثوم' }
+                    ],
+                    total: 570, subtotal: 570, deliveryFee: 0,
+                    status: 'cancelled', time: 'أمس - 8:15 م', type: 'delivery',
+                    paymentMethod: 'نقدي عند التسليم', notes: 'تم الرفض - خارج منطقة التوصيل',
+                    driver: '—', driverPhone: '—'
+                },
+                {
+                    id: 'ORD-5015', customer: 'عمر سالم', phone: '+20 123 456 7896',
+                    address: 'الطريق الدائري، شرم الشيخ',
+                    landmark: 'محطة بنزين موبيل',
+                    items: [
+                        { name: 'رز صيادية بالجمبري', qty: 2, price: 95, image: 'https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&w=200&q=70', notes: '' },
+                        { name: 'سلطة طحينة', qty: 1, price: 35, image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 225, subtotal: 225, deliveryFee: 0,
+                    status: 'delivered', time: 'أمس - 7:45 م', type: 'delivery',
+                    paymentMethod: 'فيزا كارد', notes: '',
+                    driver: 'محمد عبد الرحمن', driverPhone: '+20 100 111 2233'
+                },
+                {
+                    id: 'ORD-5014', customer: 'هند محمد', phone: '+20 123 456 7897',
+                    address: 'فندق هيلتون شرم الشيخ، خليج نعمة',
+                    landmark: 'بجوار حمام السباحة',
+                    items: [
+                        { name: 'كاليماري مقلي', qty: 1, price: 145, image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 145, subtotal: 145, deliveryFee: 0,
+                    status: 'delivered', time: 'أمس - 6:20 م', type: 'pickup',
+                    paymentMethod: 'دفع عند الاستلام', notes: '',
+                    driver: null, driverPhone: null
+                },
+                {
+                    id: 'ORD-5013', customer: 'يوسف علي', phone: '+20 123 456 7898',
+                    address: 'شارع السلام، حي النصر، شرم الشيخ',
+                    landmark: 'عمارة 12، الدور الأرضي',
+                    items: [
+                        { name: 'سمك فيليه مشوي', qty: 1, price: 165, image: 'https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?auto=format&fit=crop&w=200&q=70', notes: '' },
+                        { name: 'جمبري مقلي', qty: 1, price: 220, image: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 385, subtotal: 385, deliveryFee: 0,
+                    status: 'cancelled', time: 'أمس - 5:00 م', type: 'delivery',
+                    paymentMethod: 'نقدي عند التسليم', notes: 'تم الرفض - المطعم مزدحم',
+                    driver: '—', driverPhone: '—'
+                },
+                {
+                    id: 'ORD-5012', customer: 'نور الدين', phone: '+20 123 456 7899',
+                    address: 'ميدان الساعة، شرم الشيخ',
+                    landmark: 'بجوار البنك الأهلي',
+                    items: [
+                        { name: 'سمك مشوي طازج', qty: 1, price: 180, image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=200&q=70', notes: 'مع رز' }
+                    ],
+                    total: 180, subtotal: 180, deliveryFee: 0,
+                    status: 'preparing', time: 'اليوم - 3:00 م', type: 'delivery',
+                    paymentMethod: 'فيزا كارد', notes: '',
+                    driver: 'حسن إبراهيم', driverPhone: '+20 100 222 3344'
+                },
+                {
+                    id: 'ORD-5011', customer: 'سلمى أحمد', phone: '+20 123 456 7800',
+                    address: 'خليج نعمة، شارع الملك، شرم الشيخ',
+                    landmark: 'مول نعمة، الدور الثاني',
+                    items: [
+                        { name: 'شوربة سيفود', qty: 1, price: 55, image: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 55, subtotal: 55, deliveryFee: 0,
+                    status: 'onway', time: 'اليوم - 3:15 م', type: 'delivery',
+                    paymentMethod: 'نقدي عند التسليم', notes: '',
+                    driver: 'عبد الله سعيد', driverPhone: '+20 100 333 4455'
+                },
+                {
+                    id: 'ORD-5010', customer: 'كريم فؤاد', phone: '+20 123 456 7801',
+                    address: 'حي الرويسات، شرم الشيخ',
+                    landmark: 'بجوار صيدلية العزبي',
+                    items: [
+                        { name: 'جمبري مشوي', qty: 2, price: 190, image: 'https://images.unsplash.com/photo-1625943553852-781c6dd46faa?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 380, subtotal: 380, deliveryFee: 0,
+                    status: 'delivered', time: 'قبل 3 أيام', type: 'delivery',
+                    paymentMethod: 'فيزا كارد', notes: '',
+                    driver: 'محمد عبد الرحمن', driverPhone: '+20 100 111 2233'
+                },
+                {
+                    id: 'ORD-5009', customer: 'رنا محمود', phone: '+20 123 456 7802',
+                    address: 'خليج نعمة، شرم الشيخ',
+                    landmark: 'فندق فور سيزونز',
+                    items: [
+                        { name: 'سمك مشوي طازج', qty: 1, price: 180, image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=200&q=70', notes: '' },
+                        { name: 'سلطة طحينة', qty: 1, price: 35, image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 215, subtotal: 215, deliveryFee: 0,
+                    status: 'delivered', time: 'قبل 3 أيام', type: 'delivery',
+                    paymentMethod: 'نقدي عند التسليم', notes: '',
+                    driver: 'حسن إبراهيم', driverPhone: '+20 100 222 3344'
+                },
+                {
+                    id: 'ORD-5008', customer: 'طارق سعيد', phone: '+20 123 456 7803',
+                    address: 'حي النصر، شرم الشيخ',
+                    landmark: 'بجوار صيدلية العزبي',
+                    items: [
+                        { name: 'جمبري مقلي', qty: 2, price: 220, image: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 440, subtotal: 440, deliveryFee: 0,
+                    status: 'cancelled', time: 'قبل 4 أيام', type: 'delivery',
+                    paymentMethod: 'فيزا كارد', notes: 'تم الرفض - المطعم مغلق',
+                    driver: '—', driverPhone: '—'
+                },
+                {
+                    id: 'ORD-5007', customer: 'دينا حسن', phone: '+20 123 456 7804',
+                    address: 'شارع السلام، شرم الشيخ',
+                    landmark: 'برج السلام',
+                    items: [
+                        { name: 'شوربة سيفود', qty: 2, price: 55, image: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 110, subtotal: 110, deliveryFee: 0,
+                    status: 'delivered', time: 'قبل 4 أيام', type: 'pickup',
+                    paymentMethod: 'دفع عند الاستلام', notes: '',
+                    driver: null, driverPhone: null
+                },
+                {
+                    id: 'ORD-5006', customer: 'علي محسن', phone: '+20 123 456 7805',
+                    address: 'منتجع سيرافيتا، شرم الشيخ',
+                    landmark: 'فيلا 8',
+                    items: [
+                        { name: 'سمك فيليه مشوي', qty: 2, price: 165, image: 'https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 330, subtotal: 330, deliveryFee: 0,
+                    status: 'delivered', time: 'قبل 5 أيام', type: 'delivery',
+                    paymentMethod: 'نقدي عند التسليم', notes: '',
+                    driver: 'عبد الله سعيد', driverPhone: '+20 100 333 4455'
+                },
+                {
+                    id: 'ORD-5005', customer: 'منال فؤاد', phone: '+20 123 456 7806',
+                    address: 'خليج نعمة، شرم الشيخ',
+                    landmark: 'مول نعمة',
+                    items: [
+                        { name: 'كاليماري مقلي', qty: 3, price: 145, image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 435, subtotal: 435, deliveryFee: 0,
+                    status: 'delivered', time: 'قبل 5 أيام', type: 'delivery',
+                    paymentMethod: 'فيزا كارد', notes: '',
+                    driver: 'محمد عبد الرحمن', driverPhone: '+20 100 111 2233'
+                },
+                {
+                    id: 'ORD-5004', customer: 'حسام طارق', phone: '+20 123 456 7807',
+                    address: 'الرويسات، شرم الشيخ',
+                    landmark: 'مسجد الرويسات',
+                    items: [
+                        { name: 'رز صيادية بالجمبري', qty: 1, price: 95, image: 'https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&w=200&q=70', notes: '' },
+                        { name: 'بطاطس مقلية', qty: 2, price: 25, image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 145, subtotal: 145, deliveryFee: 0,
+                    status: 'cancelled', time: 'قبل 6 أيام', type: 'delivery',
+                    paymentMethod: 'نقدي عند التسليم', notes: 'تم الرفض - سبب آخر',
+                    driver: '—', driverPhone: '—'
+                },
+                {
+                    id: 'ORD-5003', customer: 'نادية أحمد', phone: '+20 123 456 7808',
+                    address: 'السوق القديم، شرم الشيخ',
+                    landmark: 'بجوار البنك التجاري',
+                    items: [
+                        { name: 'جمبري مشوي', qty: 2, price: 190, image: 'https://images.unsplash.com/photo-1625943553852-781c6dd46faa?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 380, subtotal: 380, deliveryFee: 0,
+                    status: 'delivered', time: 'قبل 6 أيام', type: 'delivery',
+                    paymentMethod: 'فيزا كارد', notes: '',
+                    driver: 'حسن إبراهيم', driverPhone: '+20 100 222 3344'
+                },
+                {
+                    id: 'ORD-5002', customer: 'فادي نبيل', phone: '+20 123 456 7809',
+                    address: 'حي النصر، شرم الشيخ',
+                    landmark: 'عمارة 5',
+                    items: [
+                        { name: 'سمك مشوي طازج', qty: 1, price: 180, image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 180, subtotal: 180, deliveryFee: 0,
+                    status: 'delivered', time: 'قبل أسبوع', type: 'pickup',
+                    paymentMethod: 'دفع عند الاستلام', notes: '',
+                    driver: null, driverPhone: null
+                },
+                {
+                    id: 'ORD-5001', customer: 'مريم سمير', phone: '+20 123 456 7810',
+                    address: 'خليج نعمة، شرم الشيخ',
+                    landmark: 'فندق ماريوت',
+                    items: [
+                        { name: 'شوربة سيفود', qty: 1, price: 55, image: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=200&q=70', notes: '' },
+                        { name: 'سلطة طحينة', qty: 2, price: 35, image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 125, subtotal: 125, deliveryFee: 0,
+                    status: 'delivered', time: 'قبل أسبوع', type: 'delivery',
+                    paymentMethod: 'فيزا كارد', notes: '',
+                    driver: 'عبد الله سعيد', driverPhone: '+20 100 333 4455'
+                }
+            ];
+
+            function openDropdown() { profileDropdown.classList.add('active'); }
+            function closeDropdown() { profileDropdown.classList.remove('active'); }
+            function toggleDropdown(e) {
+                if (e) e.stopPropagation();
+                if (profileDropdown.classList.contains('active')) closeDropdown();
+                else openDropdown();
+            }
+
+            headerAvatar.addEventListener('click', toggleDropdown);
+
+            document.addEventListener('click', function(e) {
+                if (profileDropdown.classList.contains('active')) {
+                    if (!profileDropdown.contains(e.target) && e.target !== headerAvatar && !headerAvatar.contains(e.target)) {
+                        closeDropdown();
+                    }
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeDropdown();
+                    if (orderDetailsPage.classList.contains('active')) closeOrderDetails();
+                }
+            });
+
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                closeDropdown();
+                Swal.fire({
+                    title: 'تسجيل الخروج',
+                    text: 'هل أنت متأكد من تسجيل الخروج من لوحة التحكم؟',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#FF5A00',
+                    cancelButtonColor: '#717171',
+                    confirmButtonText: 'نعم، خروج',
+                    cancelButtonText: 'إلغاء'
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'تم بنجاح',
+                            text: 'تم تسجيل الخروج بنجاح',
+                            icon: 'success',
+                            confirmButtonColor: '#FF5A00'
+                        });
+                    }
+                });
+            });
+
+            notificationBtn.addEventListener('click', function() {
+                Swal.fire({
+                    title: 'الإشعارات',
+                    html: '<div style="text-align:right;font-size:0.85rem;">' +
+                        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">📊 تم إكمال 15 طلب اليوم</p>' +
+                        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">💰 إجمالي أرباح اليوم: 4,250 ج.م</p>' +
+                        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">⭐ تقييم جديد 5 نجوم من عميل</p>' +
+                        '<p class="p-2 rounded" style="background:#FFF3E8;">📦 لديك 3 طلبات قيد التنفيذ</p>' +
+                        '</div>',
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00',
+                    confirmButtonText: 'حسناً'
+                });
+            });
+
+            headerStatusPill.addEventListener('click', function() {
+                isOpen = !isOpen;
+                updateStatusUI();
+                Swal.fire({
+                    title: isOpen ? 'المطعم مفتوح' : 'المطعم مغلق',
+                    text: isOpen ? 'سيبدأ استقبال الطلبات الجديدة' : 'لن تصلك طلبات جديدة حتى تفتح المطعم',
+                    icon: isOpen ? 'success' : 'warning',
+                    confirmButtonColor: '#FF5A00',
+                    timer: 1600,
+                    showConfirmButton: false
+                });
+            });
+
+            function updateStatusUI() {
+                if (isOpen) {
+                    headerStatusPill.classList.add('open');
+                    headerStatusPill.classList.remove('closed');
+                    headerStatusText.textContent = 'مفتوح';
+                } else {
+                    headerStatusPill.classList.add('closed');
+                    headerStatusPill.classList.remove('open');
+                    headerStatusText.textContent = 'مغلق';
+                }
+            }
+
+            function getFilteredOrders() {
+                let list = orders;
+                if (activeFilter !== 'all') {
+                    list = list.filter(function(o) { return o.status === activeFilter; });
+                }
+                if (searchQuery.trim() !== '') {
+                    const q = searchQuery.trim().toLowerCase();
+                    list = list.filter(function(o) {
+                        return o.id.toLowerCase().includes(q) ||
+                               o.customer.toLowerCase().includes(q) ||
+                               o.phone.toLowerCase().includes(q);
+                    });
+                }
+                return list;
+            }
+
+            function statusLabel(status) {
+                const map = {
+                    new: { label: 'جديد', cls: 'badge-new', icon: 'las la-bell' },
+                    accepted: { label: 'تم القبول', cls: 'badge-accepted', icon: 'las la-check' },
+                    preparing: { label: 'جاري التحضير', cls: 'badge-preparing', icon: 'las la-fire' },
+                    ready: { label: 'جاهز', cls: 'badge-ready', icon: 'las la-check-circle' },
+                    onway: { label: 'في الطريق', cls: 'badge-onway', icon: 'las la-motorcycle' },
+                    delivered: { label: 'تم التسليم', cls: 'badge-delivered', icon: 'las la-check-double' },
+                    cancelled: { label: 'ملغي', cls: 'badge-cancelled', icon: 'las la-times-circle' }
+                };
+                return map[status] || map.delivered;
+            }
+
+            function renderOrders() {
+                const list = getFilteredOrders();
+
+                if (list.length === 0) {
+                    ordersContainer.innerHTML =
+                        '<div class="empty-state md:col-span-2 xl:col-span-3">' +
+                            '<i class="las la-inbox"></i>' +
+                            '<p class="font-bold mb-1">لا توجد طلبات في هذه الحالة</p>' +
+                            '<p class="text-xs">جرب البحث بكلمة أخرى أو تغيير الفلتر</p>' +
+                        '</div>';
+                    return;
+                }
+
+                let html = '';
+                list.forEach(function(order) {
+                    const st = statusLabel(order.status);
+                    let itemsHtml = '';
+                    order.items.forEach(function(item) {
+                        itemsHtml +=
+                            '<div class="flex items-center gap-2 py-2" style="border-bottom:1px solid rgba(0,0,0,0.05);">' +
+                                '<img src="' + item.image + '" alt="' + item.name + '" style="width:44px;height:44px;border-radius:10px;object-fit:cover;flex-shrink:0;" loading="lazy">' +
+                                '<div class="flex-1 min-w-0">' +
+                                    '<p style="font-size:0.82rem;font-weight:800;color:var(--color-white);">' + item.name + '</p>' +
+                                    (item.notes ? '<p style="font-size:0.68rem;color:var(--color-muted);font-weight:600;margin-top:2px;"><i class="las la-info-circle"></i> ' + item.notes + '</p>' : '') +
+                                '</div>' +
+                                '<span style="font-size:0.72rem;font-weight:800;color:#FF5A00;background:rgba(255,90,0,0.1);padding:3px 8px;border-radius:8px;flex-shrink:0;">' + item.qty + '×</span>' +
+                            '</div>';
+                    });
+
+                    html +=
+                        '<div class="order-card s-' + order.status + '" data-order-id="' + order.id + '">' +
+                            '<div class="flex items-center justify-between">' +
+                                '<div class="flex items-center gap-2">' +
+                                    '<span class="order-badge ' + st.cls + '"><i class="' + st.icon + '"></i> ' + st.label + '</span>' +
+                                    '<span class="text-xs text-[var(--color-muted)] font-semibold">' + order.id + '</span>' +
+                                '</div>' +
+                                '<span class="text-xs text-[var(--color-muted)] font-semibold">' + order.time + '</span>' +
+                            '</div>' +
+                            '<div class="name-row">' +
+                                '<p class="customer-name">' + order.customer + '</p>' +
+                                '<span class="type-chip">' + (order.type === 'delivery' ? '🛵 توصيل' : '🏪 استلام') + '</span>' +
+                                '<div class="name-actions">' +
+                                    '<button class="icon-btn icon-btn-view" data-action="view" data-id="' + order.id + '" title="عرض التفاصيل"><i class="las la-eye"></i></button>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div>' +
+                                '<p class="text-xs text-[var(--color-muted)] mb-1"><i class="las la-map-marker-alt"></i> ' + order.address + '</p>' +
+                                (order.landmark ? '<p class="text-[11px] text-[var(--color-muted)]"><i class="las la-info-circle"></i> ' + order.landmark + '</p>' : '') +
+                            '</div>' +
+                            '<div class="order-card-items">' + itemsHtml + '</div>' +
+                            (order.notes ? '<div style="background:rgba(255,184,0,0.1);padding:8px 12px;border-radius:10px;font-size:0.72rem;font-weight:600;color:#B37F00;"><i class="las la-sticky-note"></i> ' + order.notes + '</div>' : '') +
+                            '<div class="flex items-center justify-between pt-2 border-t" style="border-color: var(--border-color);">' +
+                                '<span class="text-xs font-bold text-[var(--color-muted)]">' + order.paymentMethod + '</span>' +
+                                '<span class="text-base font-extrabold text-[#FF5A00]">' + order.total + ' ج.م</span>' +
+                            '</div>' +
+                        '</div>';
+                });
+                ordersContainer.innerHTML = html;
+            }
+
+            function updateCounts() {
+                const counts = {
+                    all: orders.length,
+                    delivered: orders.filter(o => o.status === 'delivered').length,
+                    cancelled: orders.filter(o => o.status === 'cancelled').length
+                };
+                orderFilters.querySelectorAll('.filter-tab').forEach(function(tab) {
+                    const countEl = tab.querySelector('.count');
+                    if (countEl) countEl.textContent = counts[tab.getAttribute('data-filter')];
+                });
+            }
+
+            orderFilters.addEventListener('click', function(e) {
+                const tab = e.target.closest('.filter-tab');
+                if (!tab) return;
+                orderFilters.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                activeFilter = tab.getAttribute('data-filter');
+                renderOrders();
+            });
+
+            searchInput.addEventListener('input', function() {
+                searchQuery = this.value;
+                renderOrders();
+            });
+
+            function findOrder(id) {
+                for (let i = 0; i < orders.length; i++) {
+                    if (orders[i].id === id) return orders[i];
+                }
+                return null;
+            }
+
+            function buildDriverCardHtml(order) {
+                if (order.type !== 'delivery') return '';
+                if (!order.driver || order.driver === '—') {
+                    return '' +
+                    '<div class="od-card">' +
+                        '<p class="od-card-title"><i class="las la-motorcycle"></i> مندوب التوصيل</p>' +
+                        '<div class="od-row"><span class="k">الحالة</span><span class="v">لم يتم تعيين مندوب بعد</span></div>' +
+                    '</div>';
+                }
+
+                const driverTel = String(order.driverPhone || '').replace(/\s+/g, '');
+                const initial = order.driver.trim().charAt(0);
+
+                return '' +
+                '<div class="od-card">' +
+                    '<p class="od-card-title"><i class="las la-motorcycle"></i> مندوب التوصيل</p>' +
+                    '<div class="od-driver-header">' +
+                        '<div class="od-driver-avatar">' + initial + '</div>' +
+                        '<div class="od-driver-info">' +
+                            '<p class="od-driver-name">' + order.driver + '</p>' +
+                            '<p class="od-driver-role"><i class="las la-motorcycle"></i> مندوب توصيل</p>' +
+                            '<p class="od-driver-phone"><i class="las la-phone"></i> ' + order.driverPhone + '</p>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="od-actions">' +
+                        '<a href="tel:' + driverTel + '" class="btn btn-primary" style="background:#3B82F6;box-shadow:0 2px 8px rgba(59,130,246,0.3);"><i class="las la-phone"></i> الاتصال بالمندوب</a>' +
+                    '</div>' +
+                '</div>';
+            }
+
+            function buildDetailsHtml(order) {
+                const st = statusLabel(order.status);
+                const tel = String(order.phone).replace(/\s+/g, '');
+
+                let itemsHtml = '';
+                let itemsSum = 0;
+                order.items.forEach(function(item) {
+                    const lineTotal = item.qty * item.price;
+                    itemsSum += lineTotal;
+                    itemsHtml +=
+                        '<div class="od-item">' +
+                            '<img src="' + item.image + '" alt="' + item.name + '" loading="lazy">' +
+                            '<div class="min-w-0 flex-1">' +
+                                '<p class="od-item-name">' + item.name + '</p>' +
+                                '<p class="od-item-price">' + item.price + ' ج.م × ' + item.qty + '</p>' +
+                                (item.notes ? '<p class="od-item-note"><i class="las la-info-circle"></i> ' + item.notes + '</p>' : '') +
+                            '</div>' +
+                            '<span class="od-item-total">' + lineTotal + ' ج.م</span>' +
+                        '</div>';
+                });
+
+                const subtotal = (order.subtotal !== undefined && order.subtotal !== null) ? order.subtotal : itemsSum;
+                const deliveryFee = order.deliveryFee || 0;
+
+                let summaryHtml =
+                    '<div class="od-row"><span class="k">إجمالي الأصناف</span><span class="v">' + subtotal + ' ج.م</span></div>';
+
+                if (deliveryFee > 0) {
+                    summaryHtml += '<div class="od-row"><span class="k">رسوم التوصيل</span><span class="v">' + deliveryFee + ' ج.م</span></div>';
+                }
+
+                summaryHtml +=
+                    '<div class="od-row"><span class="k">طريقة الدفع</span><span class="v">' + order.paymentMethod + '</span></div>' +
+                    '<div class="od-row"><span class="k">نوع الطلب</span><span class="v">' + (order.type === 'delivery' ? 'توصيل للمنزل' : 'استلام من المطعم') + '</span></div>' +
+                    '<div class="od-total-box">' +
+                        '<span class="lbl">الإجمالي النهائي</span>' +
+                        '<span class="val">' + order.total + ' ج.م</span>' +
+                    '</div>';
+
+                return '' +
+                '<div class="od-wrap">' +
+
+                    '<div class="od-hero">' +
+                        '<div class="od-hero-inner">' +
+                            '<div class="od-hero-top">' +
+                                '<span class="od-hero-badge"><i class="' + st.icon + '"></i> ' + st.label + '</span>' +
+                                '<span class="od-hero-id">' + order.id + '</span>' +
+                            '</div>' +
+                            '<p class="od-hero-total">' + order.total + ' ج.م</p>' +
+                            '<div class="od-hero-meta">' +
+                                '<span><i class="las la-clock"></i> ' + order.time + '</span>' +
+                                '<span><i class="las ' + (order.type === 'delivery' ? 'la-motorcycle' : 'la-store') + '"></i> ' + (order.type === 'delivery' ? 'توصيل' : 'استلام') + '</span>' +
+                                '<span><i class="las la-shopping-bag"></i> ' + order.items.length + ' صنف</span>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>' +
+
+                    '<div class="od-card">' +
+                        '<p class="od-card-title"><i class="las la-user"></i> بيانات العميل</p>' +
+                        '<div class="od-row"><span class="k">الاسم</span><span class="v">' + order.customer + '</span></div>' +
+                        '<div class="od-row"><span class="k">رقم الهاتف</span><span class="v" style="direction:ltr;">' + order.phone + '</span></div>' +
+                        '<div class="od-actions" style="margin-top:12px;">' +
+                            '<a href="tel:' + tel + '" class="btn btn-primary"><i class="las la-phone"></i> الاتصال بالعميل</a>' +
+                        '</div>' +
+                    '</div>' +
+
+                    buildDriverCardHtml(order) +
+
+                    '<div class="od-card">' +
+                        '<p class="od-card-title"><i class="las la-map-marker-alt"></i> عنوان التوصيل</p>' +
+                        '<div class="od-row"><span class="k">العنوان</span><span class="v">' + order.address + '</span></div>' +
+                        (order.landmark ? '<div class="od-row"><span class="k">علامة مميزة</span><span class="v">' + order.landmark + '</span></div>' : '') +
+                    '</div>' +
+
+                    '<div class="od-card">' +
+                        '<p class="od-card-title"><i class="las la-utensils"></i> أصناف الطلب</p>' +
+                        itemsHtml +
+                    '</div>' +
+
+                    '<div class="od-card">' +
+                        '<p class="od-card-title"><i class="las la-file-invoice-dollar"></i> ملخص الفاتورة</p>' +
+                        summaryHtml +
+                    '</div>' +
+
+                    (order.notes ?
+                    '<div class="od-note-box">' +
+                        '<i class="las la-sticky-note"></i>' +
+                        '<span>' + order.notes + '</span>' +
+                    '</div>' : '') +
+
+                    '<div class="od-actions">' +
+                        '<button class="btn-outline" id="odCloseBtn"><i class="las la-arrow-right"></i> رجوع للسجل</button>' +
+                    '</div>' +
+
+                '</div>';
+            }
+
+            function openOrderDetails(id) {
+                const order = findOrder(id);
+                if (!order) return;
+                odBody.innerHTML = buildDetailsHtml(order);
+                odHeaderSub.textContent = order.id + ' • ' + order.customer;
+                orderDetailsPage.classList.add('active');
+                odBody.scrollTop = 0;
+                document.body.style.overflow = 'hidden';
+
+                const closeBtn = document.getElementById('odCloseBtn');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function() {
+                        goBackFromDetails();
+                    });
+                }
+
+                try {
+                    history.pushState({ orderDetails: true }, '', '#' + order.id);
+                } catch (err) {}
+            }
+
+            function closeOrderDetails() {
+                orderDetailsPage.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            function goBackFromDetails() {
+                if (history.state && history.state.orderDetails) {
+                    history.back();
+                } else {
+                    closeOrderDetails();
+                }
+            }
+
+            odBack.addEventListener('click', goBackFromDetails);
+
+            window.addEventListener('popstate', function() {
+                if (orderDetailsPage.classList.contains('active')) closeOrderDetails();
+            });
+
+            ordersContainer.addEventListener('click', function(e) {
+                const viewBtn = e.target.closest('[data-action="view"]');
+                if (viewBtn) {
+                    e.stopPropagation();
+                    openOrderDetails(viewBtn.getAttribute('data-id'));
+                    return;
+                }
+                const card = e.target.closest('.order-card');
+                if (card) {
+                    openOrderDetails(card.getAttribute('data-order-id'));
+                }
+            });
+
+            refreshOrdersBtn.addEventListener('click', function() {
+                renderOrders();
+                updateCounts();
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'تم تحديث السجل',
+                    showConfirmButton: false,
+                    timer: 1400
+                });
+            });
+
+            function init() {
+                updateStatusUI();
+                renderOrders();
+                updateCounts();
+            }
+
+            init();
+        })();
+    </script>
+</body>
+</html>
