@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#FF5A00">
+    <title>الطلبات الجديدة - مطعم ابن حميدو</title>
+    <meta name="description" content="لوحة إدارة مطعم ابن حميدو - إدارة الطلبات الجديدة">
+    <link rel="icon" type="image/png" href="https://sys.shadowza.space/logos/1.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF5A00',
+                        secondary: '#FF8C38',
+                        accent: '#FFB800',
+                        dark: '#1A1A1A',
+                        muted: '#717171',
+                        success: '#00B14F'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --color-primary: #FF5A00;
+            --color-secondary: #FF8C38;
+            --color-accent: #FFB800;
+            --color-background: #F7F9F8;
+            --color-card: #FFFFFF;
+            --color-darker: #F0F4F3;
+            --color-white: #1A1A1A;
+            --color-muted: #717171;
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --card-bg: #FFFFFF;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --darker-bg: #F0F4F3;
+            --header-height: 70px;
+            --bottom-nav-height: 68px;
+            --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06);
+            --c-new: #FF5A00;
+            --c-accepted: #8B5CF6;
+            --c-preparing: #F59E0B;
+            --c-ready: #00B14F;
+            --c-onway: #3B82F6;
+            --c-delivered: #14B8A6;
+            --c-reject: #EF4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; width: 100%; overscroll-behavior: none; }
+        body {
+            font-family: 'Noto Sans Arabic', system-ui, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-white);
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: var(--color-background); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #FF8C38; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FF5A00; }
+
+        #mainHeader {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--color-background);
+            z-index: 110;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+        .header-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .brand-logo {
+            width: 42px; height: 42px; border-radius: 12px;
+            object-fit: cover; border: 2px solid var(--color-primary);
+            flex-shrink: 0; background: #fff;
+        }
+        .brand-name {
+            font-size: 1rem; font-weight: 800; color: var(--color-white);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .brand-sub { font-size: 0.68rem; color: var(--color-muted); font-weight: 600; }
+        .header-actions { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+        .notification-btn {
+            position: relative; background: none; border: none; cursor: pointer;
+            color: var(--color-muted); font-size: 1.5rem; padding: 0;
+            display: flex; align-items: center; justify-content: center;
+            transition: color 0.2s; flex-shrink: 0;
+        }
+        .notification-btn:hover { color: #FF5A00; }
+        .notification-btn .notification-dot {
+            position: absolute; top: 2px; right: 2px; width: 8px; height: 8px;
+            border-radius: 50%; background: #FF5A00;
+            border: 2px solid var(--color-background);
+        }
+        .header-avatar-btn {
+            width: 42px; height: 42px; border-radius: 50%;
+            object-fit: cover; border: 2px solid var(--color-primary);
+            cursor: pointer; transition: all 0.2s; flex-shrink: 0; background: #fff;
+        }
+        .header-avatar-btn:hover { transform: scale(1.05); }
+
+        .status-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 7px 14px; border-radius: 40px;
+            font-size: 0.75rem; font-weight: 700; cursor: pointer;
+            transition: all 0.25s ease; border: 1px solid transparent; flex-shrink: 0;
+        }
+        .status-pill.open {
+            background: rgba(0, 177, 79, 0.1); color: #00B14F;
+            border-color: rgba(0, 177, 79, 0.3);
+        }
+        .status-pill.closed {
+            background: rgba(239, 68, 68, 0.1); color: #EF4444;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        .status-pill .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: currentColor; animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        .profile-dropdown {
+            position: fixed; top: calc(var(--header-height) + 8px); left: 12px;
+            width: 300px; max-width: calc(100vw - 24px);
+            max-height: calc(100vh - var(--header-height) - 24px);
+            overflow-y: auto; background: var(--card-bg);
+            border: 1px solid var(--border-color); border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15); padding: 10px;
+            z-index: 200; opacity: 0; visibility: hidden;
+            transform: translateY(-12px) scale(0.97); transform-origin: top left;
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .profile-dropdown.active {
+            opacity: 1; visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+        .dropdown-user-header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px; border-radius: 14px;
+            background: linear-gradient(135deg, rgba(255,90,0,0.08), rgba(255,140,56,0.08));
+            margin-bottom: 6px;
+        }
+        .dropdown-user-header img {
+            width: 52px; height: 52px; border-radius: 50%;
+            object-fit: cover; border: 2px solid var(--color-primary);
+            flex-shrink: 0; background: #fff;
+        }
+        .dropdown-user-header .user-info { min-width: 0; flex: 1; }
+        .dropdown-user-header .user-name {
+            font-size: 0.92rem; font-weight: 800; color: var(--color-white);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .dropdown-user-header .user-role {
+            font-size: 0.72rem; color: var(--color-muted);
+            font-weight: 600; margin-top: 2px;
+        }
+        .dropdown-section-title {
+            font-size: 0.65rem; text-transform: uppercase;
+            letter-spacing: 1.5px; color: var(--color-muted);
+            padding: 12px 12px 6px; font-weight: 700;
+        }
+        .dropdown-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 11px 14px; border-radius: 12px; cursor: pointer;
+            transition: all 0.18s ease; color: var(--color-muted);
+            font-weight: 600; text-decoration: none; font-size: 0.88rem;
+        }
+        .dropdown-item i { font-size: 20px; width: 24px; flex-shrink: 0; }
+        .dropdown-item:hover { background: rgba(255, 90, 0, 0.08); color: var(--color-primary); }
+        .dropdown-item.active {
+            background: rgba(255, 90, 0, 0.12);
+            color: var(--color-primary); font-weight: 700;
+        }
+        .dropdown-item.logout { color: #EF4444; }
+        .dropdown-item.logout:hover { background: rgba(239, 68, 68, 0.08); color: #EF4444; }
+        .dropdown-divider { height: 1px; background: var(--border-color); margin: 6px 12px; }
+
+        main { padding-top: var(--header-height); padding-bottom: 0; }
+        @media (max-width: 1024px) {
+            main { padding-bottom: calc(var(--bottom-nav-height) + 20px); }
+        }
+
+        .bottom-mobile-nav {
+            display: none; position: fixed; bottom: 0; left: 0; right: 0;
+            height: var(--bottom-nav-height); background: var(--card-bg);
+            border-top: 1px solid var(--border-color); z-index: 100;
+            padding: 6px 8px;
+            padding-bottom: max(6px, env(safe-area-inset-bottom, 6px));
+            box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+            align-items: center; justify-content: space-around; gap: 4px;
+        }
+        @media (max-width: 1024px) { .bottom-mobile-nav { display: flex; } }
+        .bottom-nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; gap: 2px; flex: 1; padding: 8px 4px;
+            border-radius: 12px; cursor: pointer; text-decoration: none;
+            color: var(--color-muted); font-size: 0.68rem; font-weight: 600;
+            transition: all 0.25s ease; position: relative; min-width: 0;
+            -webkit-tap-highlight-color: transparent; user-select: none;
+        }
+        .bottom-nav-item i { font-size: 1.35rem; transition: all 0.25s ease; flex-shrink: 0; }
+        .bottom-nav-item span {
+            white-space: nowrap; text-overflow: ellipsis; overflow: hidden;
+            max-width: 100%; font-size: 0.65rem; letter-spacing: 0.2px;
+        }
+        .bottom-nav-item.active { color: var(--color-primary); }
+        .bottom-nav-item.active i { font-size: 1.5rem; }
+        .bottom-nav-item-center {
+            position: relative; top: -20px; width: 60px; height: 60px;
+            border-radius: 50%; background: var(--color-primary); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.4);
+            transition: all 0.3s ease; flex-shrink: 0; flex: none; margin: 0 4px;
+        }
+        .bottom-nav-item-center i { font-size: 2rem; }
+        .bottom-nav-item-center span { display: none; }
+        .bottom-nav-item-center.active { background: #e04e00; color: #fff; }
+        .nav-badge {
+            position: absolute; top: 4px; left: 50%; transform: translateX(-50%);
+            min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px;
+            background: #EF4444; color: #fff; font-size: 0.62rem; font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .bottom-nav-item-center .nav-badge {
+            top: -4px; left: 2px; transform: none; background: #1A1A1A;
+        }
+
+        .section-title {
+            font-size: 1.2rem; font-weight: 800; color: var(--color-white);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .section-title i { color: #FF5A00; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 14px;
+            box-shadow: var(--shadow-card);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(255, 90, 0, 0.1);
+            border-color: rgba(255, 90, 0, 0.3);
+        }
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .stat-body {
+            min-width: 0;
+            flex: 1;
+        }
+        .stat-value {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--color-white);
+            line-height: 1.2;
+        }
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--color-muted);
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            .stat-card {
+                padding: 10px;
+                gap: 8px;
+                border-radius: 12px;
+            }
+            .stat-icon {
+                width: 34px;
+                height: 34px;
+                font-size: 1.05rem;
+                border-radius: 9px;
+            }
+            .stat-value {
+                font-size: 1rem;
+            }
+            .stat-label {
+                font-size: 0.65rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
+            .stat-card {
+                padding: 8px;
+                gap: 6px;
+            }
+            .stat-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 0.95rem;
+            }
+            .stat-value {
+                font-size: 0.92rem;
+            }
+            .stat-label {
+                font-size: 0.6rem;
+            }
+        }
+
+        .order-card {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 18px; padding: 16px; box-shadow: var(--shadow-card);
+            transition: all 0.3s ease; display: flex;
+            flex-direction: column; gap: 12px; position: relative; overflow: hidden;
+        }
+        .order-card::before {
+            content: ""; position: absolute; top: 0; right: 0;
+            width: 5px; height: 100%;
+        }
+        .order-card.s-new::before { background: var(--c-new); }
+        .order-card.s-accepted::before { background: var(--c-accepted); }
+        .order-card.s-preparing::before { background: var(--c-preparing); }
+        .order-card.s-ready::before { background: var(--c-ready); }
+        .order-card.s-onway::before { background: var(--c-onway); }
+        .order-card.s-delivered::before { background: var(--c-delivered); }
+        .order-card:hover {
+            box-shadow: 0 10px 28px rgba(255, 90, 0, 0.12);
+            border-color: rgba(255, 90, 0, 0.35);
+        }
+        .order-card.urgent {
+            border-color: rgba(239, 68, 68, 0.4);
+            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.12);
+        }
+        .order-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 12px; border-radius: 30px;
+            font-size: 0.72rem; font-weight: 700;
+        }
+        .badge-new { background: rgba(255, 90, 0, 0.12); color: var(--c-new); }
+        .badge-accepted { background: rgba(139, 92, 246, 0.12); color: var(--c-accepted); }
+        .badge-preparing { background: rgba(245, 158, 11, 0.15); color: var(--c-preparing); }
+        .badge-ready { background: rgba(0, 177, 79, 0.12); color: var(--c-ready); }
+        .badge-onway { background: rgba(59, 130, 246, 0.12); color: var(--c-onway); }
+        .badge-delivered { background: rgba(20, 184, 166, 0.12); color: var(--c-delivered); }
+        .badge-cancelled { background: rgba(239, 68, 68, 0.12); color: var(--c-reject); }
+
+        .name-row {
+            display: flex; align-items: center; gap: 8px;
+            flex-wrap: nowrap; min-width: 0;
+        }
+        .name-row .customer-name {
+            font-size: 0.92rem; font-weight: 800;
+            color: var(--color-white);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            min-width: 0; flex-shrink: 1;
+        }
+        .name-row .type-chip {
+            font-size: 0.62rem; font-weight: 700;
+            padding: 3px 8px; border-radius: 999px;
+            background: rgba(59, 130, 246, 0.12); color: #3B82F6;
+            flex-shrink: 0; white-space: nowrap;
+        }
+        .name-row .name-actions {
+            display: flex; align-items: center; gap: 6px;
+            margin-right: auto; flex-shrink: 0;
+        }
+        .icon-btn {
+            width: 32px; height: 32px; border-radius: 10px;
+            display: inline-flex; align-items: center; justify-content: center;
+            cursor: pointer; border: none; font-size: 1rem;
+            transition: all 0.2s ease; flex-shrink: 0;
+            background: transparent; padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .icon-btn-call {
+            background: rgba(59, 130, 246, 0.12); color: var(--c-onway);
+        }
+        .icon-btn-call:hover {
+            background: var(--c-onway); color: #fff;
+            transform: translateY(-2px);
+        }
+        .icon-btn-close {
+            background: rgba(239, 68, 68, 0.12); color: var(--c-reject);
+        }
+        .icon-btn-close:hover {
+            background: var(--c-reject); color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .btn {
+            border: none; border-radius: 12px; padding: 10px 16px;
+            font-family: inherit; font-weight: 700; font-size: 0.82rem;
+            cursor: pointer; transition: all 0.2s ease;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 6px; color: #fff;
+        }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-primary { background: var(--c-new); box-shadow: 0 2px 8px rgba(255, 90, 0, 0.3); }
+        .btn-primary:hover:not(:disabled) { background: #e04e00; box-shadow: 0 4px 12px rgba(255, 90, 0, 0.4); }
+        .btn-success { background: var(--c-ready); box-shadow: 0 2px 8px rgba(0, 177, 79, 0.3); }
+        .btn-success:hover:not(:disabled) { background: #009940; }
+        .btn-accepted { background: var(--c-accepted); box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3); }
+        .btn-accepted:hover:not(:disabled) { background: #7c3aed; }
+        .btn-start { background: var(--c-preparing); box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3); }
+        .btn-start:hover:not(:disabled) { background: #d97706; }
+        .btn-onway { background: var(--c-onway); box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3); }
+        .btn-onway:hover:not(:disabled) { background: #2563EB; }
+        .btn-delivered { background: var(--c-delivered); box-shadow: 0 2px 8px rgba(20, 184, 166, 0.3); }
+        .btn-delivered:hover:not(:disabled) { background: #0d9488; }
+        .btn-call { background: var(--c-onway); box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3); }
+        .btn-call:hover:not(:disabled) { background: #2563EB; }
+        .btn-outline {
+            background: transparent; color: var(--color-muted);
+            border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 10px 16px; font-family: inherit; font-weight: 700;
+            font-size: 0.82rem; cursor: pointer; transition: all 0.2s ease;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 6px;
+        }
+        .btn-outline:hover { background: var(--darker-bg); color: var(--color-white); }
+        .btn-reject {
+            background: transparent; color: var(--c-reject);
+            border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 12px;
+            padding: 10px 16px; font-family: inherit; font-weight: 700;
+            font-size: 0.82rem; cursor: pointer; transition: all 0.2s ease;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 6px;
+        }
+        .btn-reject:hover { background: rgba(239, 68, 68, 0.08); border-color: #EF4444; }
+
+        .empty-state {
+            background: var(--card-bg); border: 2px dashed var(--border-color);
+            border-radius: 20px; padding: 34px 20px;
+            text-align: center; color: var(--color-muted);
+        }
+        .empty-state i {
+            font-size: 3rem; color: #FF8C38; opacity: 0.5;
+            display: block; margin-bottom: 12px;
+        }
+
+        .filter-tab {
+            padding: 9px 16px; border-radius: 12px;
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            font-size: 0.8rem; font-weight: 700; color: var(--color-muted);
+            cursor: pointer; transition: all 0.2s ease;
+            white-space: nowrap; -webkit-tap-highlight-color: transparent;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .filter-tab .dot-color {
+            width: 10px; height: 10px; border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .filter-tab[data-filter="new"] .dot-color { background: var(--c-new); }
+        .filter-tab[data-filter="accepted"] .dot-color { background: var(--c-accepted); }
+        .filter-tab[data-filter="preparing"] .dot-color { background: var(--c-preparing); }
+        .filter-tab[data-filter="ready"] .dot-color { background: var(--c-ready); }
+        .filter-tab[data-filter="onway"] .dot-color { background: var(--c-onway); }
+        .filter-tab[data-filter="delivered"] .dot-color { background: var(--c-delivered); }
+        .filter-tab:hover { border-color: rgba(255, 90, 0, 0.4); }
+        .filter-tab.active {
+            background: #FF5A00; color: #fff; border-color: #FF5A00;
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.28);
+        }
+        .filter-tab.active .dot-color { background: #fff; }
+        .filter-tab .count {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 20px; height: 20px; padding: 0 6px;
+            border-radius: 10px; background: rgba(0, 0, 0, 0.06);
+            font-size: 0.68rem;
+        }
+        .filter-tab.active .count {
+            background: rgba(255, 255, 255, 0.22); color: #fff;
+        }
+
+        .scroll-x { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+
+        .swal2-popup.reject-popup {
+            padding: 16px !important;
+            border-radius: 18px !important;
+            max-width: 480px !important;
+            width: calc(100% - 24px) !important;
+        }
+        .swal2-popup.reject-popup .swal2-title {
+            font-size: 1.05rem !important;
+            padding: 0 0 4px !important;
+            font-weight: 800 !important;
+            color: #1A1A1A !important;
+        }
+        .swal2-popup.reject-popup .swal2-html-container {
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+        }
+        .swal2-popup.reject-popup .swal2-actions {
+            margin-top: 12px !important;
+            gap: 8px !important;
+            width: 100% !important;
+        }
+        .swal2-popup.reject-popup .swal2-actions button {
+            flex: 1 !important;
+            padding: 9px 14px !important;
+            font-size: 0.82rem !important;
+            border-radius: 10px !important;
+            font-weight: 700 !important;
+        }
+        .reject-hint {
+            font-size: 0.75rem; color: #717171;
+            font-weight: 600; margin-bottom: 8px; text-align: right;
+        }
+        .reason-list {
+            display: flex; flex-direction: column; gap: 5px;
+            max-height: 260px; overflow-y: auto; padding-left: 2px;
+        }
+        .reason-option {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 10px; border-radius: 11px;
+            background: #fff; border: 1.5px solid rgba(0,0,0,0.08);
+            cursor: pointer; transition: all 0.15s ease;
+            text-align: right; font-family: inherit; width: 100%;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .reason-option:hover {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.03);
+        }
+        .reason-option.selected {
+            border-color: #EF4444; background: rgba(239, 68, 68, 0.07);
+        }
+        .reason-option .ro-icon {
+            width: 32px; height: 32px; border-radius: 9px;
+            background: rgba(239, 68, 68, 0.1); color: #EF4444;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; flex-shrink: 0;
+        }
+        .reason-option.selected .ro-icon { background: #EF4444; color: #fff; }
+        .reason-option .ro-text { flex: 1; min-width: 0; }
+        .reason-option .ro-title {
+            font-size: 0.8rem; font-weight: 800;
+            color: #1A1A1A; line-height: 1.25;
+        }
+        .reason-option .ro-desc {
+            font-size: 0.65rem; color: #717171;
+            font-weight: 600; line-height: 1.3; margin-top: 1px;
+        }
+        .other-wrap { margin-top: 8px; display: none; }
+        .other-wrap textarea {
+            width: 100%; margin: 0 !important;
+            font-family: inherit !important; font-size: 0.82rem !important;
+            border-radius: 10px !important; padding: 9px 12px !important;
+            resize: none !important; min-height: 60px !important;
+            box-sizing: border-box;
+        }
+
+        .order-card-items {
+            background: var(--darker-bg);
+            border-radius: 14px; padding: 10px 12px;
+        }
+
+        .restaurant-banner {
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #FF5A00 0%, #FF8C38 100%);
+            color: #fff;
+            box-shadow: 0 10px 28px rgba(255,90,0,0.28);
+            position: relative;
+            overflow: hidden;
+        }
+        .restaurant-banner::before {
+            content: "";
+            position: absolute;
+            top: -50px; left: -50px;
+            width: 200px; height: 200px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
+        }
+        .restaurant-banner::after {
+            content: "";
+            position: absolute;
+            bottom: -80px; right: -30px;
+            width: 180px; height: 180px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 50%;
+        }
+        .restaurant-banner .rb-inner { position: relative; z-index: 2; }
+        .rb-logo {
+            width: 64px; height: 64px; border-radius: 50%;
+            object-fit: cover; border: 3px solid rgba(255,255,255,0.4);
+            background: #fff; flex-shrink: 0;
+        }
+        .rb-name { font-size: 1.15rem; font-weight: 800; margin-bottom: 4px; }
+        .rb-meta {
+            display: flex; flex-wrap: wrap; gap: 12px;
+            font-size: 0.75rem; color: rgba(255,255,255,0.9);
+            font-weight: 600;
+        }
+        .rb-meta span { display: inline-flex; align-items: center; gap: 4px; }
+        .rb-quick-actions {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;
+        }
+        .rb-action {
+            background: rgba(255,255,255,0.18);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: #fff; font-family: inherit; font-weight: 700;
+            font-size: 0.75rem; padding: 8px 14px; border-radius: 12px;
+            cursor: pointer; transition: all 0.2s ease;
+            display: inline-flex; align-items: center; gap: 6px;
+            backdrop-filter: blur(10px);
+            text-decoration: none;
+        }
+        .rb-action:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        .rb-action i { font-size: 1rem; }
+
+        @media (max-width: 640px) {
+            .section-title { font-size: 1rem; }
+            .brand-name { font-size: 0.88rem; }
+            .brand-sub { font-size: 0.62rem; }
+            .profile-dropdown { left: 8px; right: 8px; width: auto; }
+            .rb-logo { width: 52px; height: 52px; }
+            .rb-name { font-size: 1rem; }
+            .rb-action { font-size: 0.7rem; padding: 7px 11px; }
+            .name-row .customer-name { font-size: 0.85rem; }
+            .icon-btn { width: 30px; height: 30px; font-size: 0.95rem; }
+            .icon-btn-close { width: 26px; height: 26px; font-size: 0.85rem; }
+            .swal2-popup.reject-popup { padding: 14px !important; }
+            .reason-list { max-height: 220px; }
+            .reason-option { padding: 7px 9px; gap: 8px; }
+            .reason-option .ro-icon { width: 28px; height: 28px; font-size: 0.9rem; }
+            .reason-option .ro-title { font-size: 0.76rem; }
+            .reason-option .ro-desc { font-size: 0.6rem; }
+        }
+    </style>
+</head>
+<body>
+    <header id="mainHeader">
+        <div class="header-brand">
+            <img src="https://sys.shadowza.space/logos/1.png" class="brand-logo" alt="logo">
+            <div class="min-w-0">
+                <p class="brand-name">مطعم ابن حميدو</p>
+                <p class="brand-sub">أسماك ومأكولات بحرية</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <div class="status-pill open" id="headerStatusPill">
+                <span class="dot"></span>
+                <span id="headerStatusText">مفتوح</span>
+            </div>
+            <button class="notification-btn" id="notificationBtn">
+                <i class="las la-bell"></i>
+                <span class="notification-dot"></span>
+            </button>
+            <img id="headerAvatar" src="https://sys.shadowza.space/logos/1.png" class="header-avatar-btn" alt="avatar">
+        </div>
+    </header>
+
+    <div class="profile-dropdown" id="profileDropdown" role="menu" aria-label="قائمة المستخدم">
+        <div class="dropdown-user-header">
+            <img id="dropdownUserAvatar" src="https://sys.shadowza.space/logos/1.png" alt="avatar">
+            <div class="user-info">
+                <p class="user-name">مطعم ابن حميدو</p>
+                <p class="user-role">حساب المطعم</p>
+            </div>
+        </div>
+        <div class="dropdown-section-title">القائمة</div>
+        <a href="#" class="dropdown-item" data-action="dashboard"><i class="las la-chart-pie"></i><span>لوحة التحكم</span></a>
+        <a href="#" class="dropdown-item active" data-action="orders"><i class="las la-receipt"></i><span>الطلبات الجديدة</span><span class="mr-auto text-[10px] font-bold px-2 py-0.5 rounded-full" style="background: rgba(239,68,68,0.15); color:#EF4444;" id="newOrdersCount">5</span></a>
+        <a href="#" class="dropdown-item" data-action="history"><i class="las la-history"></i><span>سجل الطلبات</span></a>
+        <a href="#" class="dropdown-item" data-action="categories"><i class="las la-th-large"></i><span>الأقسام</span></a>
+        <a href="#" class="dropdown-item" data-action="offers"><i class="las la-percent"></i><span>العروض والخصومات</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section-title">المالية</div>
+        <a href="#" class="dropdown-item" data-action="earnings"><i class="las la-wallet"></i><span>الأرباح</span></a>
+        <a href="#" class="dropdown-item" data-action="payouts"><i class="las la-money-check-alt"></i><span>طلبات السحب</span></a>
+        <a href="#" class="dropdown-item" data-action="reports"><i class="las la-chart-line"></i><span>التقارير</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section-title">الإعدادات</div>
+        <a href="#" class="dropdown-item" data-action="profile"><i class="las la-store"></i><span>بيانات المطعم</span></a>
+        <a href="#" class="dropdown-item" data-action="hours"><i class="las la-clock"></i><span>ساعات العمل</span></a>
+        <a href="#" class="dropdown-item" data-action="delivery"><i class="las la-truck"></i><span>مناطق التوصيل</span></a>
+        <a href="#" class="dropdown-item" data-action="staff"><i class="las la-users"></i><span>فريق العمل</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section-title">الدعم</div>
+        <a href="#" class="dropdown-item" data-action="help"><i class="las la-headset"></i><span>مركز المساعدة</span></a>
+        <a href="#" class="dropdown-item" data-action="settings"><i class="las la-cog"></i><span>إعدادات الحساب</span></a>
+        <div class="dropdown-divider"></div>
+        <a href="#" class="dropdown-item logout" id="logoutBtn"><i class="las la-sign-out-alt"></i><span>تسجيل الخروج</span></a>
+    </div>
+
+    <main>
+        <div class="container mx-auto px-4 py-6 max-w-7xl">
+
+            <div class="restaurant-banner">
+                <div class="rb-inner">
+                    <div class="flex items-center gap-4 flex-wrap">
+                        <img src="https://sys.shadowza.space/logos/1.png" class="rb-logo" alt="logo">
+                        <div class="min-w-0">
+                            <h2 class="rb-name">مطعم ابن حميدو</h2>
+                            <div class="rb-meta">
+                                <span><i class="las la-star" style="color:#FFD700;"></i> 4.9 (328 تقييم)</span>
+                                <span><i class="las la-clock"></i> 10:00 ص - 12:00 م</span>
+                                <span><i class="las la-map-marker-alt"></i> شرم الشيخ</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rb-quick-actions">
+                        <a href="#" class="rb-action"><i class="las la-history"></i> سجل الطلبات</a>
+                        <a href="#" class="rb-action"><i class="las la-chart-line"></i> التقارير</a>
+                        <a href="#" class="rb-action"><i class="las la-wallet"></i> الأرباح</a>
+                        <a href="#" class="rb-action"><i class="las la-th-large"></i> الأصناف</a>
+                        <a href="#" class="rb-action"><i class="las la-percent"></i> العروض</a>
+                        <a href="#" class="rb-action"><i class="las la-users"></i> الفريق</a>
+                        <a href="#" class="rb-action"><i class="las la-clock"></i> المواعيد</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-grid mb-6">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(255, 90, 0, 0.12); color: var(--c-new);"><i class="las la-bolt"></i></div>
+                    <div class="stat-body">
+                        <p class="stat-label">طلبات جديدة</p>
+                        <p class="stat-value" id="newStatCount">5</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(139, 92, 246, 0.12); color: var(--c-accepted);"><i class="las la-check"></i></div>
+                    <div class="stat-body">
+                        <p class="stat-label">مقبول</p>
+                        <p class="stat-value" id="acceptedStatCount">2</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--c-preparing);"><i class="las la-fire"></i></div>
+                    <div class="stat-body">
+                        <p class="stat-label">جاري التحضير</p>
+                        <p class="stat-value" id="preparingStatCount">2</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(0, 177, 79, 0.12); color: var(--c-ready);"><i class="las la-check-circle"></i></div>
+                    <div class="stat-body">
+                        <p class="stat-label">جاهز للتسليم</p>
+                        <p class="stat-value" id="readyStatCount">1</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(59, 130, 246, 0.12); color: var(--c-onway);"><i class="las la-motorcycle"></i></div>
+                    <div class="stat-body">
+                        <p class="stat-label">في الطريق</p>
+                        <p class="stat-value" id="onwayStatCount">1</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+                    <h3 class="section-title"><i class="las la-receipt"></i> الطلبات الجديدة</h3>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <a href="#" class="btn-outline"><i class="las la-history"></i> سجل الطلبات</a>
+                        <button class="btn-outline" id="refreshOrdersBtn"><i class="las la-sync-alt"></i> تحديث</button>
+                    </div>
+                </div>
+                <div class="scroll-x hide-scrollbar mb-4" style="gap:8px;" id="orderFilters">
+                    <button class="filter-tab active" data-filter="all">الكل <span class="count">12</span></button>
+                    <button class="filter-tab" data-filter="new"><span class="dot-color"></span> جديد <span class="count">5</span></button>
+                    <button class="filter-tab" data-filter="accepted"><span class="dot-color"></span> مقبول <span class="count">0</span></button>
+                    <button class="filter-tab" data-filter="preparing"><span class="dot-color"></span> جاري التحضير <span class="count">0</span></button>
+                    <button class="filter-tab" data-filter="ready"><span class="dot-color"></span> جاهز للتسليم <span class="count">0</span></button>
+                    <button class="filter-tab" data-filter="onway"><span class="dot-color"></span> في الطريق <span class="count">0</span></button>
+                    <button class="filter-tab" data-filter="delivered"><span class="dot-color"></span> تم التسليم <span class="count">0</span></button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" id="ordersContainer"></div>
+            </div>
+
+        </div>
+    </main>
+
+    <div class="bottom-mobile-nav" id="bottomMobileNav">
+        <a href="#" class="bottom-nav-item" data-tab="dashboard"><i class="las la-chart-pie"></i><span>الرئيسية</span></a>
+        <a href="#" class="bottom-nav-item active" data-tab="orders"><i class="las la-receipt"></i><span>الطلبات</span><span class="nav-badge" id="ordersNavBadge">5</span></a>
+        <a href="#" class="bottom-nav-item bottom-nav-item-center" data-tab="newOrder"><i class="las la-plus"></i><span>جديد</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="history"><i class="las la-history"></i><span>السجل</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="profile"><i class="las la-store"></i><span>المطعم</span></a>
+    </div>
+
+    <script>
+        (function() {
+            const profileDropdown = document.getElementById('profileDropdown');
+            const headerAvatar = document.getElementById('headerAvatar');
+            const notificationBtn = document.getElementById('notificationBtn');
+            const ordersContainer = document.getElementById('ordersContainer');
+            const orderFilters = document.getElementById('orderFilters');
+            const headerStatusPill = document.getElementById('headerStatusPill');
+            const headerStatusText = document.getElementById('headerStatusText');
+            const newOrdersCount = document.getElementById('newOrdersCount');
+            const ordersNavBadge = document.getElementById('ordersNavBadge');
+            const refreshOrdersBtn = document.getElementById('refreshOrdersBtn');
+            const newStatCount = document.getElementById('newStatCount');
+            const acceptedStatCount = document.getElementById('acceptedStatCount');
+            const preparingStatCount = document.getElementById('preparingStatCount');
+            const readyStatCount = document.getElementById('readyStatCount');
+            const onwayStatCount = document.getElementById('onwayStatCount');
+
+            let isOpen = true;
+            let activeFilter = 'all';
+            let actionInProgress = false;
+
+            const rejectionReasons = [
+                { id: 'out_of_stock', title: 'نفاذ كمية من الأسماك', desc: 'أحد الأصناف المطلوبة غير متوفر', icon: 'las la-box-open' },
+                { id: 'too_busy', title: 'المطعم مزدحم جداً', desc: 'لا يمكن استقبال طلبات جديدة الآن', icon: 'las la-users' },
+                { id: 'closing_soon', title: 'المطعم على وشك الإغلاق', desc: 'لا يمكن تحضير الطلب قبل الإغلاق', icon: 'las la-clock' },
+                { id: 'outside_area', title: 'خارج منطقة التوصيل', desc: 'العنوان خارج نطاق التوصيل', icon: 'las la-map-marked-alt' },
+                { id: 'ingredient_issue', title: 'مشكلة في جودة الأسماك', desc: 'لا يمكن التحضير بالجودة المطلوبة', icon: 'las la-exclamation-triangle' },
+                { id: 'other', title: 'سبب آخر', desc: 'اكتب السبب بالتفصيل', icon: 'las la-edit' }
+            ];
+
+            let orders = [
+                {
+                    id: 'ORD-5021', customer: 'أحمد محمد', phone: '+20 123 456 7890',
+                    address: 'فندق ريكسوس سيزونز، خليج نعمة، شرم الشيخ',
+                    landmark: 'بجوار مقهى ستاربكس، الدور الثالث',
+                    items: [
+                        { name: 'سمك مشوي طازج', qty: 2, price: 180, image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=200&q=70', notes: 'بدون شطة' },
+                        { name: 'رز صيادية', qty: 1, price: 45, image: 'https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&w=200&q=70', notes: 'كمية إضافية' }
+                    ],
+                    total: 405, subtotal: 405, deliveryFee: 0,
+                    status: 'new', time: 'قبل 3 دقائق', type: 'delivery', urgent: true,
+                    paymentMethod: 'نقدي عند التسليم', notes: 'يرجى الاتصال قبل الوصول'
+                },
+                {
+                    id: 'ORD-5020', customer: 'سارة علي', phone: '+20 123 456 7891',
+                    address: 'كمبنسكي شرم الشيخ، السوق القديم، شرم الشيخ',
+                    landmark: 'مدخل المارينا، الدور الثاني',
+                    items: [
+                        { name: 'جمبري مقلي', qty: 1, price: 220, image: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=200&q=70', notes: 'مقرمش جداً' },
+                        { name: 'سلطة طحينة', qty: 2, price: 35, image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 290, subtotal: 290, deliveryFee: 0,
+                    status: 'new', time: 'قبل 5 دقائق', type: 'delivery', urgent: true,
+                    paymentMethod: 'فيزا كارد', notes: 'الرجاء الاتصال عند الوصول'
+                },
+                {
+                    id: 'ORD-5019', customer: 'محمود حسن', phone: '+20 123 456 7892',
+                    address: 'منتجع سيرافيتا، نبق، شرم الشيخ',
+                    landmark: 'الشاطئ الخاص، فيلا 12',
+                    items: [
+                        { name: 'كاليماري مقلي', qty: 2, price: 145, image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=200&q=70', notes: 'مع صوص الثوم' }
+                    ],
+                    total: 290, subtotal: 290, deliveryFee: 0,
+                    status: 'new', time: 'قبل 7 دقائق', type: 'delivery', urgent: false,
+                    paymentMethod: 'نقدي عند التسليم', notes: ''
+                },
+                {
+                    id: 'ORD-5018', customer: 'ليلى أحمد', phone: '+20 123 456 7893',
+                    address: 'فندق شيراتون شرم الشيخ، طريق السلام',
+                    landmark: 'اللوبي الرئيسي، غرفة 305',
+                    items: [
+                        { name: 'سمك فيليه مشوي', qty: 1, price: 165, image: 'https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?auto=format&fit=crop&w=200&q=70', notes: 'مع ليمون' },
+                        { name: 'شوربة سيفود', qty: 2, price: 55, image: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=200&q=70', notes: 'ساخنة' }
+                    ],
+                    total: 275, subtotal: 275, deliveryFee: 0,
+                    status: 'new', time: 'قبل 9 دقائق', type: 'pickup', urgent: false,
+                    paymentMethod: 'دفع عند الاستلام', notes: 'سآتي لاستلام الطلب'
+                },
+                {
+                    id: 'ORD-5017', customer: 'خالد يوسف', phone: '+20 123 456 7894',
+                    address: 'حي الرويسات، شرم الشيخ',
+                    landmark: 'بجوار مسجد الرويسات',
+                    items: [
+                        { name: 'سمك مشوي طازج', qty: 2, price: 180, image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=200&q=70', notes: 'واحد مشوي وواحد مقلي' },
+                        { name: 'بطاطس مقلية', qty: 1, price: 25, image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=200&q=70', notes: 'مقرمشة' }
+                    ],
+                    total: 385, subtotal: 385, deliveryFee: 0,
+                    status: 'new', time: 'قبل 11 دقيقة', type: 'delivery', urgent: false,
+                    paymentMethod: 'فيزا كارد', notes: ''
+                },
+                {
+                    id: 'ORD-5016', customer: 'منى إبراهيم', phone: '+20 123 456 7895',
+                    address: 'خليج نعمة، شارع الملك، شرم الشيخ',
+                    landmark: 'برج الخليج، الدور الخامس',
+                    items: [
+                        { name: 'جمبري مشوي', qty: 3, price: 190, image: 'https://images.unsplash.com/photo-1625943553852-781c6dd46faa?auto=format&fit=crop&w=200&q=70', notes: 'بدون ثوم' }
+                    ],
+                    total: 570, subtotal: 570, deliveryFee: 0,
+                    status: 'accepted', time: 'قبل 15 دقيقة', type: 'delivery', urgent: false,
+                    paymentMethod: 'نقدي عند التسليم', notes: ''
+                },
+                {
+                    id: 'ORD-5015', customer: 'عمر سالم', phone: '+20 123 456 7896',
+                    address: 'الطريق الدائري، شرم الشيخ',
+                    landmark: 'محطة بنزين موبيل',
+                    items: [
+                        { name: 'رز صيادية بالجمبري', qty: 2, price: 95, image: 'https://images.unsplash.com/photo-1633945274405-b6c8069047b0?auto=format&fit=crop&w=200&q=70', notes: '' },
+                        { name: 'سلطة طحينة', qty: 1, price: 35, image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 225, subtotal: 225, deliveryFee: 0,
+                    status: 'accepted', time: 'قبل 18 دقيقة', type: 'delivery', urgent: false,
+                    paymentMethod: 'فيزا كارد', notes: ''
+                },
+                {
+                    id: 'ORD-5014', customer: 'هند محمد', phone: '+20 123 456 7897',
+                    address: 'فندق هيلتون شرم الشيخ، خليج نعمة',
+                    landmark: 'بجوار حمام السباحة',
+                    items: [
+                        { name: 'كاليماري مقلي', qty: 1, price: 145, image: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 145, subtotal: 145, deliveryFee: 0,
+                    status: 'preparing', time: 'قبل 22 دقيقة', type: 'pickup', urgent: false,
+                    paymentMethod: 'دفع عند الاستلام', notes: 'سأمر للاستلام'
+                },
+                {
+                    id: 'ORD-5013', customer: 'يوسف علي', phone: '+20 123 456 7898',
+                    address: 'شارع السلام، حي النصر، شرم الشيخ',
+                    landmark: 'عمارة 12، الدور الأرضي',
+                    items: [
+                        { name: 'سمك فيليه مشوي', qty: 1, price: 165, image: 'https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?auto=format&fit=crop&w=200&q=70', notes: '' },
+                        { name: 'جمبري مقلي', qty: 1, price: 220, image: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 385, subtotal: 385, deliveryFee: 0,
+                    status: 'preparing', time: 'قبل 25 دقيقة', type: 'delivery', urgent: false,
+                    paymentMethod: 'نقدي عند التسليم', notes: ''
+                },
+                {
+                    id: 'ORD-5012', customer: 'نور الدين', phone: '+20 123 456 7899',
+                    address: 'ميدان الساعة، شرم الشيخ',
+                    landmark: 'بجوار البنك الأهلي',
+                    items: [
+                        { name: 'سمك مشوي طازج', qty: 1, price: 180, image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=200&q=70', notes: 'مع رز' }
+                    ],
+                    total: 180, subtotal: 180, deliveryFee: 0,
+                    status: 'ready', time: 'قبل 28 دقيقة', type: 'delivery', urgent: false,
+                    paymentMethod: 'فيزا كارد', notes: 'اتصل عند الوصول'
+                },
+                {
+                    id: 'ORD-5011', customer: 'سلمى أحمد', phone: '+20 123 456 7800',
+                    address: 'خليج نعمة، شارع الملك، شرم الشيخ',
+                    landmark: 'مول نعمة، الدور الثاني',
+                    items: [
+                        { name: 'شوربة سيفود', qty: 1, price: 55, image: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 55, subtotal: 55, deliveryFee: 0,
+                    status: 'onway', time: 'قبل 32 دقيقة', type: 'delivery', urgent: false,
+                    paymentMethod: 'نقدي عند التسليم', notes: ''
+                },
+                {
+                    id: 'ORD-5010', customer: 'كريم فؤاد', phone: '+20 123 456 7801',
+                    address: 'حي الرويسات، شرم الشيخ',
+                    landmark: 'بجوار صيدلية العزبي',
+                    items: [
+                        { name: 'جمبري مشوي', qty: 2, price: 190, image: 'https://images.unsplash.com/photo-1625943553852-781c6dd46faa?auto=format&fit=crop&w=200&q=70', notes: '' }
+                    ],
+                    total: 380, subtotal: 380, deliveryFee: 0,
+                    status: 'delivered', time: 'قبل 35 دقيقة', type: 'delivery', urgent: false,
+                    paymentMethod: 'فيزا كارد', notes: ''
+                }
+            ];
+
+            function openDropdown() { profileDropdown.classList.add('active'); }
+            function closeDropdown() { profileDropdown.classList.remove('active'); }
+            function toggleDropdown(e) {
+                if (e) e.stopPropagation();
+                if (profileDropdown.classList.contains('active')) closeDropdown();
+                else openDropdown();
+            }
+
+            headerAvatar.addEventListener('click', toggleDropdown);
+
+            document.addEventListener('click', function(e) {
+                if (profileDropdown.classList.contains('active')) {
+                    if (!profileDropdown.contains(e.target) && e.target !== headerAvatar && !headerAvatar.contains(e.target)) {
+                        closeDropdown();
+                    }
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeDropdown();
+            });
+
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                closeDropdown();
+                Swal.fire({
+                    title: 'تسجيل الخروج',
+                    text: 'هل أنت متأكد من تسجيل الخروج من لوحة التحكم؟',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#FF5A00',
+                    cancelButtonColor: '#717171',
+                    confirmButtonText: 'نعم، خروج',
+                    cancelButtonText: 'إلغاء'
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'تم بنجاح',
+                            text: 'تم تسجيل الخروج بنجاح',
+                            icon: 'success',
+                            confirmButtonColor: '#FF5A00'
+                        });
+                    }
+                });
+            });
+
+            notificationBtn.addEventListener('click', function() {
+                Swal.fire({
+                    title: 'الإشعارات',
+                    html: '<div style="text-align:right;font-size:0.85rem;">' +
+                        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">🔔 5 طلبات جديدة بانتظار المراجعة</p>' +
+                        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">🐟 وصل سمك طازج اليوم - جرب الجديد</p>' +
+                        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">💰 تم تحويل 1,200 ج.م إلى حسابك</p>' +
+                        '<p class="p-2 rounded" style="background:#FFF3E8;">📦 نفاذ كمية من "جمبري مشوي"</p>' +
+                        '</div>',
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00',
+                    confirmButtonText: 'حسناً'
+                });
+            });
+
+            headerStatusPill.addEventListener('click', function() {
+                isOpen = !isOpen;
+                updateStatusUI();
+                Swal.fire({
+                    title: isOpen ? 'المطعم مفتوح' : 'المطعم مغلق',
+                    text: isOpen ? 'سيبدأ استقبال الطلبات الجديدة' : 'لن تصلك طلبات جديدة حتى تفتح المطعم',
+                    icon: isOpen ? 'success' : 'warning',
+                    confirmButtonColor: '#FF5A00',
+                    timer: 1600,
+                    showConfirmButton: false
+                });
+                renderOrders();
+            });
+
+            function updateStatusUI() {
+                if (isOpen) {
+                    headerStatusPill.classList.add('open');
+                    headerStatusPill.classList.remove('closed');
+                    headerStatusText.textContent = 'مفتوح';
+                } else {
+                    headerStatusPill.classList.add('closed');
+                    headerStatusPill.classList.remove('open');
+                    headerStatusText.textContent = 'مغلق';
+                }
+            }
+
+            function getFilteredOrders() {
+                if (activeFilter === 'all') return orders;
+                return orders.filter(function(o) { return o.status === activeFilter; });
+            }
+
+            function statusLabel(status) {
+                const map = {
+                    new: { label: 'جديد', cls: 'badge-new', icon: 'las la-bolt' },
+                    accepted: { label: 'مقبول', cls: 'badge-accepted', icon: 'las la-check' },
+                    preparing: { label: 'جاري التحضير', cls: 'badge-preparing', icon: 'las la-fire' },
+                    ready: { label: 'جاهز للتسليم', cls: 'badge-ready', icon: 'las la-check-circle' },
+                    onway: { label: 'في الطريق', cls: 'badge-onway', icon: 'las la-motorcycle' },
+                    delivered: { label: 'تم التسليم', cls: 'badge-delivered', icon: 'las la-check-double' }
+                };
+                return map[status] || map.new;
+            }
+
+            function renderOrders() {
+                const list = getFilteredOrders();
+
+                if (!isOpen) {
+                    ordersContainer.innerHTML =
+                        '<div class="empty-state md:col-span-2 xl:col-span-3">' +
+                            '<i class="las la-store-slash"></i>' +
+                            '<p class="font-bold mb-1">المطعم مغلق حالياً</p>' +
+                            '<p class="text-xs">قم بفتح المطعم لاستقبال الطلبات</p>' +
+                        '</div>';
+                    return;
+                }
+
+                if (list.length === 0) {
+                    ordersContainer.innerHTML =
+                        '<div class="empty-state md:col-span-2 xl:col-span-3">' +
+                            '<i class="las la-inbox"></i>' +
+                            '<p class="font-bold mb-1">لا توجد طلبات في هذه الحالة</p>' +
+                            '<p class="text-xs">سيتم تحديث القائمة تلقائياً</p>' +
+                        '</div>';
+                    return;
+                }
+
+                let html = '';
+                list.forEach(function(order) {
+                    const st = statusLabel(order.status);
+                    let itemsHtml = '';
+                    order.items.forEach(function(item) {
+                        itemsHtml +=
+                            '<div class="flex items-center gap-2 py-2" style="border-bottom:1px solid rgba(0,0,0,0.05);">' +
+                                '<img src="' + item.image + '" alt="' + item.name + '" style="width:44px;height:44px;border-radius:10px;object-fit:cover;flex-shrink:0;" loading="lazy">' +
+                                '<div class="flex-1 min-w-0">' +
+                                    '<p style="font-size:0.82rem;font-weight:800;color:var(--color-white);">' + item.name + '</p>' +
+                                    (item.notes ? '<p style="font-size:0.68rem;color:var(--color-muted);font-weight:600;margin-top:2px;"><i class="las la-info-circle"></i> ' + item.notes + '</p>' : '') +
+                                '</div>' +
+                                '<span style="font-size:0.72rem;font-weight:800;color:#FF5A00;background:rgba(255,90,0,0.1);padding:3px 8px;border-radius:8px;flex-shrink:0;">' + item.qty + '×</span>' +
+                            '</div>';
+                    });
+
+                    let actionButtons = '';
+                    const isPickupOrder = order.type === 'pickup';
+                    if (order.status === 'new') {
+                        actionButtons =
+                            '<button class="btn btn-accepted flex-1" data-action="accept" data-id="' + order.id + '"><i class="las la-check"></i> قبول الطلب</button>' +
+                            '<button class="btn-reject flex-1" data-action="reject" data-id="' + order.id + '"><i class="las la-times"></i> رفض</button>';
+                    } else if (order.status === 'accepted') {
+                        actionButtons =
+                            '<button class="btn btn-start flex-1" data-action="start" data-id="' + order.id + '"><i class="las la-fire"></i> بدء التحضير</button>';
+                    } else if (order.status === 'preparing') {
+                        actionButtons =
+                            '<button class="btn btn-success flex-1" data-action="ready" data-id="' + order.id + '"><i class="las la-check-circle"></i> جاهز للتسليم</button>';
+                    } else if (order.status === 'ready') {
+                        actionButtons = isPickupOrder
+                            ? '<button class="btn btn-delivered flex-1" data-action="delivered" data-id="' + order.id + '"><i class="las la-check-double"></i> تم التسليم للعميل</button>'
+                            : '<button class="btn btn-onway flex-1" data-action="onway" data-id="' + order.id + '"><i class="las la-motorcycle"></i> في الطريق</button>';
+                    } else if (order.status === 'onway') {
+                        actionButtons =
+                            '<button class="btn btn-delivered flex-1" data-action="delivered" data-id="' + order.id + '"><i class="las la-check-double"></i> وصل بنجاح</button>';
+                    }
+
+                    const showCloseBtn = order.status === 'new';
+
+                    html +=
+                        '<div class="order-card s-' + order.status + (order.urgent ? ' urgent' : '') + '" data-order-id="' + order.id + '">' +
+                            '<div class="flex items-center justify-between">' +
+                                '<div class="flex items-center gap-2">' +
+                                    '<span class="order-badge ' + st.cls + '"><i class="' + st.icon + '"></i> ' + st.label + '</span>' +
+                                    '<span class="text-xs text-[var(--color-muted)] font-semibold">' + order.id + '</span>' +
+                                '</div>' +
+                                '<span class="text-xs text-[var(--color-muted)] font-semibold">' + order.time + '</span>' +
+                            '</div>' +
+                            '<div class="name-row">' +
+                                '<p class="customer-name">' + order.customer + '</p>' +
+                                '<span class="type-chip">' + (order.type === 'delivery' ? '🛵 توصيل' : '🏪 استلام') + '</span>' +
+                                '<div class="name-actions">' +
+                                    '<button class="icon-btn icon-btn-call" data-action="call" data-id="' + order.id + '" title="اتصال بالعميل"><i class="las la-phone"></i></button>' +
+                                    (showCloseBtn ? '<button class="icon-btn icon-btn-close" data-action="reject" data-id="' + order.id + '" title="رفض الطلب"><i class="las la-times"></i></button>' : '') +
+                                '</div>' +
+                            '</div>' +
+                            '<div>' +
+                                '<p class="text-xs text-[var(--color-muted)] mb-1"><i class="las la-map-marker-alt"></i> ' + order.address + '</p>' +
+                                (order.landmark ? '<p class="text-[11px] text-[var(--color-muted)]"><i class="las la-info-circle"></i> ' + order.landmark + '</p>' : '') +
+                            '</div>' +
+                            '<div class="order-card-items">' + itemsHtml + '</div>' +
+                            (order.notes ? '<div style="background:rgba(255,184,0,0.1);padding:8px 12px;border-radius:10px;font-size:0.72rem;font-weight:600;color:#B37F00;"><i class="las la-sticky-note"></i> ' + order.notes + '</div>' : '') +
+                            '<div class="flex items-center justify-between pt-2 border-t" style="border-color: var(--border-color);">' +
+                                '<span class="text-xs font-bold text-[var(--color-muted)]">' + order.paymentMethod + '</span>' +
+                                '<span class="text-base font-extrabold text-[#FF5A00]">' + order.total + ' ج.م</span>' +
+                            '</div>' +
+                            (actionButtons ? '<div class="flex gap-2">' + actionButtons + '</div>' : '') +
+                        '</div>';
+                });
+                ordersContainer.innerHTML = html;
+            }
+
+            function updateCounts() {
+                const counts = {
+                    all: orders.length,
+                    new: orders.filter(o => o.status === 'new').length,
+                    accepted: orders.filter(o => o.status === 'accepted').length,
+                    preparing: orders.filter(o => o.status === 'preparing').length,
+                    ready: orders.filter(o => o.status === 'ready').length,
+                    onway: orders.filter(o => o.status === 'onway').length,
+                    delivered: orders.filter(o => o.status === 'delivered').length
+                };
+                orderFilters.querySelectorAll('.filter-tab').forEach(function(tab) {
+                    const countEl = tab.querySelector('.count');
+                    if (countEl) countEl.textContent = counts[tab.getAttribute('data-filter')];
+                });
+                newOrdersCount.textContent = counts.new;
+                ordersNavBadge.textContent = counts.new;
+                newStatCount.textContent = counts.new;
+                acceptedStatCount.textContent = counts.accepted;
+                preparingStatCount.textContent = counts.preparing;
+                readyStatCount.textContent = counts.ready;
+                onwayStatCount.textContent = counts.onway;
+                ordersNavBadge.style.display = counts.new > 0 ? 'flex' : 'none';
+                newOrdersCount.style.display = counts.new > 0 ? 'inline-flex' : 'none';
+            }
+
+            orderFilters.addEventListener('click', function(e) {
+                const tab = e.target.closest('.filter-tab');
+                if (!tab) return;
+                orderFilters.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                activeFilter = tab.getAttribute('data-filter');
+                renderOrders();
+            });
+
+            function findOrder(id) {
+                for (let i = 0; i < orders.length; i++) {
+                    if (orders[i].id === id) return orders[i];
+                }
+                return null;
+            }
+
+            function askRejectionReason(order, onConfirm) {
+                let selectedReason = null;
+                let otherText = '';
+
+                let reasonsHtml = '';
+                rejectionReasons.forEach(function(r) {
+                    reasonsHtml +=
+                        '<button type="button" class="reason-option" data-reason="' + r.id + '">' +
+                            '<div class="ro-icon"><i class="' + r.icon + '"></i></div>' +
+                            '<div class="ro-text">' +
+                                '<p class="ro-title">' + r.title + '</p>' +
+                                '<p class="ro-desc">' + r.desc + '</p>' +
+                            '</div>' +
+                        '</button>';
+                });
+
+                Swal.fire({
+                    title: 'سبب رفض الطلب',
+                    html: '<div style="text-align:right;">' +
+                        '<p class="reject-hint">اختر سبب رفض الطلب ' + order.id + '</p>' +
+                        '<div class="reason-list">' + reasonsHtml + '</div>' +
+                        '<div class="other-wrap" id="otherWrap">' +
+                        '<textarea id="otherReasonText" placeholder="اكتب سبب الرفض بالتفصيل..."></textarea>' +
+                        '</div>' +
+                        '</div>',
+                    customClass: { popup: 'reject-popup' },
+                    showCancelButton: true,
+                    confirmButtonColor: '#EF4444',
+                    cancelButtonColor: '#717171',
+                    confirmButtonText: 'تأكيد الرفض',
+                    cancelButtonText: 'إلغاء',
+                    didOpen: function() {
+                        const popup = Swal.getPopup();
+                        const reasonBtns = popup.querySelectorAll('.reason-option');
+                        const otherWrap = popup.querySelector('#otherWrap');
+                        const otherTextEl = popup.querySelector('#otherReasonText');
+
+                        reasonBtns.forEach(function(btn) {
+                            btn.addEventListener('click', function() {
+                                reasonBtns.forEach(b => b.classList.remove('selected'));
+                                this.classList.add('selected');
+                                selectedReason = this.getAttribute('data-reason');
+                                if (selectedReason === 'other') {
+                                    otherWrap.style.display = 'block';
+                                    otherTextEl.focus();
+                                } else {
+                                    otherWrap.style.display = 'none';
+                                }
+                            });
+                        });
+                    },
+                    preConfirm: function() {
+                        if (!selectedReason) {
+                            Swal.showValidationMessage('يرجى اختيار سبب الرفض');
+                            return false;
+                        }
+                        if (selectedReason === 'other') {
+                            const txt = document.getElementById('otherReasonText').value.trim();
+                            if (!txt) {
+                                Swal.showValidationMessage('يرجى كتابة سبب الرفض');
+                                return false;
+                            }
+                            otherText = txt;
+                        }
+                        return true;
+                    }
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        let reasonLabel = '';
+                        for (let i = 0; i < rejectionReasons.length; i++) {
+                            if (rejectionReasons[i].id === selectedReason) {
+                                reasonLabel = rejectionReasons[i].title;
+                                break;
+                            }
+                        }
+                        if (selectedReason === 'other' && otherText) reasonLabel = otherText;
+                        onConfirm(reasonLabel);
+                    }
+                });
+            }
+
+            ordersContainer.addEventListener('click', function(e) {
+                const btn = e.target.closest('[data-action]');
+                if (!btn) return;
+                if (actionInProgress) return;
+
+                const action = btn.getAttribute('data-action');
+                const id = btn.getAttribute('data-id');
+                const order = findOrder(id);
+                if (!order) return;
+
+                if (action === 'accept') {
+                    actionInProgress = true;
+                    btn.disabled = true;
+                    order.status = 'accepted';
+                    order.time = 'قبل لحظات';
+                    renderOrders();
+                    updateCounts();
+                    setTimeout(function() { actionInProgress = false; }, 500);
+                    Swal.fire({
+                        title: 'تم قبول الطلب ✅',
+                        html: '<p style="font-size:0.9rem;">تم قبول الطلب <b>' + order.id + '</b></p>' +
+                            '<p style="font-size:0.8rem;color:#717171;margin-top:6px;">اضغط <b>بدء التحضير</b> عندما يبدأ المطبخ العمل</p>',
+                        icon: 'success',
+                        confirmButtonColor: '#8B5CF6',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else if (action === 'reject') {
+                    actionInProgress = true;
+                    askRejectionReason(order, function(reason) {
+                        orders = orders.filter(o => o.id !== id);
+                        renderOrders();
+                        updateCounts();
+                        setTimeout(function() { actionInProgress = false; }, 500);
+                        Swal.fire({
+                            title: 'تم رفض الطلب',
+                            html: '<p style="font-size:0.9rem;">تم رفض الطلب <b>' + id + '</b></p>' +
+                                '<p style="font-size:0.78rem;color:#717171;margin-top:8px;padding:10px;background:#FEF2F2;border-radius:10px;"><b>سبب الرفض:</b><br>' + reason + '</p>',
+                            icon: 'info',
+                            confirmButtonColor: '#EF4444',
+                            confirmButtonText: 'حسناً'
+                        });
+                    });
+                    setTimeout(function() {
+                        if (!Swal.isVisible()) actionInProgress = false;
+                    }, 300);
+                } else if (action === 'start') {
+                    actionInProgress = true;
+                    btn.disabled = true;
+                    order.status = 'preparing';
+                    order.time = 'قبل لحظات';
+                    renderOrders();
+                    updateCounts();
+                    setTimeout(function() { actionInProgress = false; }, 500);
+                    Swal.fire({
+                        title: 'بدأ التحضير 🔥',
+                        html: '<p style="font-size:0.9rem;">بدأ تحضير الطلب <b>' + order.id + '</b></p>' +
+                            '<p style="font-size:0.8rem;color:#717171;margin-top:6px;">سيتم إشعار العميل بأن الطلب قيد التحضير</p>',
+                        icon: 'success',
+                        confirmButtonColor: '#F59E0B',
+                        timer: 1800,
+                        showConfirmButton: false
+                    });
+                } else if (action === 'ready') {
+                    actionInProgress = true;
+                    btn.disabled = true;
+                    order.status = 'ready';
+                    order.time = 'قبل لحظات';
+                    renderOrders();
+                    updateCounts();
+                    setTimeout(function() { actionInProgress = false; }, 500);
+                    Swal.fire({
+                        title: 'الطلب جاهز للتسليم',
+                        text: order.type === 'pickup' ? 'بانتظار وصول العميل لاستلامه' : 'بانتظار وصول السائق لاستلامه',
+                        icon: 'success',
+                        confirmButtonColor: '#00B14F',
+                        timer: 1800,
+                        showConfirmButton: false
+                    });
+                } else if (action === 'onway') {
+                    actionInProgress = true;
+                    btn.disabled = true;
+                    order.status = 'onway';
+                    order.time = 'قبل لحظات';
+                    renderOrders();
+                    updateCounts();
+                    setTimeout(function() { actionInProgress = false; }, 500);
+                    Swal.fire({
+                        title: 'الطلب في الطريق 🛵',
+                        text: 'تم تسليم الطلب للسائق وهو في الطريق إلى العميل',
+                        icon: 'success',
+                        confirmButtonColor: '#3B82F6',
+                        timer: 1800,
+                        showConfirmButton: false
+                    });
+                } else if (action === 'delivered') {
+                    actionInProgress = true;
+                    btn.disabled = true;
+                    order.status = 'delivered';
+                    order.time = 'قبل لحظات';
+                    renderOrders();
+                    updateCounts();
+                    setTimeout(function() { actionInProgress = false; }, 500);
+                    Swal.fire({
+                        title: 'وصل بنجاح 🎉',
+                        html: '<p style="font-size:0.9rem;">تم تسليم الطلب <b>' + order.id + '</b> بنجاح</p>' +
+                            '<p style="font-size:0.78rem;color:#717171;margin-top:8px;padding:10px;background:#F0FDF4;border-radius:10px;">تمت إضافة <b style="color:#14B8A6;">' + order.total + ' ج.م</b> إلى أرباح المطعم</p>',
+                        icon: 'success',
+                        confirmButtonColor: '#14B8A6',
+                        confirmButtonText: 'تم'
+                    });
+                } else if (action === 'call') {
+                    window.location.href = 'tel:' + order.phone.replace(/\s/g, '');
+                }
+            });
+
+            refreshOrdersBtn.addEventListener('click', function() {
+                renderOrders();
+                updateCounts();
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'تم تحديث الطلبات',
+                    showConfirmButton: false,
+                    timer: 1400
+                });
+            });
+
+            function init() {
+                updateStatusUI();
+                renderOrders();
+                updateCounts();
+            }
+
+            init();
+        })();
+    </script>
+</body>
+</html>
