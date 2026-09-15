@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#FF5A00">
+    <title>طلبات السحب - مطعم ابن حميدو</title>
+    <meta name="description" content="طلبات سحب الأرباح - مطعم ابن حميدو">
+    <link rel="icon" type="image/png" href="https://sys.shadowza.space/logos/1.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF5A00',
+                        secondary: '#FF8C38',
+                        accent: '#FFB800',
+                        dark: '#1A1A1A',
+                        muted: '#717171',
+                        success: '#00B14F'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --color-primary: #FF5A00;
+            --color-secondary: #FF8C38;
+            --color-accent: #FFB800;
+            --color-background: #F7F9F8;
+            --color-card: #FFFFFF;
+            --color-darker: #F0F4F3;
+            --color-white: #1A1A1A;
+            --color-muted: #717171;
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --card-bg: #FFFFFF;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --darker-bg: #F0F4F3;
+            --header-height: 70px;
+            --bottom-nav-height: 68px;
+            --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06);
+            --c-pending: #F59E0B;
+            --c-approved: #8B5CF6;
+            --c-processing: #3B82F6;
+            --c-completed: #00B14F;
+            --c-rejected: #EF4444;
+            --c-cancelled: #717171;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; width: 100%; overscroll-behavior: none; }
+        body {
+            font-family: 'Noto Sans Arabic', system-ui, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-white);
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: var(--color-background); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #FF8C38; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FF5A00; }
+
+        #mainHeader {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--color-background);
+            z-index: 110;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+        .header-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .brand-logo {
+            width: 42px; height: 42px; border-radius: 12px;
+            object-fit: cover; border: 2px solid var(--color-primary);
+            flex-shrink: 0; background: #fff;
+        }
+        .brand-name {
+            font-size: 1rem; font-weight: 800; color: var(--color-white);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .brand-sub { font-size: 0.68rem; color: var(--color-muted); font-weight: 600; }
+        .header-actions { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+        .notification-btn {
+            position: relative; background: none; border: none; cursor: pointer;
+            color: var(--color-muted); font-size: 1.5rem; padding: 0;
+            display: flex; align-items: center; justify-content: center;
+            transition: color 0.2s; flex-shrink: 0;
+        }
+        .notification-btn:hover { color: #FF5A00; }
+        .notification-btn .notification-dot {
+            position: absolute; top: 2px; right: 2px; width: 8px; height: 8px;
+            border-radius: 50%; background: #FF5A00;
+            border: 2px solid var(--color-background);
+        }
+        .header-avatar-btn {
+            width: 42px; height: 42px; border-radius: 50%;
+            object-fit: cover; border: 2px solid var(--color-primary);
+            cursor: pointer; transition: all 0.2s; flex-shrink: 0; background: #fff;
+        }
+        .header-avatar-btn:hover { transform: scale(1.05); }
+
+        .status-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 7px 14px; border-radius: 40px;
+            font-size: 0.75rem; font-weight: 700; cursor: pointer;
+            transition: all 0.25s ease; border: 1px solid transparent; flex-shrink: 0;
+        }
+        .status-pill.open {
+            background: rgba(0, 177, 79, 0.1); color: #00B14F;
+            border-color: rgba(0, 177, 79, 0.3);
+        }
+        .status-pill.closed {
+            background: rgba(239, 68, 68, 0.1); color: #EF4444;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        .status-pill .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: currentColor; animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        .profile-dropdown {
+            position: fixed; top: calc(var(--header-height) + 8px); left: 12px;
+            width: 300px; max-width: calc(100vw - 24px);
+            max-height: calc(100vh - var(--header-height) - 24px);
+            overflow-y: auto; background: var(--card-bg);
+            border: 1px solid var(--border-color); border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15); padding: 10px;
+            z-index: 200; opacity: 0; visibility: hidden;
+            transform: translateY(-12px) scale(0.97); transform-origin: top left;
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .profile-dropdown.active {
+            opacity: 1; visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+        .dropdown-user-header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px; border-radius: 14px;
+            background: linear-gradient(135deg, rgba(255,90,0,0.08), rgba(255,140,56,0.08));
+            margin-bottom: 6px;
+        }
+        .dropdown-user-header img {
+            width: 52px; height: 52px; border-radius: 50%;
+            object-fit: cover; border: 2px solid var(--color-primary);
+            flex-shrink: 0; background: #fff;
+        }
+        .dropdown-user-header .user-info { min-width: 0; flex: 1; }
+        .dropdown-user-header .user-name {
+            font-size: 0.92rem; font-weight: 800; color: var(--color-white);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .dropdown-user-header .user-role {
+            font-size: 0.72rem; color: var(--color-muted);
+            font-weight: 600; margin-top: 2px;
+        }
+        .dropdown-section-title {
+            font-size: 0.65rem; text-transform: uppercase;
+            letter-spacing: 1.5px; color: var(--color-muted);
+            padding: 12px 12px 6px; font-weight: 700;
+        }
+        .dropdown-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 11px 14px; border-radius: 12px; cursor: pointer;
+            transition: all 0.18s ease; color: var(--color-muted);
+            font-weight: 600; text-decoration: none; font-size: 0.88rem;
+        }
+        .dropdown-item i { font-size: 20px; width: 24px; flex-shrink: 0; }
+        .dropdown-item:hover { background: rgba(255, 90, 0, 0.08); color: var(--color-primary); }
+        .dropdown-item.active {
+            background: rgba(255, 90, 0, 0.12);
+            color: var(--color-primary); font-weight: 700;
+        }
+        .dropdown-item.logout { color: #EF4444; }
+        .dropdown-item.logout:hover { background: rgba(239, 68, 68, 0.08); color: #EF4444; }
+        .dropdown-divider { height: 1px; background: var(--border-color); margin: 6px 12px; }
+
+        main { padding-top: var(--header-height); padding-bottom: 0; }
+        @media (max-width: 1024px) {
+            main { padding-bottom: calc(var(--bottom-nav-height) + 20px); }
+        }
+
+        .bottom-mobile-nav {
+            display: none; position: fixed; bottom: 0; left: 0; right: 0;
+            height: var(--bottom-nav-height); background: var(--card-bg);
+            border-top: 1px solid var(--border-color); z-index: 100;
+            padding: 6px 8px;
+            padding-bottom: max(6px, env(safe-area-inset-bottom, 6px));
+            box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+            align-items: center; justify-content: space-around; gap: 4px;
+        }
+        @media (max-width: 1024px) { .bottom-mobile-nav { display: flex; } }
+        .bottom-nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; gap: 2px; flex: 1; padding: 8px 4px;
+            border-radius: 12px; cursor: pointer; text-decoration: none;
+            color: var(--color-muted); font-size: 0.68rem; font-weight: 600;
+            transition: all 0.25s ease; position: relative; min-width: 0;
+            -webkit-tap-highlight-color: transparent; user-select: none;
+        }
+        .bottom-nav-item i { font-size: 1.35rem; transition: all 0.25s ease; flex-shrink: 0; }
+        .bottom-nav-item span {
+            white-space: nowrap; text-overflow: ellipsis; overflow: hidden;
+            max-width: 100%; font-size: 0.65rem; letter-spacing: 0.2px;
+        }
+        .bottom-nav-item.active { color: var(--color-primary); }
+        .bottom-nav-item.active i { font-size: 1.5rem; }
+        .bottom-nav-item-center {
+            position: relative; top: -20px; width: 60px; height: 60px;
+            border-radius: 50%; background: var(--color-primary); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.4);
+            transition: all 0.3s ease; flex-shrink: 0; flex: none; margin: 0 4px;
+        }
+        .bottom-nav-item-center i { font-size: 2rem; }
+        .bottom-nav-item-center span { display: none; }
+        .bottom-nav-item-center.active { background: #e04e00; color: #fff; }
+        .nav-badge {
+            position: absolute; top: 4px; left: 50%; transform: translateX(-50%);
+            min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px;
+            background: #EF4444; color: #fff; font-size: 0.62rem; font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .bottom-nav-item-center .nav-badge {
+            top: -4px; left: 2px; transform: none; background: #1A1A1A;
+        }
+
+        .section-title {
+            font-size: 1.2rem; font-weight: 800; color: var(--color-white);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .section-title i { color: #FF5A00; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 14px;
+            box-shadow: var(--shadow-card);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(255, 90, 0, 0.1);
+            border-color: rgba(255, 90, 0, 0.3);
+        }
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .stat-body {
+            min-width: 0;
+            flex: 1;
+        }
+        .stat-value {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--color-white);
+            line-height: 1.2;
+        }
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--color-muted);
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            .stat-card {
+                padding: 10px;
+                gap: 8px;
+                border-radius: 12px;
+            }
+            .stat-icon {
+                width: 34px;
+                height: 34px;
+                font-size: 1.05rem;
+                border-radius: 9px;
+            }
+            .stat-value {
+                font-size: 1rem;
+            }
+            .stat-label {
+                font-size: 0.65rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
+            .stat-card {
+                padding: 8px;
+                gap: 6px;
+            }
+            .stat-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 0.95rem;
+            }
+            .stat-value {
+                font-size: 0.92rem;
+            }
+            .stat-label {
+                font-size: 0.6rem;
+            }
+        }
+
+        .payout-card {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 18px; padding: 16px; box-shadow: var(--shadow-card);
+            transition: all 0.3s ease; display: flex;
+            flex-direction: column; gap: 12px; position: relative; overflow: hidden;
+        }
+        .payout-card::before {
+            content: ""; position: absolute; top: 0; right: 0;
+            width: 5px; height: 100%;
+        }
+        .payout-card.s-pending::before { background: var(--c-pending); }
+        .payout-card.s-approved::before { background: var(--c-approved); }
+        .payout-card.s-processing::before { background: var(--c-processing); }
+        .payout-card.s-completed::before { background: var(--c-completed); }
+        .payout-card.s-rejected::before { background: var(--c-rejected); }
+        .payout-card.s-cancelled::before { background: var(--c-cancelled); }
+        .payout-card:hover {
+            box-shadow: 0 10px 28px rgba(255, 90, 0, 0.12);
+            border-color: rgba(255, 90, 0, 0.35);
+        }
+        .payout-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 12px; border-radius: 30px;
+            font-size: 0.72rem; font-weight: 700;
+        }
+        .badge-pending { background: rgba(245, 158, 11, 0.15); color: var(--c-pending); }
+        .badge-approved { background: rgba(139, 92, 246, 0.12); color: var(--c-approved); }
+        .badge-processing { background: rgba(59, 130, 246, 0.12); color: var(--c-processing); }
+        .badge-completed { background: rgba(0, 177, 79, 0.12); color: var(--c-completed); }
+        .badge-rejected { background: rgba(239, 68, 68, 0.12); color: var(--c-rejected); }
+        .badge-cancelled { background: rgba(113, 113, 113, 0.12); color: var(--c-cancelled); }
+
+        .name-row {
+            display: flex; align-items: center; gap: 8px;
+            flex-wrap: nowrap; min-width: 0;
+        }
+        .name-row .customer-name {
+            font-size: 0.92rem; font-weight: 800;
+            color: var(--color-white);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            min-width: 0; flex-shrink: 1;
+        }
+        .name-row .type-chip {
+            font-size: 0.62rem; font-weight: 700;
+            padding: 3px 8px; border-radius: 999px;
+            background: rgba(59, 130, 246, 0.12); color: #3B82F6;
+            flex-shrink: 0; white-space: nowrap;
+        }
+        .name-row .name-actions {
+            display: flex; align-items: center; gap: 6px;
+            margin-right: auto; flex-shrink: 0;
+        }
+        .icon-btn {
+            width: 32px; height: 32px; border-radius: 10px;
+            display: inline-flex; align-items: center; justify-content: center;
+            cursor: pointer; border: none; font-size: 1rem;
+            transition: all 0.2s ease; flex-shrink: 0;
+            background: transparent; padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .icon-btn-cancel {
+            background: rgba(239, 68, 68, 0.12); color: var(--c-rejected);
+        }
+        .icon-btn-cancel:hover {
+            background: var(--c-rejected); color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .btn {
+            border: none; border-radius: 12px; padding: 10px 16px;
+            font-family: inherit; font-weight: 700; font-size: 0.82rem;
+            cursor: pointer; transition: all 0.2s ease;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 6px; color: #fff;
+        }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-primary { background: var(--color-primary); box-shadow: 0 2px 8px rgba(255, 90, 0, 0.3); }
+        .btn-primary:hover:not(:disabled) { background: #e04e00; }
+        .btn-success { background: var(--c-completed); box-shadow: 0 2px 8px rgba(0, 177, 79, 0.3); }
+        .btn-success:hover:not(:disabled) { background: #009940; }
+        .btn-outline {
+            background: transparent; color: var(--color-muted);
+            border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 10px 16px; font-family: inherit; font-weight: 700;
+            font-size: 0.82rem; cursor: pointer; transition: all 0.2s ease;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 6px;
+        }
+        .btn-outline:hover { background: var(--darker-bg); color: var(--color-white); }
+        .btn-cancel {
+            background: transparent; color: var(--c-rejected);
+            border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 12px;
+            padding: 10px 16px; font-family: inherit; font-weight: 700;
+            font-size: 0.82rem; cursor: pointer; transition: all 0.2s ease;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 6px;
+            width: 100%;
+        }
+        .btn-cancel:hover { background: rgba(239, 68, 68, 0.08); border-color: #EF4444; }
+
+        .empty-state {
+            background: var(--card-bg); border: 2px dashed var(--border-color);
+            border-radius: 20px; padding: 34px 20px;
+            text-align: center; color: var(--color-muted);
+        }
+        .empty-state i {
+            font-size: 3rem; color: #FF8C38; opacity: 0.5;
+            display: block; margin-bottom: 12px;
+        }
+
+        .filter-tab {
+            padding: 9px 16px; border-radius: 12px;
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            font-size: 0.8rem; font-weight: 700; color: var(--color-muted);
+            cursor: pointer; transition: all 0.2s ease;
+            white-space: nowrap; -webkit-tap-highlight-color: transparent;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .filter-tab .dot-color {
+            width: 10px; height: 10px; border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .filter-tab[data-filter="pending"] .dot-color { background: var(--c-pending); }
+        .filter-tab[data-filter="approved"] .dot-color { background: var(--c-approved); }
+        .filter-tab[data-filter="processing"] .dot-color { background: var(--c-processing); }
+        .filter-tab[data-filter="completed"] .dot-color { background: var(--c-completed); }
+        .filter-tab[data-filter="rejected"] .dot-color { background: var(--c-rejected); }
+        .filter-tab:hover { border-color: rgba(255, 90, 0, 0.4); }
+        .filter-tab.active {
+            background: #FF5A00; color: #fff; border-color: #FF5A00;
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.28);
+        }
+        .filter-tab.active .dot-color { background: #fff; }
+        .filter-tab .count {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 20px; height: 20px; padding: 0 6px;
+            border-radius: 10px; background: rgba(0, 0, 0, 0.06);
+            font-size: 0.68rem;
+        }
+        .filter-tab.active .count {
+            background: rgba(255, 255, 255, 0.22); color: #fff;
+        }
+
+        .scroll-x { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+
+        .payout-card-details {
+            background: var(--darker-bg);
+            border-radius: 14px; padding: 12px 14px;
+        }
+        .payout-detail-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 6px 0; font-size: 0.78rem;
+        }
+        .payout-detail-row:not(:last-child) {
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .payout-detail-row .pd-label {
+            color: var(--color-muted); font-weight: 700;
+            display: inline-flex; align-items: center; gap: 5px;
+        }
+        .payout-detail-row .pd-label i {
+            color: var(--color-primary); font-size: 0.95rem;
+        }
+        .payout-detail-row .pd-value {
+            color: var(--color-white); font-weight: 800;
+            font-size: 0.82rem;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            max-width: 60%; text-align: left;
+            direction: ltr;
+        }
+        .payout-amount-box {
+            background: linear-gradient(135deg, rgba(255,90,0,0.1), rgba(255,140,56,0.08));
+            border-radius: 14px; padding: 14px;
+            display: flex; align-items: center; justify-content: space-between;
+            border: 1px solid rgba(255,90,0,0.15);
+        }
+        .payout-amount-box .pa-label {
+            font-size: 0.72rem; font-weight: 700;
+            color: var(--color-muted);
+            display: inline-flex; align-items: center; gap: 5px;
+        }
+        .payout-amount-box .pa-label i {
+            color: var(--color-primary); font-size: 1.05rem;
+        }
+        .payout-amount-box .pa-value {
+            font-size: 1.4rem; font-weight: 800;
+            color: var(--color-primary);
+            line-height: 1;
+        }
+        .payout-amount-box .pa-value small {
+            font-size: 0.72rem; font-weight: 700;
+            color: var(--color-muted);
+            margin-right: 4px;
+        }
+
+        .timeline {
+            display: flex; align-items: center; gap: 0;
+            padding: 4px 0;
+            direction: ltr;
+        }
+        .timeline-step {
+            display: flex; flex-direction: column; align-items: center;
+            flex: 1; position: relative; min-width: 0;
+        }
+        .timeline-dot {
+            width: 22px; height: 22px; border-radius: 50%;
+            background: var(--darker-bg);
+            border: 2px solid rgba(0,0,0,0.1);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.62rem; color: var(--color-muted);
+            position: relative; z-index: 2;
+            transition: all 0.3s ease;
+        }
+        .timeline-step.done .timeline-dot {
+            background: var(--c-completed);
+            border-color: var(--c-completed);
+            color: #fff;
+        }
+        .timeline-step.current .timeline-dot {
+            background: var(--color-primary);
+            border-color: var(--color-primary);
+            color: #fff;
+            box-shadow: 0 0 0 4px rgba(255,90,0,0.15);
+        }
+        .timeline-step.rejected .timeline-dot {
+            background: var(--c-rejected);
+            border-color: var(--c-rejected);
+            color: #fff;
+        }
+        .timeline-line {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            right: -50%;
+            height: 2px;
+            background: rgba(0,0,0,0.08);
+            z-index: 1;
+        }
+        .timeline-step:last-child .timeline-line { display: none; }
+        .timeline-step.done .timeline-line { background: var(--c-completed); }
+        .timeline-label {
+            font-size: 0.6rem; font-weight: 700;
+            color: var(--color-muted);
+            margin-top: 6px; text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        .timeline-step.done .timeline-label,
+        .timeline-step.current .timeline-label { color: var(--color-white); }
+
+        .new-payout-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 22px;
+            box-shadow: 0 8px 28px rgba(255, 90, 0, 0.08);
+            display: none;
+            animation: slideDown 0.32s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .new-payout-panel::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #FF5A00, #FF8C38, #FFB800);
+        }
+        .new-payout-panel.active { display: block; }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .np-header {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px; margin-bottom: 18px; flex-wrap: wrap;
+        }
+        .np-title {
+            font-size: 1.05rem; font-weight: 800;
+            color: var(--color-white);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .np-title i { color: var(--color-primary); font-size: 1.3rem; }
+        .np-sub {
+            font-size: 0.72rem; color: var(--color-muted);
+            font-weight: 600; margin-top: 2px;
+        }
+        .np-close-btn {
+            width: 34px; height: 34px; border-radius: 10px;
+            background: var(--darker-bg); border: none;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; color: var(--color-muted);
+            cursor: pointer; transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+            flex-shrink: 0;
+        }
+        .np-close-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+            color: #EF4444;
+        }
+        .np-balance-info {
+            background: rgba(0, 177, 79, 0.08);
+            border: 1px solid rgba(0, 177, 79, 0.2);
+            padding: 12px 16px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 18px;
+            flex-wrap: wrap; gap: 8px;
+        }
+        .np-balance-info .nbi-label {
+            color: var(--color-muted);
+            font-weight: 700; font-size: 0.78rem;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .np-balance-info .nbi-label i { color: #00B14F; font-size: 1.05rem; }
+        .np-balance-info .nbi-value {
+            color: #00B14F; font-weight: 800;
+            font-size: 1.05rem;
+        }
+        .np-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        .np-field {
+            display: flex; flex-direction: column; gap: 6px;
+            min-width: 0;
+        }
+        .np-field.full { grid-column: 1 / -1; }
+        .np-field label {
+            font-size: 0.76rem; font-weight: 800;
+            color: var(--color-white);
+            display: flex; align-items: center; gap: 5px;
+        }
+        .np-field label i { color: var(--color-primary); font-size: 0.95rem; }
+        .np-field input,
+        .np-field select,
+        .np-field textarea {
+            width: 100%; padding: 11px 14px;
+            border-radius: 12px;
+            border: 1.5px solid var(--border-color);
+            background: var(--color-background);
+            font-family: inherit; font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--color-white);
+            outline: none;
+            transition: all 0.2s;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .np-field select {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23717171' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: left 12px center;
+            background-size: 16px;
+            padding-left: 36px;
+        }
+        .np-field input:focus,
+        .np-field select:focus,
+        .np-field textarea:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(255, 90, 0, 0.1);
+        }
+        .np-field textarea {
+            resize: none; min-height: 70px;
+        }
+        .np-quick-amounts {
+            display: flex; gap: 6px; flex-wrap: wrap;
+            margin-top: 6px;
+        }
+        .np-quick-btn {
+            padding: 7px 14px; border-radius: 9px;
+            background: var(--color-background);
+            border: 1.5px solid var(--border-color);
+            font-family: inherit; font-weight: 700;
+            font-size: 0.72rem; color: var(--color-muted);
+            cursor: pointer; transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .np-quick-btn:hover {
+            background: rgba(255, 90, 0, 0.08);
+            border-color: #FF5A00;
+            color: #FF5A00;
+        }
+        .np-quick-btn.active {
+            background: #FF5A00;
+            border-color: #FF5A00;
+            color: #fff;
+        }
+        .np-fee-summary {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 4px;
+        }
+        .np-fee-box {
+            background: rgba(255, 90, 0, 0.06);
+            border: 1px solid rgba(255, 90, 0, 0.15);
+            padding: 12px 14px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 8px;
+        }
+        .np-fee-box .nfb-label {
+            font-size: 0.72rem; font-weight: 700;
+            color: var(--color-muted);
+            display: inline-flex; align-items: center; gap: 5px;
+        }
+        .np-fee-box .nfb-label i { color: var(--color-primary); font-size: 0.95rem; }
+        .np-fee-box .nfb-value {
+            font-size: 0.98rem; font-weight: 800;
+            color: var(--color-primary);
+            white-space: nowrap;
+        }
+        .np-fee-box.net {
+            background: rgba(0, 177, 79, 0.08);
+            border-color: rgba(0, 177, 79, 0.2);
+        }
+        .np-fee-box.net .nfb-label i { color: #00B14F; }
+        .np-fee-box.net .nfb-value { color: #00B14F; }
+        .np-actions {
+            grid-column: 1 / -1;
+            display: flex; gap: 10px; margin-top: 6px;
+            flex-wrap: wrap;
+        }
+        .np-actions .btn {
+            flex: 1;
+            min-width: 140px;
+            padding: 12px 20px;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 640px) {
+            .new-payout-panel { padding: 16px; border-radius: 16px; }
+            .np-form { grid-template-columns: 1fr; gap: 12px; }
+            .np-fee-summary { grid-template-columns: 1fr; }
+            .np-title { font-size: 0.95rem; }
+            .np-actions { flex-direction: column; }
+            .np-actions .btn { min-width: 0; }
+            .np-quick-btn { font-size: 0.68rem; padding: 6px 11px; }
+        }
+
+        .restaurant-banner {
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #FF5A00 0%, #FF8C38 100%);
+            color: #fff;
+            box-shadow: 0 10px 28px rgba(255,90,0,0.28);
+            position: relative;
+            overflow: hidden;
+        }
+        .restaurant-banner::before {
+            content: "";
+            position: absolute;
+            top: -50px; left: -50px;
+            width: 200px; height: 200px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
+        }
+        .restaurant-banner::after {
+            content: "";
+            position: absolute;
+            bottom: -80px; right: -30px;
+            width: 180px; height: 180px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 50%;
+        }
+        .restaurant-banner .rb-inner { position: relative; z-index: 2; }
+        .rb-logo {
+            width: 64px; height: 64px; border-radius: 50%;
+            object-fit: cover; border: 3px solid rgba(255,255,255,0.4);
+            background: #fff; flex-shrink: 0;
+        }
+        .rb-name { font-size: 1.15rem; font-weight: 800; margin-bottom: 4px; }
+        .rb-meta {
+            display: flex; flex-wrap: wrap; gap: 12px;
+            font-size: 0.75rem; color: rgba(255,255,255,0.9);
+            font-weight: 600;
+        }
+        .rb-meta span { display: inline-flex; align-items: center; gap: 4px; }
+        .rb-quick-actions {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;
+        }
+        .rb-action {
+            background: rgba(255,255,255,0.18);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: #fff; font-family: inherit; font-weight: 700;
+            font-size: 0.75rem; padding: 8px 14px; border-radius: 12px;
+            cursor: pointer; transition: all 0.2s ease;
+            display: inline-flex; align-items: center; gap: 6px;
+            backdrop-filter: blur(10px);
+            text-decoration: none;
+        }
+        .rb-action:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        .rb-action i { font-size: 1rem; }
+
+        .balance-banner {
+            background: linear-gradient(135deg, #00B14F 0%, #14B8A6 100%);
+            border-radius: 18px;
+            padding: 18px 20px;
+            margin-bottom: 20px;
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(0, 177, 79, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .balance-banner .bb-info {
+            display: flex; align-items: center; gap: 14px;
+            min-width: 0;
+        }
+        .balance-banner .bb-icon {
+            width: 52px; height: 52px; border-radius: 14px;
+            background: rgba(255,255,255,0.2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; flex-shrink: 0;
+            backdrop-filter: blur(10px);
+        }
+        .balance-banner .bb-text .bb-label {
+            font-size: 0.75rem; font-weight: 700;
+            color: rgba(255,255,255,0.85);
+        }
+        .balance-banner .bb-text .bb-amount {
+            font-size: 1.5rem; font-weight: 800;
+            line-height: 1.15; margin-top: 2px;
+        }
+        .balance-banner .bb-text .bb-amount small {
+            font-size: 0.85rem; font-weight: 700;
+            margin-right: 4px;
+        }
+        .balance-banner .bb-actions {
+            display: flex; gap: 8px; flex-wrap: wrap;
+        }
+        .balance-banner .bb-btn {
+            background: rgba(255,255,255,0.22);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #fff; font-family: inherit; font-weight: 700;
+            font-size: 0.78rem; padding: 9px 16px; border-radius: 12px;
+            cursor: pointer; transition: all 0.2s ease;
+            display: inline-flex; align-items: center; gap: 6px;
+            backdrop-filter: blur(10px);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .balance-banner .bb-btn:hover {
+            background: rgba(255,255,255,0.32);
+            transform: translateY(-2px);
+        }
+        .balance-banner .bb-btn i { font-size: 1.05rem; }
+
+        @media (max-width: 640px) {
+            .section-title { font-size: 1rem; }
+            .brand-name { font-size: 0.88rem; }
+            .brand-sub { font-size: 0.62rem; }
+            .profile-dropdown { left: 8px; right: 8px; width: auto; }
+            .rb-logo { width: 52px; height: 52px; }
+            .rb-name { font-size: 1rem; }
+            .rb-action { font-size: 0.7rem; padding: 7px 11px; }
+            .name-row .customer-name { font-size: 0.85rem; }
+            .icon-btn { width: 30px; height: 30px; font-size: 0.95rem; }
+            .balance-banner { padding: 14px 16px; }
+            .balance-banner .bb-icon { width: 44px; height: 44px; font-size: 1.35rem; }
+            .balance-banner .bb-text .bb-amount { font-size: 1.2rem; }
+            .balance-banner .bb-btn { font-size: 0.72rem; padding: 7px 12px; }
+            .payout-amount-box .pa-value { font-size: 1.15rem; }
+            .timeline-label { font-size: 0.55rem; }
+        }
+    </style>
+</head>
+<body>
+    <header id="mainHeader">
+        <div class="header-brand">
+            <img src="https://sys.shadowza.space/logos/1.png" class="brand-logo" alt="logo">
+            <div class="min-w-0">
+                <p class="brand-name">مطعم ابن حميدو</p>
+                <p class="brand-sub">طلبات السحب</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <div class="status-pill open" id="headerStatusPill">
+                <span class="dot"></span>
+                <span id="headerStatusText">مفتوح</span>
+            </div>
+            <button class="notification-btn" id="notificationBtn">
+                <i class="las la-bell"></i>
+                <span class="notification-dot"></span>
+            </button>
+            <img id="headerAvatar" src="https://sys.shadowza.space/logos/1.png" class="header-avatar-btn" alt="avatar">
+        </div>
+    </header>
+
+    <div class="profile-dropdown" id="profileDropdown" role="menu" aria-label="قائمة المستخدم">
+        <div class="dropdown-user-header">
+            <img id="dropdownUserAvatar" src="https://sys.shadowza.space/logos/1.png" alt="avatar">
+            <div class="user-info">
+                <p class="user-name">مطعم ابن حميدو</p>
+                <p class="user-role">حساب المطعم</p>
+            </div>
+        </div>
+        <div class="dropdown-section-title">القائمة</div>
+        <a href="#" class="dropdown-item" data-action="dashboard"><i class="las la-chart-pie"></i><span>لوحة التحكم</span></a>
+        <a href="#" class="dropdown-item" data-action="orders"><i class="las la-receipt"></i><span>الطلبات الجديدة</span></a>
+        <a href="#" class="dropdown-item" data-action="history"><i class="las la-history"></i><span>سجل الطلبات</span></a>
+        <a href="#" class="dropdown-item" data-action="categories"><i class="las la-th-large"></i><span>الأقسام</span></a>
+        <a href="#" class="dropdown-item" data-action="offers"><i class="las la-percent"></i><span>العروض والخصومات</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section-title">المالية</div>
+        <a href="#" class="dropdown-item" data-action="earnings"><i class="las la-wallet"></i><span>الأرباح</span></a>
+        <a href="#" class="dropdown-item active" data-action="payouts"><i class="las la-money-check-alt"></i><span>طلبات السحب</span><span class="mr-auto text-[10px] font-bold px-2 py-0.5 rounded-full" style="background: rgba(245,158,11,0.15); color:#F59E0B;" id="pendingPayoutsCount">3</span></a>
+        <a href="#" class="dropdown-item" data-action="reports"><i class="las la-chart-line"></i><span>التقارير</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section-title">الإعدادات</div>
+        <a href="#" class="dropdown-item" data-action="profile"><i class="las la-store"></i><span>بيانات المطعم</span></a>
+        <a href="#" class="dropdown-item" data-action="hours"><i class="las la-clock"></i><span>ساعات العمل</span></a>
+        <a href="#" class="dropdown-item" data-action="delivery"><i class="las la-truck"></i><span>مناطق التوصيل</span></a>
+        <a href="#" class="dropdown-item" data-action="staff"><i class="las la-users"></i><span>فريق العمل</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section-title">الدعم</div>
+        <a href="#" class="dropdown-item" data-action="help"><i class="las la-headset"></i><span>مركز المساعدة</span></a>
+        <a href="#" class="dropdown-item" data-action="settings"><i class="las la-cog"></i><span>إعدادات الحساب</span></a>
+        <div class="dropdown-divider"></div>
+        <a href="#" class="dropdown-item logout" id="logoutBtn"><i class="las la-sign-out-alt"></i><span>تسجيل الخروج</span></a>
+    </div>
+
+    <main>
+        <div class="container mx-auto px-4 py-6 max-w-7xl">
+
+            <div class="restaurant-banner">
+                <div class="rb-inner">
+                    <div class="flex items-center gap-4 flex-wrap">
+                        <img src="https://sys.shadowza.space/logos/1.png" class="rb-logo" alt="logo">
+                        <div class="min-w-0">
+                            <h2 class="rb-name">طلبات سحب الأرباح</h2>
+                            <div class="rb-meta">
+                                <span><i class="las la-money-check-alt"></i> اطلب سحب أرباحك بسهولة</span>
+                                <span><i class="las la-clock"></i> يتم المراجعة خلال 24 ساعة</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rb-quick-actions">
+                        <a href="#" class="rb-action"><i class="las la-wallet"></i> الأرباح</a>
+                        <a href="#" class="rb-action"><i class="las la-receipt"></i> الطلبات الجديدة</a>
+                        <a href="#" class="rb-action"><i class="las la-chart-line"></i> التقارير</a>
+                        <a href="#" class="rb-action" id="newPayoutBtn"><i class="las la-plus"></i> طلب سحب جديد</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="balance-banner">
+                <div class="bb-info">
+                    <div class="bb-icon"><i class="las la-wallet"></i></div>
+                    <div class="bb-text">
+                        <p class="bb-label">الرصيد المتاح للسحب</p>
+                        <p class="bb-amount">8,450 <small>ج.م</small></p>
+                    </div>
+                </div>
+                <div class="bb-actions">
+                    <button class="bb-btn" id="withdrawNowBtn"><i class="las la-hand-holding-usd"></i> سحب الآن</button>
+                    <a href="#" class="bb-btn" id="historyBtn"><i class="las la-history"></i> سجل السحوبات</a>
+                </div>
+            </div>
+
+            <div class="new-payout-panel" id="newPayoutPanel">
+                <div class="np-header">
+                    <div>
+                        <p class="np-title"><i class="las la-hand-holding-usd"></i> طلب سحب جديد</p>
+                        <p class="np-sub">املأ البيانات التالية وسيتم مراجعة طلبك من قبل الإدارة</p>
+                    </div>
+                    <button class="np-close-btn" id="closeNewPayoutBtn" title="إغلاق"><i class="las la-times"></i></button>
+                </div>
+
+                <div class="np-balance-info">
+                    <span class="nbi-label"><i class="las la-wallet"></i> الرصيد المتاح</span>
+                    <span class="nbi-value">8,450 ج.م</span>
+                </div>
+
+                <div class="np-form">
+                    <div class="np-field full">
+                        <label><i class="las la-coins"></i> المبلغ المطلوب (ج.م)</label>
+                        <input type="number" id="npAmount" min="100" max="8450" value="500" placeholder="100">
+                        <div class="np-quick-amounts">
+                            <button type="button" class="np-quick-btn" data-amt="250">250</button>
+                            <button type="button" class="np-quick-btn" data-amt="500">500</button>
+                            <button type="button" class="np-quick-btn" data-amt="1000">1,000</button>
+                            <button type="button" class="np-quick-btn" data-amt="2000">2,000</button>
+                            <button type="button" class="np-quick-btn" data-amt="5000">5,000</button>
+                            <button type="button" class="np-quick-btn" data-amt="8450">الكل</button>
+                        </div>
+                    </div>
+
+                    <div class="np-field">
+                        <label><i class="las la-university"></i> طريقة السحب</label>
+                        <select id="npMethod">
+                            <option value="bank">تحويل بنكي</option>
+                            <option value="wallet">محفظة إلكترونية</option>
+                        </select>
+                    </div>
+
+                    <div class="np-field">
+                        <label><i class="las la-user"></i> اسم الحساب</label>
+                        <input type="text" id="npAccountName" value="مطعم ابن حميدو" placeholder="اسم صاحب الحساب">
+                    </div>
+
+                    <div class="np-field">
+                        <label><i class="las la-hashtag"></i> رقم الحساب / IBAN</label>
+                        <input type="text" id="npAccountNumber" value="EG380003000123456789012345" placeholder="رقم الحساب">
+                    </div>
+
+                    <div class="np-field">
+                        <label><i class="las la-university"></i> اسم البنك / المحفظة</label>
+                        <input type="text" id="npBankName" value="البنك الأهلي المصري" placeholder="اسم البنك أو المحفظة">
+                    </div>
+
+                    <div class="np-field full">
+                        <label><i class="las la-sticky-note"></i> ملاحظات إضافية (اختياري)</label>
+                        <textarea id="npNote" placeholder="أي ملاحظات تود إضافتها للإدارة..."></textarea>
+                    </div>
+
+                    <div class="np-fee-summary">
+                        <div class="np-fee-box">
+                            <span class="nfb-label"><i class="las la-percent"></i> الرسوم (1%)</span>
+                            <span class="nfb-value" id="npFeeValue">5 ج.م</span>
+                        </div>
+                        <div class="np-fee-box net">
+                            <span class="nfb-label"><i class="las la-hand-holding-usd"></i> صافي المبلغ</span>
+                            <span class="nfb-value" id="npNetValue">495 ج.م</span>
+                        </div>
+                    </div>
+
+                    <div class="np-actions">
+                        <button class="btn btn-outline" id="cancelNewPayoutBtn"><i class="las la-times"></i> إلغاء</button>
+                        <button class="btn btn-success" id="submitNewPayoutBtn"><i class="las la-paper-plane"></i> إرسال الطلب للإدارة</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-grid mb-6">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(255, 90, 0, 0.12); color: #FF5A00;"><i class="las la-file-invoice-dollar"></i></div>
+                    <div class="stat-body">
+                        <p class="stat-label">إجمالي الطلبات</p>
+                        <p class="stat-value" id="totalStatCount">8</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--c-pending);"><i class="las la-hourglass-half"></i></div>
+                    <div class="stat-body">
+                        <p class="stat-label">قيد المراجعة</p>
+                        <p class="stat-value" id="pendingStatCount">3</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(139, 92, 246, 0.12); color: var(--c-approved);"><i class="las la-check"></i></div>
+                    <div class="stat-body">
+                        <p class="stat-label">تمت الموافقة</p>
+                        <p class="stat-value" id="approvedStatCount">2</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(59, 130, 246, 0.12); color: var(--c-processing);"><i class="las la-sync-alt"></i></div>
+                    <div class="stat-body">
+                        <p class="stat-label">جاري التحويل</p>
+                        <p class="stat-value" id="processingStatCount">1</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: rgba(0, 177, 79, 0.12); color: var(--c-completed);"><i class="las la-check-double"></i></div>
+                    <div class="stat-body">
+                        <p class="stat-label">تم التحويل</p>
+                        <p class="stat-value" id="completedStatCount">2</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+                    <h3 class="section-title"><i class="las la-money-check-alt"></i> طلبات السحب الخاصة بي</h3>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <button class="btn-outline" id="refreshPayoutsBtn"><i class="las la-sync-alt"></i> تحديث</button>
+                    </div>
+                </div>
+                <div class="scroll-x hide-scrollbar mb-4" style="gap:8px;" id="payoutFilters">
+                    <button class="filter-tab active" data-filter="all">الكل <span class="count">8</span></button>
+                    <button class="filter-tab" data-filter="pending"><span class="dot-color"></span> قيد المراجعة <span class="count">3</span></button>
+                    <button class="filter-tab" data-filter="approved"><span class="dot-color"></span> تمت الموافقة <span class="count">2</span></button>
+                    <button class="filter-tab" data-filter="processing"><span class="dot-color"></span> جاري التحويل <span class="count">1</span></button>
+                    <button class="filter-tab" data-filter="completed"><span class="dot-color"></span> تم التحويل <span class="count">2</span></button>
+                    <button class="filter-tab" data-filter="rejected"><span class="dot-color"></span> مرفوض <span class="count">0</span></button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" id="payoutsContainer"></div>
+            </div>
+
+        </div>
+    </main>
+
+    <div class="bottom-mobile-nav" id="bottomMobileNav">
+        <a href="#" class="bottom-nav-item" data-tab="dashboard"><i class="las la-chart-pie"></i><span>الرئيسية</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="orders"><i class="las la-receipt"></i><span>الطلبات</span></a>
+        <a href="#" class="bottom-nav-item bottom-nav-item-center" data-tab="newPayout"><i class="las la-plus"></i><span>سحب</span></a>
+        <a href="#" class="bottom-nav-item active" data-tab="payouts"><i class="las la-money-check-alt"></i><span>السحب</span><span class="nav-badge" id="payoutsNavBadge">3</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="profile"><i class="las la-store"></i><span>المطعم</span></a>
+    </div>
+
+    <script>
+        (function() {
+            const profileDropdown = document.getElementById('profileDropdown');
+            const headerAvatar = document.getElementById('headerAvatar');
+            const notificationBtn = document.getElementById('notificationBtn');
+            const payoutsContainer = document.getElementById('payoutsContainer');
+            const payoutFilters = document.getElementById('payoutFilters');
+            const headerStatusPill = document.getElementById('headerStatusPill');
+            const headerStatusText = document.getElementById('headerStatusText');
+            const pendingPayoutsCount = document.getElementById('pendingPayoutsCount');
+            const payoutsNavBadge = document.getElementById('payoutsNavBadge');
+            const refreshPayoutsBtn = document.getElementById('refreshPayoutsBtn');
+            const newPayoutBtn = document.getElementById('newPayoutBtn');
+            const withdrawNowBtn = document.getElementById('withdrawNowBtn');
+            const historyBtn = document.getElementById('historyBtn');
+            const totalStatCount = document.getElementById('totalStatCount');
+            const pendingStatCount = document.getElementById('pendingStatCount');
+            const approvedStatCount = document.getElementById('approvedStatCount');
+            const processingStatCount = document.getElementById('processingStatCount');
+            const completedStatCount = document.getElementById('completedStatCount');
+
+            const newPayoutPanel = document.getElementById('newPayoutPanel');
+            const closeNewPayoutBtn = document.getElementById('closeNewPayoutBtn');
+            const cancelNewPayoutBtn = document.getElementById('cancelNewPayoutBtn');
+            const submitNewPayoutBtn = document.getElementById('submitNewPayoutBtn');
+            const npAmount = document.getElementById('npAmount');
+            const npMethod = document.getElementById('npMethod');
+            const npAccountName = document.getElementById('npAccountName');
+            const npAccountNumber = document.getElementById('npAccountNumber');
+            const npBankName = document.getElementById('npBankName');
+            const npNote = document.getElementById('npNote');
+            const npFeeValue = document.getElementById('npFeeValue');
+            const npNetValue = document.getElementById('npNetValue');
+
+            let isOpen = true;
+            let activeFilter = 'all';
+            let actionInProgress = false;
+
+            const AVAILABLE_BALANCE = 8450;
+            const MIN_WITHDRAW = 100;
+            const FEE_RATE = 0.01;
+
+            const savedAccounts = {
+                bank: {
+                    name: 'مطعم ابن حميدو',
+                    number: 'EG380003000123456789012345',
+                    bank: 'البنك الأهلي المصري'
+                },
+                wallet: {
+                    name: 'مطعم ابن حميدو',
+                    number: '01012345678',
+                    bank: 'فودافون كاش'
+                }
+            };
+
+            let payouts = [
+                {
+                    id: 'WDR-2041', amount: 2500, fee: 25, netAmount: 2475,
+                    requestedAt: 'قبل 12 دقيقة',
+                    method: 'bank',
+                    methodLabel: 'تحويل بنكي',
+                    accountName: 'مطعم ابن حميدو',
+                    accountNumber: 'EG380003000123456789012345',
+                    bankName: 'البنك الأهلي المصري',
+                    status: 'pending',
+                    note: 'سحب أرباح الأسبوع الماضي',
+                    timeline: { pending: true, approved: false, processing: false, completed: false, rejected: false }
+                },
+                {
+                    id: 'WDR-2040', amount: 1800, fee: 18, netAmount: 1782,
+                    requestedAt: 'قبل 45 دقيقة',
+                    method: 'wallet',
+                    methodLabel: 'محفظة إلكترونية',
+                    accountName: 'مطعم ابن حميدو',
+                    accountNumber: '01012345678',
+                    bankName: 'فودافون كاش',
+                    status: 'pending',
+                    note: '',
+                    timeline: { pending: true, approved: false, processing: false, completed: false, rejected: false }
+                },
+                {
+                    id: 'WDR-2039', amount: 3200, fee: 32, netAmount: 3168,
+                    requestedAt: 'قبل ساعتين',
+                    method: 'bank',
+                    methodLabel: 'تحويل بنكي',
+                    accountName: 'مطعم ابن حميدو',
+                    accountNumber: 'EG380003000987654321098765',
+                    bankName: 'بنك مصر',
+                    status: 'pending',
+                    note: 'مطلوب بشكل عاجل',
+                    timeline: { pending: true, approved: false, processing: false, completed: false, rejected: false }
+                },
+                {
+                    id: 'WDR-2038', amount: 1500, fee: 15, netAmount: 1485,
+                    requestedAt: 'قبل 5 ساعات',
+                    method: 'wallet',
+                    methodLabel: 'محفظة إلكترونية',
+                    accountName: 'مطعم ابن حميدو',
+                    accountNumber: '01198765432',
+                    bankName: 'إتصالات كاش',
+                    status: 'approved',
+                    note: 'تمت الموافقة من الإدارة',
+                    timeline: { pending: true, approved: true, processing: false, completed: false, rejected: false }
+                },
+                {
+                    id: 'WDR-2037', amount: 4200, fee: 42, netAmount: 4158,
+                    requestedAt: 'أمس',
+                    method: 'bank',
+                    methodLabel: 'تحويل بنكي',
+                    accountName: 'مطعم ابن حميدو',
+                    accountNumber: 'EG380003000111222333444555',
+                    bankName: 'بنك القاهرة',
+                    status: 'approved',
+                    note: 'تمت الموافقة من الإدارة',
+                    timeline: { pending: true, approved: true, processing: false, completed: false, rejected: false }
+                },
+                {
+                    id: 'WDR-2036', amount: 900, fee: 9, netAmount: 891,
+                    requestedAt: 'أمس',
+                    method: 'wallet',
+                    methodLabel: 'محفظة إلكترونية',
+                    accountName: 'مطعم ابن حميدو',
+                    accountNumber: '01234567890',
+                    bankName: 'أورنج كاش',
+                    status: 'processing',
+                    note: 'جاري التحويل من قبل الإدارة',
+                    timeline: { pending: true, approved: true, processing: true, completed: false, rejected: false }
+                },
+                {
+                    id: 'WDR-2035', amount: 5600, fee: 56, netAmount: 5544,
+                    requestedAt: 'قبل 3 أيام',
+                    method: 'bank',
+                    methodLabel: 'تحويل بنكي',
+                    accountName: 'مطعم ابن حميدو',
+                    accountNumber: 'EG380003000555666777888999',
+                    bankName: 'البنك التجاري الدولي',
+                    status: 'completed',
+                    note: '',
+                    completedAt: 'قبل يومين',
+                    timeline: { pending: true, approved: true, processing: true, completed: true, rejected: false }
+                },
+                {
+                    id: 'WDR-2034', amount: 2200, fee: 22, netAmount: 2178,
+                    requestedAt: 'قبل 5 أيام',
+                    method: 'wallet',
+                    methodLabel: 'محفظة إلكترونية',
+                    accountName: 'مطعم ابن حميدو',
+                    accountNumber: '01098765432',
+                    bankName: 'فودافون كاش',
+                    status: 'completed',
+                    note: '',
+                    completedAt: 'قبل 4 أيام',
+                    timeline: { pending: true, approved: true, processing: true, completed: true, rejected: false }
+                }
+            ];
+
+            function openDropdown() { profileDropdown.classList.add('active'); }
+            function closeDropdown() { profileDropdown.classList.remove('active'); }
+            function toggleDropdown(e) {
+                if (e) e.stopPropagation();
+                if (profileDropdown.classList.contains('active')) closeDropdown();
+                else openDropdown();
+            }
+
+            headerAvatar.addEventListener('click', toggleDropdown);
+
+            document.addEventListener('click', function(e) {
+                if (profileDropdown.classList.contains('active')) {
+                    if (!profileDropdown.contains(e.target) && e.target !== headerAvatar && !headerAvatar.contains(e.target)) {
+                        closeDropdown();
+                    }
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeDropdown();
+            });
+
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                closeDropdown();
+                Swal.fire({
+                    title: 'تسجيل الخروج',
+                    text: 'هل أنت متأكد من تسجيل الخروج من لوحة التحكم؟',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#FF5A00',
+                    cancelButtonColor: '#717171',
+                    confirmButtonText: 'نعم، خروج',
+                    cancelButtonText: 'إلغاء'
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'تم بنجاح',
+                            text: 'تم تسجيل الخروج بنجاح',
+                            icon: 'success',
+                            confirmButtonColor: '#FF5A00'
+                        });
+                    }
+                });
+            });
+
+            notificationBtn.addEventListener('click', function() {
+                Swal.fire({
+                    title: 'الإشعارات',
+                    html: '<div style="text-align:right;font-size:0.85rem;">' +
+                        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">✅ تمت الموافقة على طلب السحب WDR-2038</p>' +
+                        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">🚀 جاري تحويل مبلغ 891 ج.م إلى محفظتك</p>' +
+                        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">💰 تم تحويل 5,544 ج.م إلى حسابك البنكي</p>' +
+                        '<p class="p-2 rounded" style="background:#FFF3E8;">⏳ 3 طلبات سحب قيد المراجعة من الإدارة</p>' +
+                        '</div>',
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00',
+                    confirmButtonText: 'حسناً'
+                });
+            });
+
+            headerStatusPill.addEventListener('click', function() {
+                isOpen = !isOpen;
+                updateStatusUI();
+                Swal.fire({
+                    title: isOpen ? 'المطعم مفتوح' : 'المطعم مغلق',
+                    text: isOpen ? 'سيبدأ استقبال الطلبات الجديدة' : 'لن تصلك طلبات جديدة حتى تفتح المطعم',
+                    icon: isOpen ? 'success' : 'warning',
+                    confirmButtonColor: '#FF5A00',
+                    timer: 1600,
+                    showConfirmButton: false
+                });
+            });
+
+            function updateStatusUI() {
+                if (isOpen) {
+                    headerStatusPill.classList.add('open');
+                    headerStatusPill.classList.remove('closed');
+                    headerStatusText.textContent = 'مفتوح';
+                } else {
+                    headerStatusPill.classList.add('closed');
+                    headerStatusPill.classList.remove('open');
+                    headerStatusText.textContent = 'مغلق';
+                }
+            }
+
+            function getFilteredPayouts() {
+                if (activeFilter === 'all') return payouts;
+                return payouts.filter(function(p) { return p.status === activeFilter; });
+            }
+
+            function statusLabel(status) {
+                const map = {
+                    pending: { label: 'قيد المراجعة', cls: 'badge-pending', icon: 'las la-hourglass-half' },
+                    approved: { label: 'تمت الموافقة', cls: 'badge-approved', icon: 'las la-check' },
+                    processing: { label: 'جاري التحويل', cls: 'badge-processing', icon: 'las la-sync-alt' },
+                    completed: { label: 'تم التحويل', cls: 'badge-completed', icon: 'las la-check-double' },
+                    rejected: { label: 'مرفوض', cls: 'badge-rejected', icon: 'las la-times-circle' },
+                    cancelled: { label: 'ملغي', cls: 'badge-cancelled', icon: 'las la-ban' }
+                };
+                return map[status] || map.pending;
+            }
+
+            function formatAmount(n) {
+                return Math.round(n).toLocaleString('en-US');
+            }
+
+            function buildTimeline(payout) {
+                const steps = [
+                    { key: 'pending', label: 'قيد المراجعة' },
+                    { key: 'approved', label: 'موافقة' },
+                    { key: 'processing', label: 'تحويل' },
+                    { key: 'completed', label: 'مكتمل' }
+                ];
+
+                if (payout.status === 'rejected') {
+                    return '<div class="timeline">' +
+                        '<div class="timeline-step rejected">' +
+                            '<div class="timeline-dot"><i class="las la-times"></i></div>' +
+                            '<div class="timeline-label">مرفوض</div>' +
+                        '</div>' +
+                    '</div>';
+                }
+
+                if (payout.status === 'cancelled') {
+                    return '<div class="timeline">' +
+                        '<div class="timeline-step rejected">' +
+                            '<div class="timeline-dot"><i class="las la-ban"></i></div>' +
+                            '<div class="timeline-label">ملغي</div>' +
+                        '</div>' +
+                    '</div>';
+                }
+
+                let html = '<div class="timeline">';
+                const currentIndex = steps.findIndex(s => s.key === payout.status);
+                steps.forEach(function(step, idx) {
+                    let cls = 'timeline-step';
+                    let dotIcon = '<i class="las la-circle"></i>';
+                    if (payout.timeline[step.key]) {
+                        if (idx < currentIndex || payout.status === 'completed') {
+                            cls += ' done';
+                            dotIcon = '<i class="las la-check"></i>';
+                        } else if (idx === currentIndex) {
+                            cls += ' current';
+                            dotIcon = '<i class="las la-dot-circle"></i>';
+                        }
+                    }
+                    html += '<div class="' + cls + '">' +
+                        '<div class="timeline-line"></div>' +
+                        '<div class="timeline-dot">' + dotIcon + '</div>' +
+                        '<div class="timeline-label">' + step.label + '</div>' +
+                    '</div>';
+                });
+                html += '</div>';
+                return html;
+            }
+
+            function renderPayouts() {
+                const list = getFilteredPayouts();
+
+                if (list.length === 0) {
+                    payoutsContainer.innerHTML =
+                        '<div class="empty-state md:col-span-2 xl:col-span-3">' +
+                            '<i class="las la-inbox"></i>' +
+                            '<p class="font-bold mb-1">لا توجد طلبات سحب في هذه الحالة</p>' +
+                            '<p class="text-xs">اضغط "طلب سحب جديد" لإنشاء طلب</p>' +
+                        '</div>';
+                    return;
+                }
+
+                let html = '';
+                list.forEach(function(p) {
+                    const st = statusLabel(p.status);
+                    const isPending = p.status === 'pending';
+                    const canCancel = isPending;
+
+                    html +=
+                        '<div class="payout-card s-' + p.status + '" data-payout-id="' + p.id + '">' +
+                            '<div class="flex items-center justify-between">' +
+                                '<div class="flex items-center gap-2">' +
+                                    '<span class="payout-badge ' + st.cls + '"><i class="' + st.icon + '"></i> ' + st.label + '</span>' +
+                                    '<span class="text-xs text-[var(--color-muted)] font-semibold">' + p.id + '</span>' +
+                                '</div>' +
+                                '<span class="text-xs text-[var(--color-muted)] font-semibold">' + p.requestedAt + '</span>' +
+                            '</div>' +
+
+                            '<div class="name-row">' +
+                                '<p class="customer-name">' + p.methodLabel + '</p>' +
+                                '<span class="type-chip">' + (p.method === 'bank' ? '🏦 بنكي' : '📱 محفظة') + '</span>' +
+                                '<div class="name-actions">' +
+                                    (canCancel ? '<button class="icon-btn icon-btn-cancel" data-action="cancel" data-id="' + p.id + '" title="إلغاء الطلب"><i class="las la-times"></i></button>' : '') +
+                                '</div>' +
+                            '</div>' +
+
+                            '<div class="payout-amount-box">' +
+                                '<span class="pa-label"><i class="las la-coins"></i> صافي المبلغ</span>' +
+                                '<span class="pa-value">' + formatAmount(p.netAmount) + ' <small>ج.م</small></span>' +
+                            '</div>' +
+
+                            buildTimeline(p) +
+
+                            '<div class="payout-card-details">' +
+                                '<div class="payout-detail-row">' +
+                                    '<span class="pd-label"><i class="las la-user"></i> اسم الحساب</span>' +
+                                    '<span class="pd-value">' + p.accountName + '</span>' +
+                                '</div>' +
+                                '<div class="payout-detail-row">' +
+                                    '<span class="pd-label"><i class="las la-hashtag"></i> رقم الحساب</span>' +
+                                    '<span class="pd-value">' + p.accountNumber + '</span>' +
+                                '</div>' +
+                                '<div class="payout-detail-row">' +
+                                    '<span class="pd-label"><i class="las la-university"></i> ' + (p.method === 'bank' ? 'البنك' : 'المحفظة') + '</span>' +
+                                    '<span class="pd-value">' + p.bankName + '</span>' +
+                                '</div>' +
+                                '<div class="payout-detail-row">' +
+                                    '<span class="pd-label"><i class="las la-hand-holding-usd"></i> الرسوم</span>' +
+                                    '<span class="pd-value">' + formatAmount(p.fee) + ' ج.م</span>' +
+                                '</div>' +
+                                (p.completedAt ? '<div class="payout-detail-row">' +
+                                    '<span class="pd-label"><i class="las la-calendar-check"></i> تاريخ التحويل</span>' +
+                                    '<span class="pd-value" style="color:#00B14F;">' + p.completedAt + '</span>' +
+                                '</div>' : '') +
+                            '</div>' +
+
+                            (p.note ? '<div style="background:rgba(255,184,0,0.1);padding:8px 12px;border-radius:10px;font-size:0.72rem;font-weight:600;color:#B37F00;"><i class="las la-sticky-note"></i> ' + p.note + '</div>' : '') +
+
+                            '<div class="flex items-center justify-between pt-2 border-t" style="border-color: var(--border-color);">' +
+                                '<span class="text-xs font-bold text-[var(--color-muted)]">المبلغ قبل الرسوم</span>' +
+                                '<span class="text-base font-extrabold text-[#FF5A00]">' + formatAmount(p.amount) + ' ج.م</span>' +
+                            '</div>' +
+
+                            (canCancel ? '<button class="btn-cancel" data-action="cancel" data-id="' + p.id + '"><i class="las la-times"></i> إلغاء الطلب</button>' : '') +
+                        '</div>';
+                });
+                payoutsContainer.innerHTML = html;
+            }
+
+            function updateCounts() {
+                const counts = {
+                    all: payouts.length,
+                    pending: payouts.filter(p => p.status === 'pending').length,
+                    approved: payouts.filter(p => p.status === 'approved').length,
+                    processing: payouts.filter(p => p.status === 'processing').length,
+                    completed: payouts.filter(p => p.status === 'completed').length,
+                    rejected: payouts.filter(p => p.status === 'rejected').length
+                };
+                payoutFilters.querySelectorAll('.filter-tab').forEach(function(tab) {
+                    const countEl = tab.querySelector('.count');
+                    if (countEl) countEl.textContent = counts[tab.getAttribute('data-filter')];
+                });
+                pendingPayoutsCount.textContent = counts.pending;
+                payoutsNavBadge.textContent = counts.pending;
+                totalStatCount.textContent = counts.all;
+                pendingStatCount.textContent = counts.pending;
+                approvedStatCount.textContent = counts.approved;
+                processingStatCount.textContent = counts.processing;
+                completedStatCount.textContent = counts.completed;
+                payoutsNavBadge.style.display = counts.pending > 0 ? 'flex' : 'none';
+                pendingPayoutsCount.style.display = counts.pending > 0 ? 'inline-flex' : 'none';
+            }
+
+            payoutFilters.addEventListener('click', function(e) {
+                const tab = e.target.closest('.filter-tab');
+                if (!tab) return;
+                payoutFilters.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                activeFilter = tab.getAttribute('data-filter');
+                renderPayouts();
+            });
+
+            function findPayout(id) {
+                for (let i = 0; i < payouts.length; i++) {
+                    if (payouts[i].id === id) return payouts[i];
+                }
+                return null;
+            }
+
+            payoutsContainer.addEventListener('click', function(e) {
+                const btn = e.target.closest('[data-action]');
+                if (!btn) return;
+                if (actionInProgress) return;
+
+                const action = btn.getAttribute('data-action');
+                const id = btn.getAttribute('data-id');
+                const payout = findPayout(id);
+                if (!payout) return;
+
+                if (action === 'cancel') {
+                    actionInProgress = true;
+                    Swal.fire({
+                        title: 'إلغاء طلب السحب',
+                        html: '<p style="font-size:0.85rem;text-align:right;">هل أنت متأكد من إلغاء طلب السحب <b>' + payout.id + '</b>؟</p>' +
+                            '<p style="font-size:0.78rem;color:#717171;margin-top:8px;padding:10px;background:#FEF2F2;border-radius:10px;text-align:right;">سيتم إلغاء طلب سحب مبلغ <b style="color:#FF5A00;">' + formatAmount(payout.netAmount) + ' ج.م</b></p>',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#EF4444',
+                        cancelButtonColor: '#717171',
+                        confirmButtonText: 'نعم، إلغاء',
+                        cancelButtonText: 'رجوع'
+                    }).then(function(result) {
+                        if (result.isConfirmed) {
+                            payouts = payouts.filter(p => p.id !== id);
+                            renderPayouts();
+                            updateCounts();
+                            Swal.fire({
+                                title: 'تم الإلغاء',
+                                text: 'تم إلغاء طلب السحب بنجاح',
+                                icon: 'success',
+                                confirmButtonColor: '#FF5A00',
+                                timer: 1600,
+                                showConfirmButton: false
+                            });
+                        }
+                        actionInProgress = false;
+                    });
+                }
+            });
+
+            refreshPayoutsBtn.addEventListener('click', function() {
+                renderPayouts();
+                updateCounts();
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'تم تحديث طلبات السحب',
+                    showConfirmButton: false,
+                    timer: 1400
+                });
+            });
+
+            historyBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                activeFilter = 'completed';
+                payoutFilters.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                payoutFilters.querySelector('[data-filter="completed"]').classList.add('active');
+                renderPayouts();
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'info',
+                    title: 'عرض سجل السحوبات المكتملة',
+                    showConfirmButton: false,
+                    timer: 1400
+                });
+            });
+
+            function updateFeePreview() {
+                const amt = parseFloat(npAmount.value) || 0;
+                const fee = Math.round(amt * FEE_RATE);
+                const net = amt - fee;
+                npFeeValue.textContent = formatAmount(fee) + ' ج.م';
+                npNetValue.textContent = formatAmount(net) + ' ج.م';
+            }
+
+            function openNewPayoutPanel() {
+                newPayoutPanel.classList.add('active');
+                npAmount.value = 500;
+                npMethod.value = 'bank';
+                npAccountName.value = savedAccounts.bank.name;
+                npAccountNumber.value = savedAccounts.bank.number;
+                npBankName.value = savedAccounts.bank.bank;
+                npNote.value = '';
+                document.querySelectorAll('.np-quick-btn').forEach(b => b.classList.remove('active'));
+                const defaultBtn = document.querySelector('.np-quick-btn[data-amt="500"]');
+                if (defaultBtn) defaultBtn.classList.add('active');
+                updateFeePreview();
+                setTimeout(function() {
+                    newPayoutPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+
+            function closeNewPayoutPanel() {
+                newPayoutPanel.classList.remove('active');
+            }
+
+            npAmount.addEventListener('input', updateFeePreview);
+
+            document.querySelectorAll('.np-quick-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const amt = this.getAttribute('data-amt');
+                    npAmount.value = amt;
+                    document.querySelectorAll('.np-quick-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    updateFeePreview();
+                });
+            });
+
+            npMethod.addEventListener('change', function() {
+                const isBank = this.value === 'bank';
+                const acc = isBank ? savedAccounts.bank : savedAccounts.wallet;
+                npAccountName.value = acc.name;
+                npAccountNumber.value = acc.number;
+                npBankName.value = acc.bank;
+            });
+
+            closeNewPayoutBtn.addEventListener('click', closeNewPayoutPanel);
+            cancelNewPayoutBtn.addEventListener('click', closeNewPayoutPanel);
+
+            submitNewPayoutBtn.addEventListener('click', function() {
+                const amt = parseFloat(npAmount.value);
+                if (!amt || amt < MIN_WITHDRAW) {
+                    Swal.fire({
+                        title: 'تنبيه',
+                        text: 'الحد الأدنى للسحب ' + MIN_WITHDRAW + ' ج.م',
+                        icon: 'warning',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'حسناً'
+                    });
+                    return;
+                }
+                if (amt > AVAILABLE_BALANCE) {
+                    Swal.fire({
+                        title: 'تنبيه',
+                        text: 'المبلغ أكبر من الرصيد المتاح',
+                        icon: 'warning',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'حسناً'
+                    });
+                    return;
+                }
+                const accName = npAccountName.value.trim();
+                const accNumber = npAccountNumber.value.trim();
+                const bankName = npBankName.value.trim();
+                if (!accName) {
+                    Swal.fire({
+                        title: 'تنبيه',
+                        text: 'يرجى إدخال اسم الحساب',
+                        icon: 'warning',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'حسناً'
+                    });
+                    return;
+                }
+                if (!accNumber) {
+                    Swal.fire({
+                        title: 'تنبيه',
+                        text: 'يرجى إدخال رقم الحساب',
+                        icon: 'warning',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'حسناً'
+                    });
+                    return;
+                }
+                if (!bankName) {
+                    Swal.fire({
+                        title: 'تنبيه',
+                        text: 'يرجى إدخال اسم البنك أو المحفظة',
+                        icon: 'warning',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'حسناً'
+                    });
+                    return;
+                }
+
+                const method = npMethod.value;
+                const isBank = method === 'bank';
+                const fee = Math.round(amt * FEE_RATE);
+                const netAmount = amt - fee;
+                const newId = 'WDR-' + (2042 + Math.floor(Math.random() * 900));
+
+                submitNewPayoutBtn.disabled = true;
+
+                payouts.unshift({
+                    id: newId,
+                    amount: amt,
+                    fee: fee,
+                    netAmount: netAmount,
+                    requestedAt: 'قبل لحظات',
+                    method: method,
+                    methodLabel: isBank ? 'تحويل بنكي' : 'محفظة إلكترونية',
+                    accountName: accName,
+                    accountNumber: accNumber,
+                    bankName: bankName,
+                    status: 'pending',
+                    note: npNote.value.trim(),
+                    timeline: { pending: true, approved: false, processing: false, completed: false, rejected: false }
+                });
+
+                activeFilter = 'all';
+                payoutFilters.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                payoutFilters.querySelector('[data-filter="all"]').classList.add('active');
+                renderPayouts();
+                updateCounts();
+                closeNewPayoutPanel();
+                submitNewPayoutBtn.disabled = false;
+
+                Swal.fire({
+                    title: 'تم إرسال الطلب بنجاح',
+                    html: '<div style="text-align:right;">' +
+                        '<p style="font-size:0.9rem;margin-bottom:8px;">تم إرسال طلب السحب <b>' + newId + '</b> إلى الإدارة</p>' +
+                        '<div style="background:#FFF3E8;padding:12px;border-radius:12px;font-size:0.8rem;font-weight:700;">' +
+                            '<div style="display:flex;justify-content:space-between;padding:4px 0;">' +
+                                '<span style="color:#717171;">المبلغ:</span>' +
+                                '<span style="color:#FF5A00;">' + formatAmount(amt) + ' ج.م</span>' +
+                            '</div>' +
+                            '<div style="display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid rgba(0,0,0,0.06);">' +
+                                '<span style="color:#717171;">الرسوم:</span>' +
+                                '<span style="color:#FF5A00;">' + formatAmount(fee) + ' ج.م</span>' +
+                            '</div>' +
+                            '<div style="display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid rgba(0,0,0,0.06);">' +
+                                '<span style="color:#717171;">الصافي:</span>' +
+                                '<span style="color:#00B14F;">' + formatAmount(netAmount) + ' ج.م</span>' +
+                            '</div>' +
+                        '</div>' +
+                        '<p style="font-size:0.75rem;color:#717171;margin-top:10px;text-align:center;">سيتم مراجعة الطلب من قبل الإدارة خلال 24 ساعة</p>' +
+                    '</div>',
+                    icon: 'success',
+                    confirmButtonColor: '#00B14F',
+                    confirmButtonText: 'تم'
+                });
+            });
+
+            newPayoutBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                openNewPayoutPanel();
+            });
+
+            withdrawNowBtn.addEventListener('click', function() {
+                openNewPayoutPanel();
+            });
+
+            const newPayoutCenterBtn = document.querySelector('.bottom-nav-item-center[data-tab="newPayout"]');
+            if (newPayoutCenterBtn) {
+                newPayoutCenterBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openNewPayoutPanel();
+                });
+            }
+
+            updateFeePreview();
+
+            function init() {
+                updateStatusUI();
+                renderPayouts();
+                updateCounts();
+            }
+
+            init();
+        })();
+    </script>
+</body>
+</html>
