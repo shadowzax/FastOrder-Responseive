@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#FF5A00">
+    <title>ساعات العمل - مطعم ابن حميدو</title>
+    <meta name="description" content="ساعات العمل - مطعم ابن حميدو">
+    <link rel="icon" type="image/png" href="https://sys.shadowza.space/logos/1.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF5A00',
+                        secondary: '#FF8C38',
+                        accent: '#FFB800',
+                        dark: '#1A1A1A',
+                        muted: '#717171',
+                        success: '#00B14F'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --color-primary: #FF5A00;
+            --color-secondary: #FF8C38;
+            --color-accent: #FFB800;
+            --color-background: #F7F9F8;
+            --color-card: #FFFFFF;
+            --color-darker: #F0F4F3;
+            --color-white: #1A1A1A;
+            --color-muted: #717171;
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --card-bg: #FFFFFF;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --darker-bg: #F0F4F3;
+            --header-height: 70px;
+            --bottom-nav-height: 68px;
+            --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06);
+            --c-active: #00B14F;
+            --c-inactive: #717171;
+            --c-paused: #F59E0B;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; width: 100%; overscroll-behavior: none; }
+        body {
+            font-family: 'Noto Sans Arabic', system-ui, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-white);
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: var(--color-background); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #FF8C38; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FF5A00; }
+
+        #mainHeader {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: var(--color-background);
+            z-index: 110;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        }
+        .header-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .brand-logo {
+            width: 42px; height: 42px; border-radius: 12px;
+            object-fit: cover; border: 2px solid var(--color-primary);
+            flex-shrink: 0; background: #fff;
+        }
+        .brand-name {
+            font-size: 1rem; font-weight: 800; color: var(--color-white);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .brand-sub { font-size: 0.68rem; color: var(--color-muted); font-weight: 600; }
+        .header-actions { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+        .notification-btn {
+            position: relative; background: none; border: none; cursor: pointer;
+            color: var(--color-muted); font-size: 1.5rem; padding: 0;
+            display: flex; align-items: center; justify-content: center;
+            transition: color 0.2s; flex-shrink: 0;
+        }
+        .notification-btn:hover { color: #FF5A00; }
+        .notification-btn .notification-dot {
+            position: absolute; top: 2px; right: 2px; width: 8px; height: 8px;
+            border-radius: 50%; background: #FF5A00;
+            border: 2px solid var(--color-background);
+        }
+        .header-avatar-btn {
+            width: 42px; height: 42px; border-radius: 50%;
+            object-fit: cover; border: 2px solid var(--color-primary);
+            cursor: pointer; transition: all 0.2s; flex-shrink: 0; background: #fff;
+        }
+        .header-avatar-btn:hover { transform: scale(1.05); }
+
+        .status-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 7px 14px; border-radius: 40px;
+            font-size: 0.75rem; font-weight: 700; cursor: pointer;
+            transition: all 0.25s ease; border: 1px solid transparent; flex-shrink: 0;
+        }
+        .status-pill.open {
+            background: rgba(0, 177, 79, 0.1); color: #00B14F;
+            border-color: rgba(0, 177, 79, 0.3);
+        }
+        .status-pill.closed {
+            background: rgba(239, 68, 68, 0.1); color: #EF4444;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        .status-pill .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: currentColor; animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        .profile-dropdown {
+            position: fixed; top: calc(var(--header-height) + 8px); left: 12px;
+            width: 300px; max-width: calc(100vw - 24px);
+            max-height: calc(100vh - var(--header-height) - 24px);
+            overflow-y: auto; background: var(--card-bg);
+            border: 1px solid var(--border-color); border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15); padding: 10px;
+            z-index: 200; opacity: 0; visibility: hidden;
+            transform: translateY(-12px) scale(0.97); transform-origin: top left;
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .profile-dropdown.active {
+            opacity: 1; visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+        .dropdown-user-header {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px; border-radius: 14px;
+            background: linear-gradient(135deg, rgba(255,90,0,0.08), rgba(255,140,56,0.08));
+            margin-bottom: 6px;
+        }
+        .dropdown-user-header img {
+            width: 52px; height: 52px; border-radius: 50%;
+            object-fit: cover; border: 2px solid var(--color-primary);
+            flex-shrink: 0; background: #fff;
+        }
+        .dropdown-user-header .user-info { min-width: 0; flex: 1; }
+        .dropdown-user-header .user-name {
+            font-size: 0.92rem; font-weight: 800; color: var(--color-white);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .dropdown-user-header .user-role {
+            font-size: 0.72rem; color: var(--color-muted);
+            font-weight: 600; margin-top: 2px;
+        }
+        .dropdown-section-title {
+            font-size: 0.65rem; text-transform: uppercase;
+            letter-spacing: 1.5px; color: var(--color-muted);
+            padding: 12px 12px 6px; font-weight: 700;
+        }
+        .dropdown-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 11px 14px; border-radius: 12px; cursor: pointer;
+            transition: all 0.18s ease; color: var(--color-muted);
+            font-weight: 600; text-decoration: none; font-size: 0.88rem;
+        }
+        .dropdown-item i { font-size: 20px; width: 24px; flex-shrink: 0; }
+        .dropdown-item:hover { background: rgba(255, 90, 0, 0.08); color: var(--color-primary); }
+        .dropdown-item.active {
+            background: rgba(255, 90, 0, 0.12);
+            color: var(--color-primary); font-weight: 700;
+        }
+        .dropdown-item.logout { color: #EF4444; }
+        .dropdown-item.logout:hover { background: rgba(239, 68, 68, 0.08); color: #EF4444; }
+        .dropdown-divider { height: 1px; background: var(--border-color); margin: 6px 12px; }
+
+        main { padding-top: var(--header-height); padding-bottom: 0; }
+        @media (max-width: 1024px) {
+            main { padding-bottom: calc(var(--bottom-nav-height) + 20px); }
+        }
+
+        .bottom-mobile-nav {
+            display: none; position: fixed; bottom: 0; left: 0; right: 0;
+            height: var(--bottom-nav-height); background: var(--card-bg);
+            border-top: 1px solid var(--border-color); z-index: 100;
+            padding: 6px 8px;
+            padding-bottom: max(6px, env(safe-area-inset-bottom, 6px));
+            box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+            align-items: center; justify-content: space-around; gap: 4px;
+        }
+        @media (max-width: 1024px) { .bottom-mobile-nav { display: flex; } }
+        .bottom-nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; gap: 2px; flex: 1; padding: 8px 4px;
+            border-radius: 12px; cursor: pointer; text-decoration: none;
+            color: var(--color-muted); font-size: 0.68rem; font-weight: 600;
+            transition: all 0.25s ease; position: relative; min-width: 0;
+            -webkit-tap-highlight-color: transparent; user-select: none;
+        }
+        .bottom-nav-item i { font-size: 1.35rem; transition: all 0.25s ease; flex-shrink: 0; }
+        .bottom-nav-item span {
+            white-space: nowrap; text-overflow: ellipsis; overflow: hidden;
+            max-width: 100%; font-size: 0.65rem; letter-spacing: 0.2px;
+        }
+        .bottom-nav-item.active { color: var(--color-primary); }
+        .bottom-nav-item.active i { font-size: 1.5rem; }
+        .bottom-nav-item-center {
+            position: relative; top: -20px; width: 60px; height: 60px;
+            border-radius: 50%; background: var(--color-primary); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(255, 90, 0, 0.4);
+            transition: all 0.3s ease; flex-shrink: 0; flex: none; margin: 0 4px;
+        }
+        .bottom-nav-item-center i { font-size: 2rem; }
+        .bottom-nav-item-center span { display: none; }
+        .bottom-nav-item-center.active { background: #e04e00; color: #fff; }
+
+        .section-title {
+            font-size: 1.2rem; font-weight: 800; color: var(--color-white);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .section-title i { color: #FF5A00; }
+
+        .btn {
+            border: none; border-radius: 12px; padding: 10px 16px;
+            font-family: inherit; font-weight: 700; font-size: 0.82rem;
+            cursor: pointer; transition: all 0.2s ease;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 6px; color: #fff;
+        }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-primary { background: var(--color-primary); box-shadow: 0 2px 8px rgba(255, 90, 0, 0.3); }
+        .btn-primary:hover:not(:disabled) { background: #e04e00; }
+        .btn-success { background: var(--c-active); box-shadow: 0 2px 8px rgba(0, 177, 79, 0.3); }
+        .btn-success:hover:not(:disabled) { background: #009940; }
+        .btn-outline {
+            background: transparent; color: var(--color-muted);
+            border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 10px 16px; font-family: inherit; font-weight: 700;
+            font-size: 0.82rem; cursor: pointer; transition: all 0.2s ease;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 6px;
+        }
+        .btn-outline:hover { background: var(--darker-bg); color: var(--color-white); }
+
+        .day-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 16px;
+            box-shadow: var(--shadow-card);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        .day-card::before {
+            content: "";
+            position: absolute;
+            top: 0; right: 0;
+            width: 5px;
+            height: 100%;
+        }
+        .day-card.is-enabled::before { background: var(--c-active); }
+        .day-card.is-disabled::before { background: var(--c-inactive); }
+        .day-card.is-today {
+            border-color: rgba(255, 90, 0, 0.4);
+            box-shadow: 0 6px 22px rgba(255, 90, 0, 0.14);
+        }
+        .day-card.is-dirty {
+            border-color: rgba(245, 158, 11, 0.55);
+            box-shadow: 0 6px 22px rgba(245, 158, 11, 0.12);
+        }
+        .day-card.is-dirty.is-today {
+            border-color: rgba(255, 90, 0, 0.55);
+        }
+        .day-card:hover {
+            box-shadow: 0 10px 28px rgba(255, 90, 0, 0.12);
+            border-color: rgba(255, 90, 0, 0.35);
+        }
+        .day-card.is-dirty:hover {
+            border-color: rgba(245, 158, 11, 0.7);
+        }
+
+        .day-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .day-name-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            flex: 1;
+        }
+        .day-icon {
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(255,90,0,0.14), rgba(255,140,56,0.1));
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+            color: var(--color-primary);
+        }
+        .day-names {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            min-width: 0;
+            flex: 1;
+        }
+        .day-name-ar {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--color-white);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .day-name-sub {
+            font-size: 0.68rem;
+            color: var(--color-muted);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .day-today-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: rgba(255, 90, 0, 0.12);
+            color: var(--color-primary);
+            font-size: 0.6rem;
+            font-weight: 800;
+        }
+        .day-dirty-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--c-paused);
+            font-size: 0.6rem;
+            font-weight: 800;
+        }
+        .day-hours-summary {
+            font-size: 0.68rem;
+            color: var(--color-muted);
+            font-weight: 700;
+        }
+
+        .day-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 26px;
+            flex-shrink: 0;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(113, 113, 113, 0.3);
+            transition: .3s;
+            border-radius: 26px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            transition: .3s;
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        input:checked + .slider { background: var(--c-active); }
+        input:checked + .slider:before { transform: translateX(18px); }
+
+        .shifts-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .shift-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--darker-bg);
+            border-radius: 12px;
+            padding: 8px 10px;
+            flex-wrap: wrap;
+        }
+        .shift-field {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+            min-width: 0;
+        }
+        .shift-field label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: var(--color-muted);
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .shift-field label i {
+            color: var(--color-primary);
+            font-size: 0.8rem;
+        }
+        .shift-field input[type="time"] {
+            width: 100%;
+            min-width: 0;
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1.5px solid var(--border-color);
+            background: var(--card-bg);
+            font-family: inherit;
+            font-weight: 800;
+            font-size: 0.82rem;
+            color: var(--color-white);
+            outline: none;
+            transition: all 0.2s;
+            direction: ltr;
+            text-align: center;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .shift-field input[type="time"]:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(255, 90, 0, 0.1);
+        }
+        .shift-arrow {
+            color: var(--color-primary);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        .shift-remove-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            background: rgba(239, 68, 68, 0.12);
+            color: #EF4444;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .shift-remove-btn:hover {
+            background: #EF4444;
+            color: #fff;
+            transform: translateY(-1px);
+        }
+        .add-shift-btn {
+            background: transparent;
+            border: 1.5px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 9px 14px;
+            font-family: inherit;
+            font-weight: 800;
+            font-size: 0.78rem;
+            color: var(--color-muted);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .add-shift-btn:hover {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+            background: rgba(255, 90, 0, 0.04);
+        }
+        .day-closed-note {
+            background: rgba(113, 113, 113, 0.08);
+            border-radius: 12px;
+            padding: 12px 14px;
+            text-align: center;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--color-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .day-closed-note i {
+            color: #EF4444;
+            font-size: 1rem;
+        }
+
+        .day-card-actions {
+            display: none;
+            gap: 8px;
+            padding-top: 12px;
+            margin-top: 4px;
+            border-top: 1px dashed rgba(245, 158, 11, 0.4);
+            animation: dayActionsIn 0.25s ease;
+        }
+        .day-card.is-dirty .day-card-actions {
+            display: flex;
+        }
+        @keyframes dayActionsIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .day-card-actions .btn {
+            flex: 1;
+            padding: 10px 14px;
+            font-size: 0.78rem;
+        }
+        .day-card-actions .btn-save-day {
+            background: var(--c-active);
+            box-shadow: 0 2px 8px rgba(0, 177, 79, 0.3);
+        }
+        .day-card-actions .btn-save-day:hover {
+            background: #009940;
+        }
+        .day-card-actions .btn-cancel-day {
+            background: transparent;
+            color: var(--color-muted);
+            border: 1px solid var(--border-color);
+        }
+        .day-card-actions .btn-cancel-day:hover {
+            background: rgba(239, 68, 68, 0.08);
+            color: #EF4444;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .dirty-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: var(--c-paused);
+        }
+        .dirty-indicator .dot-pulse {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--c-paused);
+            animation: pulse 1.5s infinite;
+        }
+
+        .empty-state {
+            background: var(--card-bg); border: 2px dashed var(--border-color);
+            border-radius: 20px; padding: 34px 20px;
+            text-align: center; color: var(--color-muted);
+        }
+        .empty-state i {
+            font-size: 3rem; color: #FF8C38; opacity: 0.5;
+            display: block; margin-bottom: 12px;
+        }
+
+        .restaurant-banner {
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #FF5A00 0%, #FF8C38 100%);
+            color: #fff;
+            box-shadow: 0 10px 28px rgba(255,90,0,0.28);
+            position: relative;
+            overflow: hidden;
+        }
+        .restaurant-banner::before {
+            content: "";
+            position: absolute;
+            top: -50px; left: -50px;
+            width: 200px; height: 200px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
+        }
+        .restaurant-banner::after {
+            content: "";
+            position: absolute;
+            bottom: -80px; right: -30px;
+            width: 180px; height: 180px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 50%;
+        }
+        .restaurant-banner .rb-inner { position: relative; z-index: 2; }
+        .rb-logo {
+            width: 64px; height: 64px; border-radius: 50%;
+            object-fit: cover; border: 3px solid rgba(255,255,255,0.4);
+            background: #fff; flex-shrink: 0;
+        }
+        .rb-name { font-size: 1.15rem; font-weight: 800; margin-bottom: 4px; }
+        .rb-meta {
+            display: flex; flex-wrap: wrap; gap: 12px;
+            font-size: 0.75rem; color: rgba(255,255,255,0.9);
+            font-weight: 600;
+        }
+        .rb-meta span { display: inline-flex; align-items: center; gap: 4px; }
+        .rb-quick-actions {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;
+        }
+        .rb-action {
+            background: rgba(255,255,255,0.18);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: #fff; font-family: inherit; font-weight: 700;
+            font-size: 0.75rem; padding: 8px 14px; border-radius: 12px;
+            cursor: pointer; transition: all 0.2s ease;
+            display: inline-flex; align-items: center; gap: 6px;
+            backdrop-filter: blur(10px);
+            text-decoration: none;
+        }
+        .rb-action:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        .rb-action i { font-size: 1rem; }
+
+        .info-banner {
+            background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+            border-radius: 18px;
+            padding: 18px 20px;
+            margin-bottom: 20px;
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .info-banner .ib-info {
+            display: flex; align-items: center; gap: 14px;
+            min-width: 0;
+        }
+        .info-banner .ib-icon {
+            width: 52px; height: 52px; border-radius: 14px;
+            background: rgba(255,255,255,0.2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; flex-shrink: 0;
+            backdrop-filter: blur(10px);
+        }
+        .info-banner .ib-text .ib-label {
+            font-size: 0.75rem; font-weight: 700;
+            color: rgba(255,255,255,0.85);
+        }
+        .info-banner .ib-text .ib-title {
+            font-size: 1.15rem; font-weight: 800;
+            line-height: 1.2; margin-top: 2px;
+        }
+        .info-banner .ib-text .ib-sub {
+            font-size: 0.72rem; color: rgba(255,255,255,0.8);
+            font-weight: 600; margin-top: 3px;
+        }
+        .info-banner .ib-actions {
+            display: flex; gap: 8px; flex-wrap: wrap;
+        }
+        .info-banner .ib-btn {
+            background: rgba(255,255,255,0.22);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #fff; font-family: inherit; font-weight: 700;
+            font-size: 0.78rem; padding: 9px 16px; border-radius: 12px;
+            cursor: pointer; transition: all 0.2s ease;
+            display: inline-flex; align-items: center; gap: 6px;
+            backdrop-filter: blur(10px);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .info-banner .ib-btn:hover {
+            background: rgba(255,255,255,0.32);
+            transform: translateY(-2px);
+        }
+        .info-banner .ib-btn i { font-size: 1.05rem; }
+
+        .section-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .save-all-btn {
+            background: var(--c-active);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 18px;
+            font-family: inherit;
+            font-weight: 800;
+            font-size: 0.82rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(0, 177, 79, 0.3);
+            transition: all 0.2s ease;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .save-all-btn:hover {
+            background: #009940;
+            transform: translateY(-1px);
+        }
+        .save-all-btn .save-all-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 20px;
+            height: 20px;
+            padding: 0 6px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.25);
+            font-size: 0.68rem;
+        }
+
+        @media (max-width: 640px) {
+            .section-title { font-size: 1rem; }
+            .brand-name { font-size: 0.88rem; }
+            .brand-sub { font-size: 0.62rem; }
+            .profile-dropdown { left: 8px; right: 8px; width: auto; }
+            .rb-logo { width: 52px; height: 52px; }
+            .rb-name { font-size: 1rem; }
+            .rb-action { font-size: 0.7rem; padding: 7px 11px; }
+            .info-banner { padding: 14px 16px; }
+            .info-banner .ib-icon { width: 44px; height: 44px; font-size: 1.35rem; }
+            .info-banner .ib-text .ib-title { font-size: 0.95rem; }
+            .info-banner .ib-btn { font-size: 0.72rem; padding: 7px 12px; }
+            .day-card { padding: 14px; }
+            .day-icon { width: 36px; height: 36px; font-size: 1rem; }
+            .day-name-ar { font-size: 0.88rem; }
+            .shift-row { padding: 8px; }
+            .shift-field input[type="time"] { font-size: 0.78rem; padding: 7px 8px; }
+            .day-card-actions .btn { font-size: 0.72rem; padding: 9px 10px; }
+            .save-all-btn { padding: 9px 14px; font-size: 0.76rem; }
+        }
+    </style>
+</head>
+<body>
+    <header id="mainHeader">
+        <div class="header-brand">
+            <img src="https://sys.shadowza.space/logos/1.png" class="brand-logo" alt="logo">
+            <div class="min-w-0">
+                <p class="brand-name">مطعم ابن حميدو</p>
+                <p class="brand-sub">ساعات العمل</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <div class="status-pill open" id="headerStatusPill">
+                <span class="dot"></span>
+                <span id="headerStatusText">مفتوح</span>
+            </div>
+            <button class="notification-btn" id="notificationBtn">
+                <i class="las la-bell"></i>
+                <span class="notification-dot"></span>
+            </button>
+            <img id="headerAvatar" src="https://sys.shadowza.space/logos/1.png" class="header-avatar-btn" alt="avatar">
+        </div>
+    </header>
+
+    <div class="profile-dropdown" id="profileDropdown" role="menu" aria-label="قائمة المستخدم">
+        <div class="dropdown-user-header">
+            <img id="dropdownUserAvatar" src="https://sys.shadowza.space/logos/1.png" alt="avatar">
+            <div class="user-info">
+                <p class="user-name">مطعم ابن حميدو</p>
+                <p class="user-role">حساب المطعم</p>
+            </div>
+        </div>
+        <div class="dropdown-section-title">القائمة</div>
+        <a href="#" class="dropdown-item" data-action="dashboard"><i class="las la-chart-pie"></i><span>لوحة التحكم</span></a>
+        <a href="#" class="dropdown-item" data-action="orders"><i class="las la-receipt"></i><span>الطلبات الجديدة</span></a>
+        <a href="#" class="dropdown-item" data-action="history"><i class="las la-history"></i><span>سجل الطلبات</span></a>
+        <a href="#" class="dropdown-item" data-action="categories"><i class="las la-th-large"></i><span>الأقسام</span></a>
+        <a href="#" class="dropdown-item" data-action="offers"><i class="las la-percent"></i><span>العروض والخصومات</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section-title">المالية</div>
+        <a href="#" class="dropdown-item" data-action="earnings"><i class="las la-wallet"></i><span>الأرباح</span></a>
+        <a href="#" class="dropdown-item" data-action="payouts"><i class="las la-money-check-alt"></i><span>طلبات السحب</span></a>
+        <a href="#" class="dropdown-item" data-action="reports"><i class="las la-chart-line"></i><span>التقارير</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section-title">الإعدادات</div>
+        <a href="#" class="dropdown-item" data-action="profile"><i class="las la-store"></i><span>بيانات المطعم</span></a>
+        <a href="#" class="dropdown-item active" data-action="hours"><i class="las la-clock"></i><span>ساعات العمل</span></a>
+        <a href="#" class="dropdown-item" data-action="delivery"><i class="las la-truck"></i><span>مناطق التوصيل</span></a>
+        <a href="#" class="dropdown-item" data-action="staff"><i class="las la-users"></i><span>فريق العمل</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section-title">الدعم</div>
+        <a href="#" class="dropdown-item" data-action="help"><i class="las la-headset"></i><span>مركز المساعدة</span></a>
+        <a href="#" class="dropdown-item" data-action="settings"><i class="las la-cog"></i><span>إعدادات الحساب</span></a>
+        <div class="dropdown-divider"></div>
+        <a href="#" class="dropdown-item logout" id="logoutBtn"><i class="las la-sign-out-alt"></i><span>تسجيل الخروج</span></a>
+    </div>
+
+    <main>
+        <div class="container mx-auto px-4 py-6 max-w-7xl">
+
+            <div class="restaurant-banner">
+                <div class="rb-inner">
+                    <div class="flex items-center gap-4 flex-wrap">
+                        <img src="https://sys.shadowza.space/logos/1.png" class="rb-logo" alt="logo">
+                        <div class="min-w-0">
+                            <h2 class="rb-name">ساعات العمل</h2>
+                            <div class="rb-meta">
+                                <span><i class="las la-clock"></i> تحديد أوقات فتح وإغلاق المطعم</span>
+                                <span><i class="las la-calendar-week"></i> دعم فترات متعددة لليوم الواحد</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rb-quick-actions">
+                        <a href="#" class="rb-action"><i class="las la-wallet"></i> الأرباح</a>
+                        <a href="#" class="rb-action"><i class="las la-receipt"></i> الطلبات الجديدة</a>
+                        <a href="#" class="rb-action"><i class="las la-chart-line"></i> التقارير</a>
+                        <a href="#" class="rb-action" id="scrollToDaysBtn"><i class="las la-calendar-day"></i> جدول الأسبوع</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-banner">
+                <div class="ib-info">
+                    <div class="ib-icon"><i class="las la-clock"></i></div>
+                    <div class="ib-text">
+                        <p class="ib-label">ملخص ساعات العمل</p>
+                        <p class="ib-title"><span id="infoWeeklyHours">77</span> ساعة / أسبوع</p>
+                        <p class="ib-sub">اليوم الحالي: <b id="infoTodayName">-</b> · <b id="infoTodayHours">-</b></p>
+                    </div>
+                </div>
+                <div class="ib-actions">
+                    <button class="ib-btn" id="enableAllBtn"><i class="las la-check-circle"></i> تفعيل الكل</button>
+                    <a href="#" class="ib-btn" id="revertAllBtn"><i class="las la-undo-alt"></i> تراجع عن الكل</a>
+                </div>
+            </div>
+
+            <div class="mb-6" id="daysSection">
+                <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+                    <h3 class="section-title"><i class="las la-calendar-week"></i> جدول الأسبوع</h3>
+                    <div class="section-toolbar">
+                        <button class="btn-outline" id="resetHoursBtn"><i class="las la-undo-alt"></i> استرجاع الكل</button>
+                        <button class="save-all-btn" id="saveAllBtn">
+                            <i class="las la-check-double"></i>
+                            حفظ الكل
+                            <span class="save-all-count" id="saveAllCount" style="display:none;">0</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4" id="daysContainer"></div>
+            </div>
+
+        </div>
+    </main>
+
+    <div class="bottom-mobile-nav" id="bottomMobileNav">
+        <a href="#" class="bottom-nav-item" data-tab="dashboard"><i class="las la-chart-pie"></i><span>الرئيسية</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="orders"><i class="las la-receipt"></i><span>الطلبات</span></a>
+        <a href="#" class="bottom-nav-item bottom-nav-item-center" data-tab="hours"><i class="las la-clock"></i><span>ساعات</span></a>
+        <a href="#" class="bottom-nav-item active" data-tab="hours"><i class="las la-clock"></i><span>ساعات</span></a>
+        <a href="#" class="bottom-nav-item" data-tab="profile"><i class="las la-store"></i><span>المطعم</span></a>
+    </div>
+
+    <script>
+        (function() {
+            const profileDropdown = document.getElementById('profileDropdown');
+            const headerAvatar = document.getElementById('headerAvatar');
+            const notificationBtn = document.getElementById('notificationBtn');
+            const daysContainer = document.getElementById('daysContainer');
+            const headerStatusPill = document.getElementById('headerStatusPill');
+            const headerStatusText = document.getElementById('headerStatusText');
+            const resetHoursBtn = document.getElementById('resetHoursBtn');
+            const saveAllBtn = document.getElementById('saveAllBtn');
+            const saveAllCount = document.getElementById('saveAllCount');
+            const enableAllBtn = document.getElementById('enableAllBtn');
+            const revertAllBtn = document.getElementById('revertAllBtn');
+            const scrollToDaysBtn = document.getElementById('scrollToDaysBtn');
+            const infoWeeklyHours = document.getElementById('infoWeeklyHours');
+            const infoTodayName = document.getElementById('infoTodayName');
+            const infoTodayHours = document.getElementById('infoTodayHours');
+
+            let isOpen = true;
+
+            const dayKeys = ['sat', 'sun', 'mon', 'tue', 'wed', 'thu', 'fri'];
+            const dayNamesMap = {
+                sat: { ar: 'السبت', en: 'Saturday', ru: 'Суббота', icon: 'las la-calendar-day' },
+                sun: { ar: 'الأحد', en: 'Sunday', ru: 'Воскресенье', icon: 'las la-calendar-day' },
+                mon: { ar: 'الاثنين', en: 'Monday', ru: 'Понедельник', icon: 'las la-calendar-day' },
+                tue: { ar: 'الثلاثاء', en: 'Tuesday', ru: 'Вторник', icon: 'las la-calendar-day' },
+                wed: { ar: 'الأربعاء', en: 'Wednesday', ru: 'Среда', icon: 'las la-calendar-day' },
+                thu: { ar: 'الخميس', en: 'Thursday', ru: 'Четверг', icon: 'las la-calendar-day' },
+                fri: { ar: 'الجمعة', en: 'Friday', ru: 'Пятница', icon: 'las la-calendar-day' }
+            };
+
+            const jsDayToKey = {
+                0: 'sun',
+                1: 'mon',
+                2: 'tue',
+                3: 'wed',
+                4: 'thu',
+                5: 'fri',
+                6: 'sat'
+            };
+
+            const defaultHours = [
+                { dayKey: 'sat', enabled: true, shifts: [{ from: '11:00', to: '23:00' }] },
+                { dayKey: 'sun', enabled: true, shifts: [{ from: '11:00', to: '23:00' }] },
+                { dayKey: 'mon', enabled: true, shifts: [{ from: '11:00', to: '23:00' }] },
+                { dayKey: 'tue', enabled: true, shifts: [{ from: '11:00', to: '23:00' }] },
+                { dayKey: 'wed', enabled: true, shifts: [{ from: '11:00', to: '23:00' }] },
+                { dayKey: 'thu', enabled: true, shifts: [{ from: '11:00', to: '23:59' }] },
+                { dayKey: 'fri', enabled: true, shifts: [{ from: '13:00', to: '23:59' }] }
+            ];
+
+            let workingHours = JSON.parse(JSON.stringify(defaultHours));
+            let savedWorkingHours = JSON.parse(JSON.stringify(defaultHours));
+
+            function openDropdown() { profileDropdown.classList.add('active'); }
+            function closeDropdown() { profileDropdown.classList.remove('active'); }
+            function toggleDropdown(e) {
+                if (e) e.stopPropagation();
+                if (profileDropdown.classList.contains('active')) closeDropdown();
+                else openDropdown();
+            }
+
+            headerAvatar.addEventListener('click', toggleDropdown);
+
+            document.addEventListener('click', function(e) {
+                if (profileDropdown.classList.contains('active')) {
+                    if (!profileDropdown.contains(e.target) && e.target !== headerAvatar && !headerAvatar.contains(e.target)) {
+                        closeDropdown();
+                    }
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeDropdown();
+            });
+
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                closeDropdown();
+                Swal.fire({
+                    title: 'تسجيل الخروج',
+                    text: 'هل أنت متأكد من تسجيل الخروج من لوحة التحكم؟',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#FF5A00',
+                    cancelButtonColor: '#717171',
+                    confirmButtonText: 'نعم، خروج',
+                    cancelButtonText: 'إلغاء'
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'تم بنجاح',
+                            text: 'تم تسجيل الخروج بنجاح',
+                            icon: 'success',
+                            confirmButtonColor: '#FF5A00'
+                        });
+                    }
+                });
+            });
+
+            notificationBtn.addEventListener('click', function() {
+                Swal.fire({
+                    title: 'الإشعارات',
+                    html: '<div style="text-align:right;font-size:0.85rem;">' +
+                        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">🕐 تم تحديث ساعات عمل يوم الجمعة</p>' +
+                        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">📅 تم إضافة فترة مسائية ليوم السبت</p>' +
+                        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">✅ تم تفعيل ساعات العمل لجميع الأيام</p>' +
+                        '</div>',
+                    icon: 'info',
+                    confirmButtonColor: '#FF5A00',
+                    confirmButtonText: 'حسناً'
+                });
+            });
+
+            headerStatusPill.addEventListener('click', function() {
+                isOpen = !isOpen;
+                updateStatusUI();
+                Swal.fire({
+                    title: isOpen ? 'المطعم مفتوح' : 'المطعم مغلق',
+                    text: isOpen ? 'سيبدأ استقبال الطلبات الجديدة' : 'لن تصلك طلبات جديدة حتى تفتح المطعم',
+                    icon: isOpen ? 'success' : 'warning',
+                    confirmButtonColor: '#FF5A00',
+                    timer: 1600,
+                    showConfirmButton: false
+                });
+            });
+
+            function updateStatusUI() {
+                if (isOpen) {
+                    headerStatusPill.classList.add('open');
+                    headerStatusPill.classList.remove('closed');
+                    headerStatusText.textContent = 'مفتوح';
+                } else {
+                    headerStatusPill.classList.add('closed');
+                    headerStatusPill.classList.remove('open');
+                    headerStatusText.textContent = 'مغلق';
+                }
+            }
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            function findDay(dayKey) {
+                for (let i = 0; i < workingHours.length; i++) {
+                    if (workingHours[i].dayKey === dayKey) return workingHours[i];
+                }
+                return null;
+            }
+
+            function findSavedDay(dayKey) {
+                for (let i = 0; i < savedWorkingHours.length; i++) {
+                    if (savedWorkingHours[i].dayKey === dayKey) return savedWorkingHours[i];
+                }
+                return null;
+            }
+
+            function getTodayKey() {
+                const d = new Date().getDay();
+                return jsDayToKey[d];
+            }
+
+            function timeToMinutes(t) {
+                if (!t || typeof t !== 'string') return 0;
+                const parts = t.split(':');
+                const h = parseInt(parts[0], 10) || 0;
+                const m = parseInt(parts[1], 10) || 0;
+                return h * 60 + m;
+            }
+
+            function calculateShiftMinutes(shift) {
+                const from = timeToMinutes(shift.from);
+                let to = timeToMinutes(shift.to);
+                if (to <= from) to += 24 * 60;
+                return Math.max(0, to - from);
+            }
+
+            function formatDuration(minutes) {
+                const h = Math.floor(minutes / 60);
+                const m = minutes % 60;
+                if (h === 0 && m === 0) return '0 س';
+                if (m === 0) return h + ' س';
+                return h + ' س ' + m + ' د';
+            }
+
+            function calculateDayMinutes(day) {
+                if (!day.enabled) return 0;
+                let total = 0;
+                day.shifts.forEach(function(s) {
+                    total += calculateShiftMinutes(s);
+                });
+                return total;
+            }
+
+            function calculateWeeklyMinutes() {
+                let total = 0;
+                workingHours.forEach(function(d) {
+                    total += calculateDayMinutes(d);
+                });
+                return total;
+            }
+
+            function formatDaySummary(day) {
+                if (!day.enabled) return 'مغلق';
+                if (day.shifts.length === 0) return 'لا توجد فترات';
+                return day.shifts.map(function(s) {
+                    return s.from + ' - ' + s.to;
+                }).join(' · ');
+            }
+
+            function isDayDirty(dayKey) {
+                const current = findDay(dayKey);
+                const saved = findSavedDay(dayKey);
+                if (!current || !saved) return false;
+                return JSON.stringify(current) !== JSON.stringify(saved);
+            }
+
+            function getDirtyDays() {
+                const list = [];
+                dayKeys.forEach(function(k) {
+                    if (isDayDirty(k)) list.push(k);
+                });
+                return list;
+            }
+
+            function updateSaveAllBadge() {
+                const dirty = getDirtyDays();
+                if (dirty.length > 0) {
+                    saveAllCount.style.display = '';
+                    saveAllCount.textContent = dirty.length;
+                    saveAllBtn.style.opacity = '1';
+                    saveAllBtn.disabled = false;
+                } else {
+                    saveAllCount.style.display = 'none';
+                    saveAllBtn.style.opacity = '0.55';
+                    saveAllBtn.disabled = false;
+                }
+            }
+
+            function renderDays() {
+                const todayKey = getTodayKey();
+                let html = '';
+
+                workingHours.forEach(function(day) {
+                    const meta = dayNamesMap[day.dayKey];
+                    const isToday = day.dayKey === todayKey;
+                    const minutes = calculateDayMinutes(day);
+                    const dirty = isDayDirty(day.dayKey);
+
+                    let cardClass = 'day-card';
+                    if (day.enabled) cardClass += ' is-enabled';
+                    else cardClass += ' is-disabled';
+                    if (isToday) cardClass += ' is-today';
+                    if (dirty) cardClass += ' is-dirty';
+
+                    html +=
+                        '<div class="' + cardClass + '" data-day-key="' + day.dayKey + '">' +
+                            '<div class="day-header">' +
+                                '<div class="day-name-wrap">' +
+                                    '<span class="day-icon"><i class="' + meta.icon + '"></i></span>' +
+                                    '<div class="day-names">' +
+                                        '<p class="day-name-ar">' +
+                                            meta.ar +
+                                            (dirty ? '<span class="day-dirty-badge"><i class="las la-circle"></i> غير محفوظ</span>' : '') +
+                                        '</p>' +
+                                        '<div class="day-name-sub">' +
+                                            '<span>' + meta.en + '</span>' +
+                                            (isToday ? '<span class="day-today-badge"><i class="las la-circle"></i> اليوم</span>' : '') +
+                                        '</div>' +
+                                    '</div>' +
+                                '</div>' +
+                                '<div class="day-header-actions">' +
+                                    '<span class="day-hours-summary">' + (day.enabled ? formatDuration(minutes) : 'مغلق') + '</span>' +
+                                    '<label class="switch">' +
+                                        '<input type="checkbox" data-day-toggle="' + day.dayKey + '"' + (day.enabled ? ' checked' : '') + '>' +
+                                        '<span class="slider"></span>' +
+                                    '</label>' +
+                                '</div>' +
+                            '</div>';
+
+                    if (day.enabled) {
+                        html += '<div class="shifts-container">';
+                        if (day.shifts.length === 0) {
+                            html += '<div class="day-closed-note"><i class="las la-info-circle"></i> لا توجد فترات - أضف فترة عمل</div>';
+                        } else {
+                            day.shifts.forEach(function(shift, idx) {
+                                html +=
+                                    '<div class="shift-row" data-shift-index="' + idx + '">' +
+                                        '<div class="shift-field">' +
+                                            '<label><i class="las la-hourglass-start"></i> من</label>' +
+                                            '<input type="time" value="' + shift.from + '" data-shift-from="' + idx + '" data-day-key="' + day.dayKey + '">' +
+                                        '</div>' +
+                                        '<span class="shift-arrow"><i class="las la-arrow-left"></i></span>' +
+                                        '<div class="shift-field">' +
+                                            '<label><i class="las la-hourglass-end"></i> إلى</label>' +
+                                            '<input type="time" value="' + shift.to + '" data-shift-to="' + idx + '" data-day-key="' + day.dayKey + '">' +
+                                        '</div>' +
+                                        '<button type="button" class="shift-remove-btn" data-shift-remove="' + idx + '" data-day-key="' + day.dayKey + '" title="حذف الفترة"><i class="las la-trash"></i></button>' +
+                                    '</div>';
+                            });
+                        }
+                        html +=
+                            '<button type="button" class="add-shift-btn" data-add-shift="' + day.dayKey + '">' +
+                                '<i class="las la-plus"></i> إضافة فترة عمل' +
+                            '</button>';
+                        html += '</div>';
+                    } else {
+                        html +=
+                            '<div class="day-closed-note">' +
+                                '<i class="las la-door-closed"></i> المطعم مغلق في هذا اليوم' +
+                            '</div>';
+                    }
+
+                    html +=
+                        '<div class="day-card-actions">' +
+                            '<button type="button" class="btn btn-cancel-day" data-day-cancel="' + day.dayKey + '"><i class="las la-times"></i> إلغاء</button>' +
+                            '<button type="button" class="btn btn-save-day" data-day-save="' + day.dayKey + '"><i class="las la-check"></i> حفظ التغييرات</button>' +
+                        '</div>';
+
+                    html += '</div>';
+                });
+
+                daysContainer.innerHTML = html;
+                updateInfoBanner();
+                updateSaveAllBadge();
+            }
+
+            function updateInfoBanner() {
+                const totalMin = calculateWeeklyMinutes();
+                const hours = Math.floor(totalMin / 60);
+                infoWeeklyHours.textContent = hours;
+
+                const todayKey = getTodayKey();
+                const todayDay = findDay(todayKey);
+                const meta = dayNamesMap[todayKey];
+
+                infoTodayName.textContent = meta ? meta.ar : '-';
+                if (todayDay) {
+                    infoTodayHours.textContent = formatDaySummary(todayDay);
+                } else {
+                    infoTodayHours.textContent = '-';
+                }
+            }
+
+            function validateDay(day) {
+                if (!day.enabled) return { valid: true };
+                if (day.shifts.length === 0) {
+                    return { valid: false, message: 'اليوم "' + dayNamesMap[day.dayKey].ar + '" مفعّل بدون فترات عمل. أضف فترة أو أغلق اليوم.' };
+                }
+                for (let j = 0; j < day.shifts.length; j++) {
+                    const s = day.shifts[j];
+                    if (!s.from || !s.to) {
+                        return { valid: false, message: 'يرجى إدخال وقت البداية والنهاية في يوم "' + dayNamesMap[day.dayKey].ar + '"' };
+                    }
+                    if (s.from === s.to) {
+                        return { valid: false, message: 'وقت البداية والنهاية متطابقان في يوم "' + dayNamesMap[day.dayKey].ar + '"' };
+                    }
+                }
+                return { valid: true };
+            }
+
+            function saveDay(dayKey) {
+                const day = findDay(dayKey);
+                if (!day) return;
+                const result = validateDay(day);
+                if (!result.valid) {
+                    Swal.fire({
+                        title: 'تنبيه',
+                        text: result.message,
+                        icon: 'warning',
+                        confirmButtonColor: '#FF5A00',
+                        confirmButtonText: 'حسناً'
+                    });
+                    return;
+                }
+                const idx = savedWorkingHours.findIndex(function(d) { return d.dayKey === dayKey; });
+                if (idx !== -1) {
+                    savedWorkingHours[idx] = JSON.parse(JSON.stringify(day));
+                }
+                renderDays();
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'تم حفظ ' + dayNamesMap[dayKey].ar,
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            }
+
+            function cancelDay(dayKey) {
+                const saved = findSavedDay(dayKey);
+                const idx = workingHours.findIndex(function(d) { return d.dayKey === dayKey; });
+                if (saved && idx !== -1) {
+                    workingHours[idx] = JSON.parse(JSON.stringify(saved));
+                }
+                renderDays();
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'info',
+                    title: 'تم إلغاء تغييرات ' + dayNamesMap[dayKey].ar,
+                    showConfirmButton: false,
+                    timer: 1400
+                });
+            }
+
+            function saveAllDays() {
+                const dirty = getDirtyDays();
+                if (dirty.length === 0) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'info',
+                        title: 'لا توجد تغييرات لحفظها',
+                        showConfirmButton: false,
+                        timer: 1400
+                    });
+                    return;
+                }
+                for (let i = 0; i < dirty.length; i++) {
+                    const day = findDay(dirty[i]);
+                    const result = validateDay(day);
+                    if (!result.valid) {
+                        Swal.fire({
+                            title: 'تنبيه',
+                            text: result.message,
+                            icon: 'warning',
+                            confirmButtonColor: '#FF5A00',
+                            confirmButtonText: 'حسناً'
+                        });
+                        return;
+                    }
+                }
+                dirty.forEach(function(k) {
+                    const day = findDay(k);
+                    const idx = savedWorkingHours.findIndex(function(d) { return d.dayKey === k; });
+                    if (idx !== -1) {
+                        savedWorkingHours[idx] = JSON.parse(JSON.stringify(day));
+                    }
+                });
+                renderDays();
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'تم حفظ تغييرات ' + dirty.length + ' يوم',
+                    showConfirmButton: false,
+                    timer: 1600
+                });
+            }
+
+            function revertAllDays() {
+                const dirty = getDirtyDays();
+                if (dirty.length === 0) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'info',
+                        title: 'لا توجد تغييرات للتراجع عنها',
+                        showConfirmButton: false,
+                        timer: 1400
+                    });
+                    return;
+                }
+                Swal.fire({
+                    title: 'تراجع عن الكل',
+                    html: '<p style="font-size:0.85rem;text-align:right;">هل تريد التراجع عن جميع التغييرات غير المحفوظة؟</p>' +
+                        '<p style="font-size:0.75rem;color:#717171;margin-top:8px;">عدد الأيام المتغيرة: <b style="color:#F59E0B;">' + dirty.length + '</b></p>',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#EF4444',
+                    cancelButtonColor: '#717171',
+                    confirmButtonText: 'نعم، تراجع',
+                    cancelButtonText: 'إلغاء'
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        workingHours = JSON.parse(JSON.stringify(savedWorkingHours));
+                        renderDays();
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'تم التراجع عن جميع التغييرات',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    }
+                });
+            }
+
+            daysContainer.addEventListener('change', function(e) {
+                const toggle = e.target.closest('input[data-day-toggle]');
+                if (toggle) {
+                    const dayKey = toggle.getAttribute('data-day-toggle');
+                    const day = findDay(dayKey);
+                    if (!day) return;
+                    day.enabled = toggle.checked;
+                    if (day.enabled && day.shifts.length === 0) {
+                        day.shifts.push({ from: '11:00', to: '23:00' });
+                    }
+                    renderDays();
+                    return;
+                }
+
+                const fromInput = e.target.closest('input[data-shift-from]');
+                if (fromInput) {
+                    const dayKey = fromInput.getAttribute('data-day-key');
+                    const idx = parseInt(fromInput.getAttribute('data-shift-from'), 10);
+                    const day = findDay(dayKey);
+                    if (!day || !day.shifts[idx]) return;
+                    day.shifts[idx].from = fromInput.value;
+                    const card = fromInput.closest('.day-card');
+                    if (card) {
+                        card.classList.add('is-dirty');
+                        const summaryEl = card.querySelector('.day-hours-summary');
+                        if (summaryEl) summaryEl.textContent = formatDuration(calculateDayMinutes(day));
+                    }
+                    updateInfoBanner();
+                    updateSaveAllBadge();
+                    refreshDirtyVisual(dayKey);
+                    return;
+                }
+
+                const toInput = e.target.closest('input[data-shift-to]');
+                if (toInput) {
+                    const dayKey = toInput.getAttribute('data-day-key');
+                    const idx = parseInt(toInput.getAttribute('data-shift-to'), 10);
+                    const day = findDay(dayKey);
+                    if (!day || !day.shifts[idx]) return;
+                    day.shifts[idx].to = toInput.value;
+                    const card = toInput.closest('.day-card');
+                    if (card) {
+                        card.classList.add('is-dirty');
+                        const summaryEl = card.querySelector('.day-hours-summary');
+                        if (summaryEl) summaryEl.textContent = formatDuration(calculateDayMinutes(day));
+                    }
+                    updateInfoBanner();
+                    updateSaveAllBadge();
+                    refreshDirtyVisual(dayKey);
+                    return;
+                }
+            });
+
+            function refreshDirtyVisual(dayKey) {
+                const dirty = isDayDirty(dayKey);
+                const card = daysContainer.querySelector('[data-day-key="' + dayKey + '"]');
+                if (!card) return;
+                if (dirty) {
+                    card.classList.add('is-dirty');
+                    const nameEl = card.querySelector('.day-name-ar');
+                    if (nameEl && !nameEl.querySelector('.day-dirty-badge')) {
+                        const badge = document.createElement('span');
+                        badge.className = 'day-dirty-badge';
+                        badge.innerHTML = '<i class="las la-circle"></i> غير محفوظ';
+                        nameEl.appendChild(badge);
+                    }
+                } else {
+                    card.classList.remove('is-dirty');
+                    const badge = card.querySelector('.day-dirty-badge');
+                    if (badge) badge.remove();
+                }
+            }
+
+            daysContainer.addEventListener('click', function(e) {
+                const saveBtn = e.target.closest('[data-day-save]');
+                if (saveBtn) {
+                    const dayKey = saveBtn.getAttribute('data-day-save');
+                    saveDay(dayKey);
+                    return;
+                }
+
+                const cancelBtn = e.target.closest('[data-day-cancel]');
+                if (cancelBtn) {
+                    const dayKey = cancelBtn.getAttribute('data-day-cancel');
+                    cancelDay(dayKey);
+                    return;
+                }
+
+                const addBtn = e.target.closest('[data-add-shift]');
+                if (addBtn) {
+                    const dayKey = addBtn.getAttribute('data-add-shift');
+                    const day = findDay(dayKey);
+                    if (!day) return;
+                    day.shifts.push({ from: '17:00', to: '23:00' });
+                    renderDays();
+                    const card = daysContainer.querySelector('[data-day-key="' + dayKey + '"]');
+                    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    return;
+                }
+
+                const removeBtn = e.target.closest('[data-shift-remove]');
+                if (removeBtn) {
+                    const dayKey = removeBtn.getAttribute('data-day-key');
+                    const idx = parseInt(removeBtn.getAttribute('data-shift-remove'), 10);
+                    const day = findDay(dayKey);
+                    if (!day) return;
+                    if (day.shifts.length <= 1) {
+                        Swal.fire({
+                            title: 'تنبيه',
+                            text: 'لا يمكن حذف الفترة الأخيرة. يمكنك إغلاق اليوم بالكامل من الزر العلوي.',
+                            icon: 'warning',
+                            confirmButtonColor: '#FF5A00',
+                            confirmButtonText: 'حسناً'
+                        });
+                        return;
+                    }
+                    day.shifts.splice(idx, 1);
+                    renderDays();
+                    return;
+                }
+            });
+
+            resetHoursBtn.addEventListener('click', function() {
+                Swal.fire({
+                    title: 'استرجاع الإعدادات',
+                    text: 'هل تريد استرجاع آخر إعدادات محفوظة لجميع الأيام؟ سيتم تجاهل أي تغييرات غير محفوظة.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#FF5A00',
+                    cancelButtonColor: '#717171',
+                    confirmButtonText: 'نعم، استرجع',
+                    cancelButtonText: 'إلغاء'
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        workingHours = JSON.parse(JSON.stringify(savedWorkingHours));
+                        renderDays();
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'info',
+                            title: 'تم استرجاع الإعدادات المحفوظة',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    }
+                });
+            });
+
+            saveAllBtn.addEventListener('click', saveAllDays);
+            revertAllBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                revertAllDays();
+            });
+
+            enableAllBtn.addEventListener('click', function() {
+                Swal.fire({
+                    title: 'تفعيل جميع الأيام',
+                    text: 'سيتم تفعيل جميع أيام الأسبوع بنفس الفترة الافتراضية (11:00 - 23:00).',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#FF5A00',
+                    cancelButtonColor: '#717171',
+                    confirmButtonText: 'نعم، فعّل الكل',
+                    cancelButtonText: 'إلغاء'
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        workingHours.forEach(function(day) {
+                            day.enabled = true;
+                            if (day.shifts.length === 0) {
+                                day.shifts.push({ from: '11:00', to: '23:00' });
+                            }
+                        });
+                        renderDays();
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'تم تفعيل جميع أيام الأسبوع',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    }
+                });
+            });
+
+            scrollToDaysBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const section = document.getElementById('daysSection');
+                if (section) {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+
+            function init() {
+                updateStatusUI();
+                renderDays();
+            }
+
+            init();
+        })();
+    </script>
+</body>
+</html>
