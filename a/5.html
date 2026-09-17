@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+<meta name="theme-color" content="#FF5A00">
+<title>لوحة إدارة التطبيق - السائقين</title>
+<meta name="description" content="لوحة تحكم إدارة التطبيق - إدارة السائقين">
+<link rel="icon" type="image/png" href="https://sys.shadowza.space/logos/1.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        primary: '#FF5A00',
+        secondary: '#FF8C38',
+        accent: '#FFB800',
+        dark: '#1A1A1A',
+        muted: '#717171',
+        success: '#00B14F'
+      }
+    }
+  }
+}
+</script>
+<style>
+:root{
+  --color-primary:#FF5A00;
+  --color-secondary:#FF8C38;
+  --color-accent:#FFB800;
+  --color-background:#F7F9F8;
+  --color-card:#FFFFFF;
+  --color-darker:#F0F4F3;
+  --color-white:#1A1A1A;
+  --color-muted:#717171;
+  --border-subtle:rgba(0,0,0,0.08);
+  --card-bg:#FFFFFF;
+  --border-color:rgba(0,0,0,0.1);
+  --darker-bg:#F0F4F3;
+  --header-height:72px;
+  --sidebar-width:262px;
+  --sidebar-collapsed:72px;
+  --bottom-nav-height:68px;
+  --shadow-card:0 2px 12px rgba(0,0,0,0.06);
+  --c-active:#00B14F;
+  --c-busy:#F59E0B;
+  --c-offline:#717171;
+  --c-suspended:#EF4444;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;width:100%;overscroll-behavior:none;}
+body{
+  font-family:'Noto Sans Arabic',system-ui,sans-serif;
+  background-color:var(--color-background);
+  color:var(--color-white);
+  overflow-x:hidden;
+}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--color-background);border-radius:4px;}
+::-webkit-scrollbar-thumb{background:#FF8C38;border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:#FF5A00;}
+
+.main-wrap{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+#mainHeader{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:var(--header-height);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 16px;
+  border-bottom:1px solid var(--border-subtle);
+  background:var(--color-background);
+  z-index:400;
+  box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.header-brand{display:flex;align-items:center;min-width:0;}
+.brand-logo{
+  height:58px;
+  width:auto;
+  max-width:230px;
+  object-fit:contain;
+  display:block;
+  flex-shrink:0;
+}
+.header-actions{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.notification-btn{
+  position:relative;background:none;border:none;cursor:pointer;
+  color:var(--color-muted);font-size:1.5rem;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:color .2s;flex-shrink:0;
+}
+.notification-btn:hover{color:#FF5A00;}
+.notification-btn .notification-dot{
+  position:absolute;top:2px;right:2px;width:8px;height:8px;
+  border-radius:50%;background:#FF5A00;
+  border:2px solid var(--color-background);
+}
+.header-avatar-btn{
+  width:44px;height:44px;border-radius:50%;
+  object-fit:cover;border:2px solid var(--color-primary);
+  cursor:pointer;transition:all .2s;flex-shrink:0;background:#fff;
+}
+.header-avatar-btn:hover{transform:scale(1.05);}
+
+.status-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:40px;
+  font-size:0.75rem;font-weight:700;cursor:pointer;
+  transition:all .25s ease;border:1px solid transparent;flex-shrink:0;
+}
+.status-pill.open{
+  background:rgba(0,177,79,0.1);color:#00B14F;
+  border-color:rgba(0,177,79,0.3);
+}
+.status-pill.closed{
+  background:rgba(239,68,68,0.1);color:#EF4444;
+  border-color:rgba(239,68,68,0.3);
+}
+.status-pill .dot{
+  width:8px;height:8px;border-radius:50%;
+  background:currentColor;animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.sidebar{
+  position:fixed;
+  top:var(--header-height);
+  right:0;
+  bottom:0;
+  width:var(--sidebar-width);max-width:86vw;
+  background:var(--card-bg);
+  border-left:1px solid var(--border-color);
+  border-top:1px solid var(--border-color);
+  z-index:300;
+  transform:translateX(100%);
+  transition:transform .3s cubic-bezier(.4,0,.2,1), width .3s cubic-bezier(.4,0,.2,1);
+  overflow-y:auto;overscroll-behavior:contain;
+  box-shadow:-6px 0 30px rgba(0,0,0,0.12);
+  display:flex;flex-direction:column;
+}
+body.sb-open .sidebar{transform:translateX(0);}
+
+.sb-header{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 12px;border-bottom:1px solid var(--border-color);
+  position:sticky;top:0;background:var(--card-bg);z-index:2;
+  transition:padding .3s ease;
+}
+.sb-avatar{
+  width:44px;height:44px;border-radius:50%;
+  object-fit:cover;border:2px solid var(--color-primary);
+  background:#fff;flex-shrink:0;
+  transition:width .3s ease, height .3s ease;
+  box-shadow:0 2px 8px rgba(255,90,0,0.18);
+}
+.sb-brand{flex:1;min-width:0;transition:opacity .2s ease;}
+.sb-title{
+  font-size:0.88rem;font-weight:800;color:var(--color-white);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.sb-sub{
+  font-size:0.64rem;color:var(--color-muted);font-weight:600;
+  margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+.sb-pin{
+  width:32px;height:32px;border-radius:9px;
+  border:1.5px solid var(--border-color);background:transparent;
+  color:var(--color-muted);cursor:pointer;font-size:0.95rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .25s ease;flex-shrink:0;padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.sb-pin:hover{
+  background:rgba(255,90,0,0.08);
+  color:var(--color-primary);
+  border-color:rgba(255,90,0,0.3);
+}
+.sb-pin i{
+  transition:transform .3s ease;
+  display:inline-block;
+  font-size:1rem;
+}
+.sb-pin.pinned{
+  background:rgba(255,90,0,0.12);
+  color:var(--color-primary);
+  border-color:rgba(255,90,0,0.4);
+}
+.sb-pin.pinned i{transform:rotate(0deg);}
+.sb-pin:not(.pinned) i{transform:rotate(45deg);}
+
+.sb-close{
+  width:32px;height:32px;border-radius:9px;
+  border:1px solid var(--border-color);background:transparent;
+  color:var(--color-muted);cursor:pointer;font-size:1rem;
+  display:none;align-items:center;justify-content:center;
+  transition:all .2s ease;flex-shrink:0;
+}
+.sb-close:hover{background:rgba(239,68,68,.1);color:#EF4444;border-color:rgba(239,68,68,.3);}
+
+.sb-nav{padding:10px;display:flex;flex-direction:column;gap:2px;flex:1;transition:padding .3s ease;}
+.sb-section{
+  font-size:0.62rem;text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--color-muted);padding:12px 12px 5px;font-weight:700;
+  transition:opacity .2s ease;
+}
+.sb-item{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 13px;border-radius:12px;cursor:pointer;
+  transition:all .18s ease;color:var(--color-muted);
+  font-weight:600;text-decoration:none;font-size:0.86rem;
+  border:none;background:transparent;font-family:inherit;width:100%;
+  text-align:right;-webkit-tap-highlight-color:transparent;
+  position:relative;
+}
+.sb-item i{font-size:20px;width:24px;flex-shrink:0;text-align:center;transition:all .25s ease;}
+.sb-item:hover{background:rgba(255,90,0,0.08);color:var(--color-primary);}
+.sb-item.active{
+  background:rgba(255,90,0,0.12);
+  color:var(--color-primary);font-weight:800;
+}
+.sb-item.logout{color:#EF4444;}
+.sb-item.logout:hover{background:rgba(239,68,68,0.08);color:#EF4444;}
+.sb-badge{
+  margin-right:auto;min-width:20px;height:20px;padding:0 6px;
+  border-radius:10px;background:#EF4444;color:#fff;
+  font-size:0.62rem;font-weight:800;
+  display:inline-flex;align-items:center;justify-content:center;
+  transition:all .25s ease;
+}
+.sb-divider{height:1px;background:var(--border-color);margin:6px 12px;transition:margin .3s ease;}
+
+@media (min-width:1025px){
+  .sidebar{transform:translateX(0);}
+  .main-wrap{
+    margin-right:var(--sidebar-width);
+    padding-top:var(--header-height);
+    transition:margin-right .3s cubic-bezier(.4,0,.2,1);
+  }
+  body.sb-collapsed .main-wrap{margin-right:var(--sidebar-collapsed);}
+  body.sb-collapsed .sidebar{width:var(--sidebar-collapsed);}
+
+  body.sb-collapsed .sb-header{
+    padding:14px 0;
+    flex-direction:column;
+    gap:10px;
+    justify-content:center;
+    align-items:center;
+  }
+  body.sb-collapsed .sb-avatar{width:38px;height:38px;}
+  body.sb-collapsed .sb-brand{display:none;}
+  body.sb-collapsed .sb-nav{padding:8px;}
+  body.sb-collapsed .sb-section{display:none;}
+  body.sb-collapsed .sb-divider{margin:6px 14px;}
+  body.sb-collapsed .sb-item{
+    justify-content:center;
+    padding:12px 0;
+    gap:0;
+  }
+  body.sb-collapsed .sb-item span:not(.sb-badge){display:none;}
+  body.sb-collapsed .sb-item i{width:auto;font-size:20px;}
+  body.sb-collapsed .sb-badge{
+    position:absolute;
+    top:4px;
+    left:6px;
+    right:auto;
+    margin:0;
+    min-width:15px;
+    height:15px;
+    padding:0 4px;
+    font-size:0.52rem;
+    border-radius:8px;
+  }
+}
+
+@media (max-width:1024px){
+  .main-wrap{padding-top:var(--header-height);}
+  .sb-pin{display:none;}
+  .sb-close{display:flex;}
+  body.sb-collapsed .sidebar{width:var(--sidebar-width);}
+  body.sb-collapsed .main-wrap{margin-right:0;}
+  body.sb-collapsed .sb-header{padding:14px 12px;flex-direction:row;justify-content:flex-start;gap:10px;}
+  body.sb-collapsed .sb-avatar{width:44px;height:44px;}
+  body.sb-collapsed .sb-brand{display:block;}
+  body.sb-collapsed .sb-nav{padding:10px;}
+  body.sb-collapsed .sb-section{display:block;}
+  body.sb-collapsed .sb-divider{margin:6px 12px;}
+  body.sb-collapsed .sb-item{justify-content:flex-start;padding:11px 13px;gap:12px;}
+  body.sb-collapsed .sb-item span:not(.sb-badge){display:inline;}
+  body.sb-collapsed .sb-item i{width:24px;font-size:20px;}
+  body.sb-collapsed .sb-badge{position:static;margin-right:auto;min-width:20px;height:20px;padding:0 6px;font-size:0.62rem;border-radius:10px;}
+}
+
+.overlay{
+  position:fixed;
+  top:var(--header-height);
+  left:0;
+  right:0;
+  bottom:0;
+  background:rgba(0,0,0,0.45);
+  z-index:290;opacity:0;visibility:hidden;
+  transition:all .3s ease;backdrop-filter:blur(2px);
+}
+body.sb-open .overlay{opacity:1;visibility:visible;}
+@media (min-width:1025px){.overlay{display:none;}}
+
+main{flex:1;padding-bottom:24px;}
+@media (max-width:1024px){
+  main{padding-bottom:calc(var(--bottom-nav-height) + 24px);}
+}
+
+.bottom-mobile-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;
+  height:var(--bottom-nav-height);background:var(--card-bg);
+  border-top:1px solid var(--border-color);z-index:100;
+  padding:6px 8px;
+  padding-bottom:max(6px,env(safe-area-inset-bottom,6px));
+  box-shadow:0 -2px 12px rgba(0,0,0,0.08);
+  align-items:center;justify-content:space-around;gap:4px;
+}
+@media (max-width:1024px){.bottom-mobile-nav{display:flex;}}
+.bottom-nav-item{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:2px;flex:1;padding:8px 4px;
+  border-radius:12px;cursor:pointer;text-decoration:none;
+  color:var(--color-muted);font-size:0.68rem;font-weight:600;
+  transition:all .25s ease;position:relative;min-width:0;
+  -webkit-tap-highlight-color:transparent;user-select:none;
+  background:transparent;border:none;font-family:inherit;
+}
+.bottom-nav-item i{font-size:1.3rem;transition:all .25s ease;flex-shrink:0;}
+.bottom-nav-item span{
+  white-space:nowrap;text-overflow:ellipsis;overflow:hidden;
+  max-width:100%;font-size:0.63rem;letter-spacing:.2px;
+}
+.bottom-nav-item.active{color:var(--color-primary);}
+.bottom-nav-item.active i{font-size:1.45rem;}
+.bottom-nav-item-center{
+  position:relative;top:-20px;width:58px;height:58px;
+  border-radius:50%;background:var(--color-primary);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 12px rgba(255,90,0,0.4);
+  transition:all .3s ease;flex-shrink:0;flex:none;margin:0 4px;
+}
+.bottom-nav-item-center i{font-size:1.9rem;}
+.bottom-nav-item-center span{display:none;}
+.bottom-nav-item-center.active{background:#e04e00;color:#fff;}
+.nav-badge{
+  position:absolute;top:4px;left:50%;transform:translateX(-50%);
+  min-width:18px;height:18px;padding:0 4px;border-radius:9px;
+  background:#EF4444;color:#fff;font-size:.6rem;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+}
+.bottom-nav-item-center .nav-badge{
+  top:-4px;left:2px;transform:none;background:#1A1A1A;
+}
+
+.page-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;margin-bottom:20px;
+}
+.page-title{
+  font-size:1.25rem;font-weight:800;color:var(--color-white);
+  display:flex;align-items:center;gap:8px;
+}
+.page-title i{color:#FF5A00;}
+.page-sub{font-size:0.76rem;color:var(--color-muted);font-weight:600;margin-top:3px;}
+
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:12px;
+}
+.stat-card{
+  background:var(--card-bg);
+  border:1px solid var(--border-color);
+  border-radius:16px;
+  padding:14px;
+  box-shadow:var(--shadow-card);
+  transition:all .3s ease;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+.stat-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 8px 24px rgba(255,90,0,0.1);
+  border-color:rgba(255,90,0,0.3);
+}
+.stat-icon{
+  width:42px;height:42px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;flex-shrink:0;
+}
+.stat-body{min-width:0;flex:1;}
+.stat-value{font-size:1.15rem;font-weight:800;color:var(--color-white);line-height:1.2;}
+.stat-label{
+  font-size:0.7rem;color:var(--color-muted);font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+@media (max-width:1024px){.stats-grid{grid-template-columns:repeat(3,1fr);gap:10px;}}
+@media (max-width:640px){
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .stat-card{padding:10px;gap:8px;border-radius:12px;}
+  .stat-icon{width:34px;height:34px;font-size:1.05rem;border-radius:9px;}
+  .stat-value{font-size:1rem;}
+  .stat-label{font-size:0.65rem;}
+}
+
+.panel{
+  background:var(--card-bg);
+  border:1px solid var(--border-color);
+  border-radius:18px;
+  box-shadow:var(--shadow-card);
+  padding:16px;
+}
+.panel-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;margin-bottom:14px;flex-wrap:wrap;
+}
+.section-title{
+  font-size:1.02rem;font-weight:800;color:var(--color-white);
+  display:flex;align-items:center;gap:8px;
+}
+.section-title i{color:#FF5A00;}
+
+.btn{
+  border:none;border-radius:12px;padding:10px 16px;
+  font-family:inherit;font-weight:700;font-size:.82rem;
+  cursor:pointer;transition:all .2s ease;
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:6px;color:#fff;white-space:nowrap;text-decoration:none;
+}
+.btn-primary{background:var(--color-primary);box-shadow:0 2px 8px rgba(255,90,0,0.3);}
+.btn-primary:hover{background:#e04e00;}
+.btn-outline{
+  background:transparent;color:var(--color-muted);
+  border:1px solid var(--border-color);border-radius:12px;
+  padding:10px 16px;font-family:inherit;font-weight:700;
+  font-size:.82rem;cursor:pointer;transition:all .2s ease;
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:6px;white-space:nowrap;text-decoration:none;
+}
+.btn-outline:hover{background:var(--darker-bg);color:var(--color-white);}
+
+.drivers-toolbar{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.search-box{position:relative;flex:1;min-width:210px;}
+.search-box i{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  color:var(--color-muted);font-size:1.1rem;pointer-events:none;
+}
+.search-box input{
+  width:100%;padding:11px 42px 11px 14px;border-radius:12px;
+  border:1px solid var(--border-color);background:var(--card-bg);
+  font-family:inherit;font-size:.82rem;font-weight:600;
+  color:var(--color-white);outline:none;transition:all .2s ease;
+}
+.search-box input::placeholder{color:var(--color-muted);font-weight:600;}
+.search-box input:focus{
+  border-color:rgba(255,90,0,.5);
+  box-shadow:0 0 0 3px rgba(255,90,0,.08);
+}
+
+.filter-tabs{
+  display:inline-flex;background:var(--darker-bg);
+  border-radius:12px;padding:4px;gap:3px;flex-wrap:wrap;
+}
+.filter-tabs button{
+  border:none;background:transparent;font-family:inherit;
+  font-size:.72rem;font-weight:800;color:var(--color-muted);
+  padding:7px 13px;border-radius:9px;cursor:pointer;
+  transition:all .2s ease;white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;
+  display:inline-flex;align-items:center;gap:5px;
+}
+.filter-tabs button:hover{color:var(--color-primary);}
+.filter-tabs button.active{
+  background:#fff;color:var(--color-primary);
+  box-shadow:0 1px 4px rgba(0,0,0,0.08);
+}
+.filter-tabs button .ft-count{
+  min-width:17px;height:17px;padding:0 5px;border-radius:9px;
+  background:rgba(0,0,0,0.07);color:inherit;
+  font-size:.6rem;font-weight:800;
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.filter-tabs button.active .ft-count{background:rgba(255,90,0,0.14);}
+
+.drivers-count{
+  font-size:.72rem;font-weight:800;color:var(--color-muted);
+  white-space:nowrap;
+}
+
+.table-wrap{
+  width:100%;
+  overflow-x:auto;
+  border-radius:14px;
+  border:1px solid var(--border-color);
+  -webkit-overflow-scrolling:touch;
+}
+.table-wrap::-webkit-scrollbar{height:8px;}
+
+.drivers-table{
+  width:100%;
+  min-width:960px;
+  border-collapse:separate;
+  border-spacing:0;
+  font-size:0.82rem;
+}
+.drivers-table thead th{
+  background:var(--darker-bg);
+  color:var(--color-muted);
+  font-size:0.68rem;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:0.6px;
+  padding:13px 14px;
+  text-align:right;
+  white-space:nowrap;
+  border-bottom:1px solid var(--border-color);
+  position:sticky;
+  top:0;
+  z-index:2;
+}
+.drivers-table thead th:first-child{border-top-right-radius:13px;}
+.drivers-table thead th:last-child{border-top-left-radius:13px;}
+
+.drivers-table tbody td{
+  padding:12px 14px;
+  text-align:right;
+  vertical-align:middle;
+  border-bottom:1px solid var(--border-color);
+  white-space:nowrap;
+  color:var(--color-white);
+  font-weight:600;
+  background:var(--card-bg);
+  transition:background .18s ease;
+}
+.drivers-table tbody tr:last-child td{border-bottom:none;}
+.drivers-table tbody tr:hover td{background:rgba(255,90,0,0.035);}
+
+.driver-cell{
+  display:flex;align-items:center;gap:11px;min-width:0;
+}
+.driver-avatar{
+  width:40px;height:40px;border-radius:50%;object-fit:cover;
+  border:2px solid var(--border-color);background:#fff;flex-shrink:0;
+}
+.driver-info{min-width:0;display:flex;flex-direction:column;gap:2px;}
+.driver-name{
+  font-size:.85rem;font-weight:800;color:var(--color-white);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.driver-id{
+  font-family:monospace;font-size:.62rem;font-weight:800;
+  color:var(--color-muted);letter-spacing:.3px;
+}
+
+.cell-muted{color:var(--color-muted);font-weight:600;}
+.cell-phone{
+  font-family:monospace;letter-spacing:.3px;font-weight:700;
+  color:var(--color-white);direction:ltr;text-align:right;
+}
+
+.status-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 11px;border-radius:20px;
+  font-size:.66rem;font-weight:800;white-space:nowrap;
+}
+.status-badge .sb-dot{
+  width:7px;height:7px;border-radius:50%;background:currentColor;
+  flex-shrink:0;
+}
+.status-active{background:rgba(0,177,79,0.12);color:var(--c-active);}
+.status-busy{background:rgba(245,158,11,0.15);color:var(--c-busy);}
+.status-offline{background:rgba(113,113,113,0.12);color:var(--c-offline);}
+.status-suspended{background:rgba(239,68,68,0.12);color:var(--c-suspended);}
+
+.rating-cell{
+  display:inline-flex;align-items:center;gap:5px;
+  font-weight:800;color:var(--color-accent);
+}
+.rating-cell i{font-size:.85rem;}
+.rating-cell small{
+  font-size:.62rem;color:var(--color-muted);font-weight:700;
+}
+
+.vehicle-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 9px;border-radius:9px;
+  background:var(--darker-bg);color:var(--color-muted);
+  font-size:.68rem;font-weight:800;white-space:nowrap;
+}
+.vehicle-chip i{font-size:.9rem;color:var(--color-primary);}
+
+.orders-count{
+  font-weight:800;color:var(--color-primary);
+  font-variant-numeric:tabular-nums;
+}
+
+.row-actions{
+  display:flex;align-items:center;gap:6px;justify-content:flex-start;
+}
+.icon-btn{
+  width:32px;height:32px;border-radius:9px;
+  border:1px solid var(--border-color);background:transparent;
+  color:var(--color-muted);cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:1rem;transition:all .2s ease;flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;padding:0;
+}
+.icon-btn:hover{background:var(--darker-bg);color:var(--color-white);}
+.icon-btn.view:hover{
+  background:rgba(59,130,246,0.1);color:#3B82F6;
+  border-color:rgba(59,130,246,0.3);
+}
+.icon-btn.success:hover{
+  background:rgba(0,177,79,0.1);color:#00B14F;
+  border-color:rgba(0,177,79,0.3);
+}
+.icon-btn.danger:hover{
+  background:rgba(239,68,68,0.1);color:#EF4444;
+  border-color:rgba(239,68,68,0.3);
+}
+
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;padding:56px 16px;text-align:center;
+}
+.empty-state i{font-size:3rem;color:var(--color-muted);opacity:.5;}
+.empty-state p{font-size:.85rem;font-weight:700;color:var(--color-muted);}
+.empty-state span{font-size:.72rem;font-weight:600;color:var(--color-muted);opacity:.8;}
+
+.swal-form{text-align:right;font-family:'Noto Sans Arabic',sans-serif;}
+.swal-form label{
+  display:block;font-size:.75rem;font-weight:800;
+  color:#1A1A1A;margin:10px 0 5px;
+}
+.swal-form input,
+.swal-form select{
+  width:100%;padding:10px 12px;border-radius:10px;
+  border:1px solid rgba(0,0,0,.12);font-family:inherit;
+  font-size:.82rem;font-weight:600;outline:none;
+  transition:all .2s ease;background:#fff;color:#1A1A1A;
+}
+.swal-form input:focus,
+.swal-form select:focus{
+  border-color:rgba(255,90,0,.5);
+  box-shadow:0 0 0 3px rgba(255,90,0,.08);
+}
+.swal-details{
+  text-align:right;font-size:.82rem;color:#1A1A1A;
+}
+.swal-details .row{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:8px 10px;border-radius:9px;background:#F7F9F8;
+  margin-bottom:6px;
+}
+.swal-details .row b{font-weight:800;}
+.swal-details .row span{font-weight:600;color:#717171;}
+
+@media (max-width:1024px){
+  .table-wrap{
+    border-radius:12px;
+  }
+  .drivers-table{
+    min-width:820px;
+    font-size:0.78rem;
+  }
+  .drivers-table thead th{padding:11px 12px;font-size:0.64rem;}
+  .drivers-table tbody td{padding:11px 12px;}
+  .driver-avatar{width:36px;height:36px;}
+  .driver-name{font-size:0.8rem;}
+}
+
+@media (max-width:640px){
+  :root{--header-height:66px;}
+  .page-title{font-size:1.05rem;}
+  .brand-logo{height:48px;max-width:190px;}
+  .header-avatar-btn{width:40px;height:40px;}
+  .status-pill{padding:6px 10px;font-size:0.68rem;}
+  .panel{padding:13px;border-radius:16px;}
+  .filter-tabs{width:100%;justify-content:space-between;}
+  .filter-tabs button{flex:1;justify-content:center;padding:7px 8px;font-size:.66rem;}
+  .btn{padding:9px 13px;font-size:.76rem;}
+  .btn-outline{padding:9px 13px;font-size:.76rem;}
+  .drivers-table{min-width:760px;}
+  .drivers-table thead th{padding:10px 10px;font-size:0.6rem;}
+  .drivers-table tbody td{padding:10px 10px;font-size:0.74rem;}
+  .driver-avatar{width:34px;height:34px;}
+  .icon-btn{width:30px;height:30px;font-size:.92rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="main-wrap">
+
+  <header id="mainHeader">
+    <div class="header-brand">
+      <img src="https://sys.shadowza.space/logos/1.png" class="brand-logo" alt="logo">
+    </div>
+    <div class="header-actions">
+      <div class="status-pill open" id="appStatusPill">
+        <span class="dot"></span>
+        <span id="appStatusText">التطبيق يعمل</span>
+      </div>
+      <button class="notification-btn" id="notificationBtn" aria-label="الإشعارات">
+        <i class="las la-bell"></i>
+        <span class="notification-dot"></span>
+      </button>
+      <img id="headerAvatar" src="https://sys.shadowza.space/logos/1.png" class="header-avatar-btn" alt="avatar">
+    </div>
+  </header>
+
+  <main>
+    <div class="container mx-auto px-4 py-6 max-w-7xl" id="pageContent"></div>
+  </main>
+
+</div>
+
+<aside class="sidebar" id="sidebar" role="navigation" aria-label="القائمة الجانبية">
+  <div class="sb-header">
+    <img src="https://sys.shadowza.space/logos/1.png" class="sb-avatar" alt="admin avatar">
+    <div class="sb-brand">
+      <p class="sb-title">مدير التطبيق</p>
+      <p class="sb-sub">أدمن عام</p>
+    </div>
+    <button class="sb-pin pinned" id="sbPin" aria-label="تثبيت القائمة">
+      <i class="las la-thumbtack"></i>
+    </button>
+    <button class="sb-close" id="sidebarClose" aria-label="إغلاق"><i class="las la-times"></i></button>
+  </div>
+  <nav class="sb-nav">
+    <p class="sb-section">الرئيسية</p>
+    <a href="#" class="sb-item" data-page="dashboard"><i class="las la-chart-pie"></i><span>لوحة التحكم</span></a>
+    <a href="#" class="sb-item" data-page="orders"><i class="las la-receipt"></i><span>كل الطلبات</span><span class="sb-badge" id="sbOrdersBadge">5</span></a>
+    <a href="#" class="sb-item" data-page="restaurants"><i class="las la-store"></i><span>المطاعم</span><span class="sb-badge" id="sbRestBadge">4</span></a>
+    <a href="#" class="sb-item active" data-page="drivers"><i class="las la-motorcycle"></i><span>السائقين</span></a>
+    <a href="#" class="sb-item" data-page="customers"><i class="las la-users"></i><span>العملاء</span></a>
+    <div class="sb-divider"></div>
+    <p class="sb-section">المحتوى</p>
+    <a href="#" class="sb-item" data-page="categories"><i class="las la-th-large"></i><span>الأقسام</span></a>
+    <a href="#" class="sb-item" data-page="offers"><i class="las la-percent"></i><span>العروض والخصومات</span></a>
+    <a href="#" class="sb-item" data-page="banners"><i class="las la-image"></i><span>البانرات</span></a>
+    <div class="sb-divider"></div>
+    <p class="sb-section">المالية</p>
+    <a href="#" class="sb-item" data-page="finance"><i class="las la-wallet"></i><span>الأرباح والعمولات</span></a>
+    <a href="#" class="sb-item" data-page="payouts"><i class="las la-money-check-alt"></i><span>طلبات السحب</span><span class="sb-badge" id="sbPayoutBadge">3</span></a>
+    <a href="#" class="sb-item" data-page="reports"><i class="las la-chart-line"></i><span>التقارير</span></a>
+    <div class="sb-divider"></div>
+    <p class="sb-section">الإدارة</p>
+    <a href="#" class="sb-item" data-page="admins"><i class="las la-user-shield"></i><span>المشرفين والصلاحيات</span></a>
+    <a href="#" class="sb-item" data-page="support"><i class="las la-headset"></i><span>الدعم والشكاوى</span></a>
+    <a href="#" class="sb-item" data-page="settings"><i class="las la-cog"></i><span>إعدادات التطبيق</span></a>
+    <div class="sb-divider"></div>
+    <a href="#" class="sb-item logout" id="logoutBtn"><i class="las la-sign-out-alt"></i><span>تسجيل الخروج</span></a>
+    <div style="height:20px;"></div>
+  </nav>
+</aside>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="bottom-mobile-nav" id="bottomMobileNav">
+  <a href="#" class="bottom-nav-item" data-page="dashboard"><i class="las la-chart-pie"></i><span>الرئيسية</span></a>
+  <a href="#" class="bottom-nav-item" data-page="restaurants"><i class="las la-store"></i><span>المطاعم</span></a>
+  <a href="#" class="bottom-nav-item bottom-nav-item-center" data-page="orders"><i class="las la-receipt"></i><span>الطلبات</span><span class="nav-badge" id="navOrdersBadge">5</span></a>
+  <a href="#" class="bottom-nav-item active" data-page="drivers"><i class="las la-motorcycle"></i><span>السائقين</span></a>
+  <a href="#" class="bottom-nav-item" data-page="customers"><i class="las la-users"></i><span>العملاء</span></a>
+</div>
+
+<script>
+(function(){
+
+  var STORAGE_KEY = 'admin_sidebar_collapsed';
+
+  var pageContent = document.getElementById('pageContent');
+  var overlay = document.getElementById('overlay');
+  var sbPin = document.getElementById('sbPin');
+  var sidebarClose = document.getElementById('sidebarClose');
+  var appStatusPill = document.getElementById('appStatusPill');
+  var appStatusText = document.getElementById('appStatusText');
+  var notificationBtn = document.getElementById('notificationBtn');
+  var headerAvatar = document.getElementById('headerAvatar');
+  var logoutBtn = document.getElementById('logoutBtn');
+  var sbOrdersBadge = document.getElementById('sbOrdersBadge');
+  var sbRestBadge = document.getElementById('sbRestBadge');
+  var sbPayoutBadge = document.getElementById('sbPayoutBadge');
+  var navOrdersBadge = document.getElementById('navOrdersBadge');
+
+  var appOpen = true;
+  var currentFilter = 'all';
+  var searchQuery = '';
+
+  var drivers = [
+    { id:'D-201', name:'محمود سيد', phone:'01001112233', status:'active', vehicle:'موتوسيكل', plate:'ن ص ع 4521', orders:342, rating:4.8, joined:'2024-01-05', city:'القاهرة', avatar:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=70' },
+    { id:'D-202', name:'عمرو خالد', phone:'01112223344', status:'active', vehicle:'موتوسيكل', plate:'ر ب ت 7845', orders:298, rating:4.6, joined:'2024-01-18', city:'الجيزة', avatar:'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=70' },
+    { id:'D-203', name:'طارق منير', phone:'01223334455', status:'busy', vehicle:'سيارة', plate:'س د ج 1290', orders:510, rating:4.9, joined:'2023-11-22', city:'القاهرة', avatar:'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=200&q=70' },
+    { id:'D-204', name:'يوسف علي', phone:'01064445566', status:'active', vehicle:'موتوسيكل', plate:'ع ف ق 3367', orders:187, rating:4.4, joined:'2024-02-10', city:'الإسكندرية', avatar:'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=200&q=70' },
+    { id:'D-205', name:'حسن إبراهيم', phone:'01285556677', status:'offline', vehicle:'سيارة', plate:'م ن ه 5528', orders:421, rating:4.7, joined:'2023-12-14', city:'المنصورة', avatar:'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=200&q=70' },
+    { id:'D-206', name:'كريم فؤاد', phone:'01146667788', status:'active', vehicle:'موتوسيكل', plate:'ي ص ض 8834', orders:256, rating:4.5, joined:'2024-02-27', city:'طنطا', avatar:'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=70' },
+    { id:'D-207', name:'عمر سالم', phone:'01097778899', status:'busy', vehicle:'موتوسيكل', plate:'ط ظ ع 6612', orders:378, rating:4.8, joined:'2023-12-30', city:'القاهرة', avatar:'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=200&q=70' },
+    { id:'D-208', name:'منى إبراهيم', phone:'01158889900', status:'active', vehicle:'سيارة', plate:'ف ق ر 4478', orders:143, rating:4.6, joined:'2024-03-08', city:'الغردقة', avatar:'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=70' },
+    { id:'D-209', name:'سلمى أحمد', phone:'01129990011', status:'suspended', vehicle:'موتوسيكل', plate:'ش س ص 9903', orders:88, rating:3.9, joined:'2024-03-19', city:'أسوان', avatar:'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&w=200&q=70' },
+    { id:'D-210', name:'خالد يوسف', phone:'01031213141', status:'active', vehicle:'سيارة', plate:'ت ث خ 7729', orders:465, rating:4.9, joined:'2023-11-08', city:'شرم الشيخ', avatar:'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=200&q=70' }
+  ];
+
+  var restaurants = [
+    { id:'R-1001', name:'مطعم ابن حميدو', status:'active' },
+    { id:'R-1002', name:'مطعم البحر الأحمر', status:'active' },
+    { id:'R-1003', name:'مشويات الشرق', status:'active' },
+    { id:'R-1004', name:'بيتزا روما', status:'pending' }
+  ];
+
+  var payouts = [
+    { id:'P-9001', restaurant:'مطعم ابن حميدو', amount:12400, status:'pending' },
+    { id:'P-9002', restaurant:'كشري التحرير', amount:7300, status:'pending' },
+    { id:'P-9003', restaurant:'مشويات الشرق', amount:5150, status:'pending' },
+    { id:'P-9004', restaurant:'مطعم البحر الأحمر', amount:9820, status:'paid' }
+  ];
+
+  var orders = [
+    { id:'ORD-5021', status:'new' },
+    { id:'ORD-5020', status:'new' },
+    { id:'ORD-5019', status:'new' },
+    { id:'ORD-5018', status:'new' },
+    { id:'ORD-5017', status:'new' },
+    { id:'ORD-5016', status:'accepted' },
+    { id:'ORD-5015', status:'accepted' },
+    { id:'ORD-5014', status:'preparing' },
+    { id:'ORD-5013', status:'preparing' },
+    { id:'ORD-5012', status:'ready' },
+    { id:'ORD-5011', status:'onway' },
+    { id:'ORD-5010', status:'delivered' }
+  ];
+
+  var statusMap = {
+    active:{ label:'متاح', cls:'status-active', icon:'las la-check-circle' },
+    busy:{ label:'مشغول', cls:'status-busy', icon:'las la-clock' },
+    offline:{ label:'غير متصل', cls:'status-offline', icon:'las la-moon' },
+    suspended:{ label:'موقوف', cls:'status-suspended', icon:'las la-ban' }
+  };
+
+  function esc(v){
+    return String(v == null ? '' : v)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+  function driverCounts(){
+    return {
+      all: drivers.length,
+      active: drivers.filter(function(d){ return d.status === 'active'; }).length,
+      busy: drivers.filter(function(d){ return d.status === 'busy'; }).length,
+      offline: drivers.filter(function(d){ return d.status === 'offline'; }).length,
+      suspended: drivers.filter(function(d){ return d.status === 'suspended'; }).length,
+      orders: drivers.reduce(function(s,d){ return s + d.orders; }, 0)
+    };
+  }
+
+  function updateBadges(){
+    var newOrders = orders.filter(function(o){ return o.status === 'new'; }).length;
+    sbOrdersBadge.textContent = newOrders;
+    navOrdersBadge.textContent = newOrders;
+
+    var activeRest = restaurants.filter(function(r){ return r.status === 'active'; }).length;
+    sbRestBadge.textContent = activeRest;
+    sbRestBadge.style.display = activeRest > 0 ? 'inline-flex' : 'none';
+
+    var pendingPayouts = payouts.filter(function(p){ return p.status === 'pending'; }).length;
+    sbPayoutBadge.textContent = pendingPayouts;
+    sbPayoutBadge.style.display = pendingPayouts > 0 ? 'inline-flex' : 'none';
+  }
+
+  function readStoredCollapsed(){
+    try {
+      return localStorage.getItem(STORAGE_KEY) === '1';
+    } catch(e){
+      return false;
+    }
+  }
+
+  function writeStoredCollapsed(val){
+    try {
+      localStorage.setItem(STORAGE_KEY, val ? '1' : '0');
+    } catch(e){}
+  }
+
+  function applyCollapsed(val){
+    if (val){
+      document.body.classList.add('sb-collapsed');
+      sbPin.classList.remove('pinned');
+      sbPin.setAttribute('aria-label','توسيع القائمة');
+    } else {
+      document.body.classList.remove('sb-collapsed');
+      sbPin.classList.add('pinned');
+      sbPin.setAttribute('aria-label','تثبيت القائمة');
+    }
+  }
+
+  function filteredDrivers(){
+    var q = searchQuery.trim().toLowerCase();
+    return drivers.filter(function(d){
+      var matchStatus = currentFilter === 'all' || d.status === currentFilter;
+      if (!matchStatus) return false;
+      if (!q) return true;
+      return d.name.toLowerCase().indexOf(q) !== -1 ||
+             d.phone.toLowerCase().indexOf(q) !== -1 ||
+             d.id.toLowerCase().indexOf(q) !== -1 ||
+             d.city.toLowerCase().indexOf(q) !== -1 ||
+             d.plate.toLowerCase().indexOf(q) !== -1;
+    });
+  }
+
+  function renderDriversTable(){
+    var list = filteredDrivers();
+
+    if (!list.length){
+      return '<div class="empty-state">' +
+        '<i class="las la-user-slash"></i>' +
+        '<p>لا يوجد سائقون مطابقون</p>' +
+        '<span>جرّب تغيير كلمة البحث أو الفلتر</span>' +
+      '</div>';
+    }
+
+    var html = '' +
+    '<div class="table-wrap">' +
+      '<table class="drivers-table">' +
+        '<thead>' +
+          '<tr>' +
+            '<th>السائق</th>' +
+            '<th>رقم الهاتف</th>' +
+            '<th>المدينة</th>' +
+            '<th>المركبة</th>' +
+            '<th>رقم اللوحة</th>' +
+            '<th>الطلبات</th>' +
+            '<th>التقييم</th>' +
+            '<th>الحالة</th>' +
+            '<th>إجراءات</th>' +
+          '</tr>' +
+        '</thead>' +
+        '<tbody>';
+
+    list.forEach(function(d){
+      var st = statusMap[d.status] || statusMap.offline;
+      var actionIcon, actionTitle, actionCls;
+
+      if (d.status === 'suspended'){
+        actionIcon = 'las la-power-off';
+        actionTitle = 'تفعيل';
+        actionCls = 'success';
+      } else {
+        actionIcon = 'las la-ban';
+        actionTitle = 'إيقاف';
+        actionCls = 'danger';
+      }
+
+      var vehicleIcon = d.vehicle === 'سيارة' ? 'las la-car' : 'las la-motorcycle';
+
+      html +=
+        '<tr>' +
+          '<td>' +
+            '<div class="driver-cell">' +
+              '<img class="driver-avatar" src="' + esc(d.avatar) + '" alt="">' +
+              '<div class="driver-info">' +
+                '<span class="driver-name">' + esc(d.name) + '</span>' +
+                '<span class="driver-id">' + esc(d.id) + '</span>' +
+              '</div>' +
+            '</div>' +
+          '</td>' +
+          '<td><span class="cell-phone">' + esc(d.phone) + '</span></td>' +
+          '<td><span class="cell-muted">' + esc(d.city) + '</span></td>' +
+          '<td>' +
+            '<span class="vehicle-chip"><i class="' + vehicleIcon + '"></i> ' + esc(d.vehicle) + '</span>' +
+          '</td>' +
+          '<td><span class="cell-muted" style="font-family:monospace;letter-spacing:.4px;">' + esc(d.plate) + '</span></td>' +
+          '<td><span class="orders-count">' + d.orders + '</span></td>' +
+          '<td>' +
+            '<span class="rating-cell"><i class="las la-star"></i> ' + d.rating + ' <small>/ 5</small></span>' +
+          '</td>' +
+          '<td>' +
+            '<span class="status-badge ' + st.cls + '">' +
+              '<span class="sb-dot"></span> ' + st.label +
+            '</span>' +
+          '</td>' +
+          '<td>' +
+            '<div class="row-actions">' +
+              '<button type="button" class="icon-btn view" data-action="view" data-id="' + esc(d.id) + '" title="تفاصيل">' +
+                '<i class="las la-eye"></i>' +
+              '</button>' +
+              '<button type="button" class="icon-btn ' + actionCls + '" data-action="toggle" data-id="' + esc(d.id) + '" title="' + actionTitle + '">' +
+                '<i class="' + actionIcon + '"></i>' +
+              '</button>' +
+            '</div>' +
+          '</td>' +
+        '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+    return html;
+  }
+
+  function refreshTable(){
+    var wrap = document.getElementById('driversListWrap');
+    if (wrap) wrap.innerHTML = renderDriversTable();
+    var counter = document.getElementById('driversCount');
+    if (counter){
+      counter.textContent = filteredDrivers().length + ' من ' + drivers.length + ' سائق';
+    }
+    var counts = driverCounts();
+    var tabAll = document.getElementById('ftAll');
+    var tabActive = document.getElementById('ftActive');
+    var tabBusy = document.getElementById('ftBusy');
+    var tabOffline = document.getElementById('ftOffline');
+    var tabSuspended = document.getElementById('ftSuspended');
+    if (tabAll) tabAll.textContent = counts.all;
+    if (tabActive) tabActive.textContent = counts.active;
+    if (tabBusy) tabBusy.textContent = counts.busy;
+    if (tabOffline) tabOffline.textContent = counts.offline;
+    if (tabSuspended) tabSuspended.textContent = counts.suspended;
+  }
+
+  function renderDriversPage(){
+    var c = driverCounts();
+
+    return '' +
+    '<div class="page-head">' +
+      '<div>' +
+        '<h2 class="page-title"><i class="las la-motorcycle"></i> إدارة السائقين</h2>' +
+        '<p class="page-sub">متابعة كل السائقين المسجلين في التطبيق وإدارة حالتهم</p>' +
+      '</div>' +
+      '<div class="flex items-center gap-2 flex-wrap">' +
+        '<a href="#" class="btn-outline" data-dead><i class="las la-file-export"></i> تصدير</a>' +
+        '<button type="button" class="btn btn-primary" id="addDriverBtn"><i class="las la-plus"></i> إضافة سائق</button>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="stats-grid mb-6">' +
+      '<div class="stat-card">' +
+        '<div class="stat-icon" style="background:rgba(255,90,0,.12);color:#FF5A00;"><i class="las la-users"></i></div>' +
+        '<div class="stat-body"><p class="stat-label">إجمالي السائقين</p><p class="stat-value">' + c.all + '</p></div>' +
+      '</div>' +
+      '<div class="stat-card">' +
+        '<div class="stat-icon" style="background:rgba(0,177,79,.12);color:#00B14F;"><i class="las la-check-circle"></i></div>' +
+        '<div class="stat-body"><p class="stat-label">سائقين متاحين</p><p class="stat-value">' + c.active + '</p></div>' +
+      '</div>' +
+      '<div class="stat-card">' +
+        '<div class="stat-icon" style="background:rgba(245,158,11,.15);color:#F59E0B;"><i class="las la-clock"></i></div>' +
+        '<div class="stat-body"><p class="stat-label">مشغولين</p><p class="stat-value">' + c.busy + '</p></div>' +
+      '</div>' +
+      '<div class="stat-card">' +
+        '<div class="stat-icon" style="background:rgba(113,113,113,.12);color:#717171;"><i class="las la-moon"></i></div>' +
+        '<div class="stat-body"><p class="stat-label">غير متصلين</p><p class="stat-value">' + c.offline + '</p></div>' +
+      '</div>' +
+      '<div class="stat-card">' +
+        '<div class="stat-icon" style="background:rgba(59,130,246,.12);color:#3B82F6;"><i class="las la-receipt"></i></div>' +
+        '<div class="stat-body"><p class="stat-label">إجمالي التوصيلات</p><p class="stat-value">' + c.orders.toLocaleString('en-US') + '</p></div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="panel">' +
+      '<div class="drivers-toolbar mb-4">' +
+        '<div class="search-box">' +
+          '<i class="las la-search"></i>' +
+          '<input type="text" id="driverSearch" placeholder="ابحث بالاسم أو الهاتف أو المعرف أو اللوحة...">' +
+        '</div>' +
+        '<div class="filter-tabs" id="driverFilters">' +
+          '<button type="button" class="active" data-filter="all">الكل <span class="ft-count" id="ftAll">' + c.all + '</span></button>' +
+          '<button type="button" data-filter="active">متاح <span class="ft-count" id="ftActive">' + c.active + '</span></button>' +
+          '<button type="button" data-filter="busy">مشغول <span class="ft-count" id="ftBusy">' + c.busy + '</span></button>' +
+          '<button type="button" data-filter="offline">غير متصل <span class="ft-count" id="ftOffline">' + c.offline + '</span></button>' +
+          '<button type="button" data-filter="suspended">موقوف <span class="ft-count" id="ftSuspended">' + c.suspended + '</span></button>' +
+        '</div>' +
+        '<span class="drivers-count" id="driversCount">' + drivers.length + ' من ' + drivers.length + ' سائق</span>' +
+      '</div>' +
+      '<div id="driversListWrap">' + renderDriversTable() + '</div>' +
+    '</div>';
+  }
+
+  function findDriver(id){
+    for (var i = 0; i < drivers.length; i++){
+      if (drivers[i].id === id) return drivers[i];
+    }
+    return null;
+  }
+
+  function showDevToast(){
+    Swal.fire({
+      toast:true,
+      position:'top-end',
+      icon:'info',
+      title:'هذه الصفحة قيد التطوير',
+      showConfirmButton:false,
+      timer:1600
+    });
+  }
+
+  function bindDeadLinks(){
+    var els = pageContent.querySelectorAll('[data-dead]');
+    for (var i = 0; i < els.length; i++){
+      els[i].addEventListener('click', function(e){
+        e.preventDefault();
+        showDevToast();
+      });
+    }
+  }
+
+  function openDriverDetails(id){
+    var d = findDriver(id);
+    if (!d) return;
+    var st = statusMap[d.status] || statusMap.offline;
+
+    Swal.fire({
+      title: esc(d.name),
+      html:
+        '<div class="swal-details">' +
+          '<div class="row"><b>المعرف</b><span>' + esc(d.id) + '</span></div>' +
+          '<div class="row"><b>الهاتف</b><span>' + esc(d.phone) + '</span></div>' +
+          '<div class="row"><b>المدينة</b><span>' + esc(d.city) + '</span></div>' +
+          '<div class="row"><b>المركبة</b><span>' + esc(d.vehicle) + '</span></div>' +
+          '<div class="row"><b>رقم اللوحة</b><span>' + esc(d.plate) + '</span></div>' +
+          '<div class="row"><b>تاريخ الانضمام</b><span>' + esc(d.joined) + '</span></div>' +
+          '<div class="row"><b>إجمالي الطلبات</b><span>' + d.orders + ' توصيل</span></div>' +
+          '<div class="row"><b>التقييم</b><span>⭐ ' + d.rating + ' / 5</span></div>' +
+          '<div class="row"><b>الحالة</b><span>' + st.label + '</span></div>' +
+        '</div>',
+      imageUrl: d.avatar,
+      imageWidth: 84,
+      imageHeight: 84,
+      confirmButtonColor: '#FF5A00',
+      confirmButtonText: 'إغلاق'
+    });
+  }
+
+  function toggleDriverStatus(id){
+    var d = findDriver(id);
+    if (!d) return;
+
+    var title, text, confirmText, confirmColor, successTitle, successText;
+
+    if (d.status === 'suspended'){
+      title = 'إعادة تفعيل السائق';
+      text = 'هل تريد إعادة تفعيل "' + d.name + '"؟';
+      confirmText = 'نعم، تفعيل';
+      confirmColor = '#00B14F';
+      successTitle = 'تم التفعيل';
+      successText = 'تم إعادة تفعيل السائق بنجاح';
+    } else {
+      title = 'إيقاف السائق';
+      text = 'هل تريد إيقاف "' + d.name + '"؟ لن يستقبل طلبات جديدة.';
+      confirmText = 'نعم، إيقاف';
+      confirmColor = '#EF4444';
+      successTitle = 'تم الإيقاف';
+      successText = 'تم إيقاف السائق بنجاح';
+    }
+
+    Swal.fire({
+      title: title,
+      text: text,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: confirmColor,
+      cancelButtonColor: '#717171',
+      confirmButtonText: confirmText,
+      cancelButtonText: 'إلغاء'
+    }).then(function(result){
+      if (!result.isConfirmed) return;
+
+      if (d.status === 'suspended'){
+        d.status = 'active';
+      } else {
+        d.status = 'suspended';
+      }
+
+      refreshTable();
+      updateBadges();
+
+      Swal.fire({
+        title: successTitle,
+        text: successText,
+        icon: 'success',
+        confirmButtonColor: '#FF5A00',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    });
+  }
+
+  function openAddDriver(){
+    Swal.fire({
+      title: 'إضافة سائق جديد',
+      html:
+        '<div class="swal-form">' +
+          '<label>اسم السائق</label>' +
+          '<input id="ndName" type="text" placeholder="مثال: أحمد محمود">' +
+          '<label>رقم الهاتف</label>' +
+          '<input id="ndPhone" type="text" placeholder="مثال: 01000000000">' +
+          '<label>المدينة</label>' +
+          '<input id="ndCity" type="text" placeholder="مثال: القاهرة">' +
+          '<label>نوع المركبة</label>' +
+          '<select id="ndVehicle">' +
+            '<option value="موتوسيكل">موتوسيكل</option>' +
+            '<option value="سيارة">سيارة</option>' +
+          '</select>' +
+          '<label>رقم اللوحة</label>' +
+          '<input id="ndPlate" type="text" placeholder="مثال: ن ص ع 1234">' +
+        '</div>',
+      showCancelButton: true,
+      confirmButtonColor: '#FF5A00',
+      cancelButtonColor: '#717171',
+      confirmButtonText: 'إضافة',
+      cancelButtonText: 'إلغاء',
+      focusConfirm: false,
+      preConfirm: function(){
+        var name = document.getElementById('ndName').value.trim();
+        var phone = document.getElementById('ndPhone').value.trim().replace(/\s+/g, '');
+        var city = document.getElementById('ndCity').value.trim();
+        var vehicle = document.getElementById('ndVehicle').value;
+        var plate = document.getElementById('ndPlate').value.trim();
+
+        if (!name){
+          Swal.showValidationMessage('يرجى إدخال اسم السائق');
+          return false;
+        }
+        if (!phone){
+          Swal.showValidationMessage('يرجى إدخال رقم الهاتف');
+          return false;
+        }
+        if (!city){
+          Swal.showValidationMessage('يرجى إدخال المدينة');
+          return false;
+        }
+        if (!plate){
+          Swal.showValidationMessage('يرجى إدخال رقم اللوحة');
+          return false;
+        }
+
+        return { name:name, phone:phone, city:city, vehicle:vehicle, plate:plate };
+      }
+    }).then(function(result){
+      if (!result.isConfirmed || !result.value) return;
+
+      var v = result.value;
+      var newId = 'D-' + (200 + drivers.length + 1);
+
+      drivers.unshift({
+        id: newId,
+        name: v.name,
+        phone: v.phone,
+        status: 'active',
+        vehicle: v.vehicle,
+        plate: v.plate,
+        orders: 0,
+        rating: 0,
+        joined: new Date().toISOString().slice(0,10),
+        city: v.city,
+        avatar: 'https://sys.shadowza.space/logos/1.png'
+      });
+
+      currentFilter = 'all';
+      searchQuery = '';
+      render();
+
+      Swal.fire({
+        title: 'تمت الإضافة',
+        text: 'تم إضافة السائق بنجاح',
+        icon: 'success',
+        confirmButtonColor: '#FF5A00'
+      });
+    });
+  }
+
+  function bindPageEvents(){
+    var searchInput = document.getElementById('driverSearch');
+    if (searchInput){
+      searchInput.addEventListener('input', function(){
+        searchQuery = this.value;
+        refreshTable();
+      });
+    }
+
+    var filters = document.getElementById('driverFilters');
+    if (filters){
+      filters.addEventListener('click', function(e){
+        var btn = e.target.closest('button[data-filter]');
+        if (!btn) return;
+        var buttons = filters.querySelectorAll('button[data-filter]');
+        for (var i = 0; i < buttons.length; i++){
+          buttons[i].classList.remove('active');
+        }
+        btn.classList.add('active');
+        currentFilter = btn.getAttribute('data-filter');
+        refreshTable();
+      });
+    }
+
+    var listWrap = document.getElementById('driversListWrap');
+    if (listWrap){
+      listWrap.addEventListener('click', function(e){
+        var btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        var action = btn.getAttribute('data-action');
+        var id = btn.getAttribute('data-id');
+        if (action === 'view') openDriverDetails(id);
+        else if (action === 'toggle') toggleDriverStatus(id);
+      });
+    }
+
+    var addBtn = document.getElementById('addDriverBtn');
+    if (addBtn){
+      addBtn.addEventListener('click', openAddDriver);
+    }
+  }
+
+  function render(){
+    pageContent.innerHTML = renderDriversPage();
+    updateBadges();
+    bindPageEvents();
+    bindDeadLinks();
+  }
+
+  function openSidebar(){ document.body.classList.add('sb-open'); }
+  function closeSidebar(){ document.body.classList.remove('sb-open'); }
+
+  sbPin.addEventListener('click', function(){
+    var willCollapse = !document.body.classList.contains('sb-collapsed');
+    applyCollapsed(willCollapse);
+    writeStoredCollapsed(willCollapse);
+  });
+
+  sidebarClose.addEventListener('click', closeSidebar);
+  overlay.addEventListener('click', closeSidebar);
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') closeSidebar();
+  });
+
+  var sbItems = document.querySelectorAll('.sb-item[data-page]');
+  for (var i = 0; i < sbItems.length; i++){
+    sbItems[i].addEventListener('click', function(e){
+      e.preventDefault();
+      var page = this.getAttribute('data-page');
+      if (page === 'drivers'){
+        closeSidebar();
+        window.scrollTo({ top:0, behavior:'smooth' });
+        return;
+      }
+      showDevToast();
+    });
+  }
+
+  var bnItems = document.querySelectorAll('.bottom-nav-item[data-page]');
+  for (var j = 0; j < bnItems.length; j++){
+    bnItems[j].addEventListener('click', function(e){
+      e.preventDefault();
+      var page = this.getAttribute('data-page');
+      if (page === 'drivers'){
+        window.scrollTo({ top:0, behavior:'smooth' });
+        return;
+      }
+      showDevToast();
+    });
+  }
+
+  appStatusPill.addEventListener('click', function(){
+    appOpen = !appOpen;
+    if (appOpen){
+      appStatusPill.classList.add('open');
+      appStatusPill.classList.remove('closed');
+      appStatusText.textContent = 'التطبيق يعمل';
+    } else {
+      appStatusPill.classList.add('closed');
+      appStatusPill.classList.remove('open');
+      appStatusText.textContent = 'التطبيق متوقف';
+    }
+    Swal.fire({
+      title: appOpen ? 'التطبيق يعمل الآن' : 'تم إيقاف التطبيق',
+      text: appOpen ? 'يمكن للمطاعم استقبال الطلبات من جديد' : 'لن يتم استقبال أي طلبات جديدة حتى إعادة التشغيل',
+      icon: appOpen ? 'success' : 'warning',
+      confirmButtonColor:'#FF5A00',
+      timer:1700,
+      showConfirmButton:false
+    });
+  });
+
+  notificationBtn.addEventListener('click', function(){
+    Swal.fire({
+      title:'إشعارات الإدارة',
+      html:'<div style="text-align:right;font-size:0.85rem;">' +
+        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">🔔 5 طلبات جديدة في كل المطاعم</p>' +
+        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">🏪 مطعم جديد بانتظار الموافقة: بيتزا روما</p>' +
+        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">💸 3 طلبات سحب بانتظار المراجعة</p>' +
+        '<p class="p-2 rounded" style="background:#FFF3E8;">⚠️ شكوى جديدة على مطعم شاورما الشام</p>' +
+        '</div>',
+      icon:'info',
+      confirmButtonColor:'#FF5A00',
+      confirmButtonText:'حسناً'
+    });
+  });
+
+  headerAvatar.addEventListener('click', function(){
+    if (window.innerWidth <= 1024){
+      if (document.body.classList.contains('sb-open')) closeSidebar();
+      else openSidebar();
+      return;
+    }
+    Swal.fire({
+      title:'حساب المدير العام',
+      html:'<div style="text-align:right;font-size:0.85rem;">' +
+        '<p class="mb-2"><b>الاسم:</b> مدير التطبيق</p>' +
+        '<p class="mb-2"><b>البريد:</b> admin@shadowza.space</p>' +
+        '<p class="mb-2"><b>الصلاحية:</b> أدمن عام</p>' +
+        '<p><b>آخر دخول:</b> اليوم 09:14 ص</p>' +
+        '</div>',
+      imageUrl:'https://sys.shadowza.space/logos/1.png',
+      imageWidth:80,
+      imageHeight:80,
+      confirmButtonColor:'#FF5A00',
+      confirmButtonText:'إغلاق'
+    });
+  });
+
+  logoutBtn.addEventListener('click', function(e){
+    e.preventDefault();
+    closeSidebar();
+    Swal.fire({
+      title:'تسجيل الخروج',
+      text:'هل أنت متأكد من تسجيل الخروج من لوحة إدارة التطبيق؟',
+      icon:'warning',
+      showCancelButton:true,
+      confirmButtonColor:'#FF5A00',
+      cancelButtonColor:'#717171',
+      confirmButtonText:'نعم، خروج',
+      cancelButtonText:'إلغاء'
+    }).then(function(result){
+      if (result.isConfirmed){
+        Swal.fire({
+          title:'تم بنجاح',
+          text:'تم تسجيل الخروج بنجاح',
+          icon:'success',
+          confirmButtonColor:'#FF5A00'
+        });
+      }
+    });
+  });
+
+  var lastIsDesktop = window.innerWidth >= 1025;
+
+  window.addEventListener('resize', function(){
+    var isDesktop = window.innerWidth >= 1025;
+    if (isDesktop !== lastIsDesktop){
+      lastIsDesktop = isDesktop;
+      if (isDesktop){
+        document.body.classList.remove('sb-open');
+        applyCollapsed(readStoredCollapsed());
+      } else {
+        document.body.classList.remove('sb-collapsed');
+        document.body.classList.remove('sb-open');
+      }
+    }
+  });
+
+  function init(){
+    applyCollapsed(readStoredCollapsed());
+    render();
+  }
+
+  init();
+
+})();
+</script>
+</body>
+</html>
