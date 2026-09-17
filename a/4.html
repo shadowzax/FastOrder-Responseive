@@ -1,0 +1,1410 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+<meta name="theme-color" content="#FF5A00">
+<title>لوحة إدارة التطبيق - المطاعم</title>
+<meta name="description" content="لوحة تحكم إدارة التطبيق - إدارة المطاعم">
+<link rel="icon" type="image/png" href="https://sys.shadowza.space/logos/1.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        primary: '#FF5A00',
+        secondary: '#FF8C38',
+        accent: '#FFB800',
+        dark: '#1A1A1A',
+        muted: '#717171',
+        success: '#00B14F'
+      }
+    }
+  }
+}
+</script>
+<style>
+:root{
+  --color-primary:#FF5A00;
+  --color-secondary:#FF8C38;
+  --color-accent:#FFB800;
+  --color-background:#F7F9F8;
+  --color-card:#FFFFFF;
+  --color-darker:#F0F4F3;
+  --color-white:#1A1A1A;
+  --color-muted:#717171;
+  --border-subtle:rgba(0,0,0,0.08);
+  --card-bg:#FFFFFF;
+  --border-color:rgba(0,0,0,0.1);
+  --darker-bg:#F0F4F3;
+  --header-height:72px;
+  --sidebar-width:262px;
+  --sidebar-collapsed:72px;
+  --bottom-nav-height:68px;
+  --shadow-card:0 2px 12px rgba(0,0,0,0.06);
+  --c-active:#00B14F;
+  --c-pending:#F59E0B;
+  --c-suspended:#EF4444;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;width:100%;overscroll-behavior:none;}
+body{
+  font-family:'Noto Sans Arabic',system-ui,sans-serif;
+  background-color:var(--color-background);
+  color:var(--color-white);
+  overflow-x:hidden;
+}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--color-background);border-radius:4px;}
+::-webkit-scrollbar-thumb{background:#FF8C38;border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:#FF5A00;}
+
+.main-wrap{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+#mainHeader{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:var(--header-height);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 16px;
+  border-bottom:1px solid var(--border-subtle);
+  background:var(--color-background);
+  z-index:400;
+  box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.header-brand{display:flex;align-items:center;min-width:0;}
+.brand-logo{
+  height:58px;
+  width:auto;
+  max-width:230px;
+  object-fit:contain;
+  display:block;
+  flex-shrink:0;
+}
+.header-actions{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.notification-btn{
+  position:relative;background:none;border:none;cursor:pointer;
+  color:var(--color-muted);font-size:1.5rem;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:color .2s;flex-shrink:0;
+}
+.notification-btn:hover{color:#FF5A00;}
+.notification-btn .notification-dot{
+  position:absolute;top:2px;right:2px;width:8px;height:8px;
+  border-radius:50%;background:#FF5A00;
+  border:2px solid var(--color-background);
+}
+.header-avatar-btn{
+  width:44px;height:44px;border-radius:50%;
+  object-fit:cover;border:2px solid var(--color-primary);
+  cursor:pointer;transition:all .2s;flex-shrink:0;background:#fff;
+}
+.header-avatar-btn:hover{transform:scale(1.05);}
+
+.status-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:40px;
+  font-size:0.75rem;font-weight:700;cursor:pointer;
+  transition:all .25s ease;border:1px solid transparent;flex-shrink:0;
+}
+.status-pill.open{
+  background:rgba(0,177,79,0.1);color:#00B14F;
+  border-color:rgba(0,177,79,0.3);
+}
+.status-pill.closed{
+  background:rgba(239,68,68,0.1);color:#EF4444;
+  border-color:rgba(239,68,68,0.3);
+}
+.status-pill .dot{
+  width:8px;height:8px;border-radius:50%;
+  background:currentColor;animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.sidebar{
+  position:fixed;
+  top:var(--header-height);
+  right:0;
+  bottom:0;
+  width:var(--sidebar-width);max-width:86vw;
+  background:var(--card-bg);
+  border-left:1px solid var(--border-color);
+  border-top:1px solid var(--border-color);
+  z-index:300;
+  transform:translateX(100%);
+  transition:transform .3s cubic-bezier(.4,0,.2,1), width .3s cubic-bezier(.4,0,.2,1);
+  overflow-y:auto;overscroll-behavior:contain;
+  box-shadow:-6px 0 30px rgba(0,0,0,0.12);
+  display:flex;flex-direction:column;
+}
+body.sb-open .sidebar{transform:translateX(0);}
+
+.sb-header{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 12px;border-bottom:1px solid var(--border-color);
+  position:sticky;top:0;background:var(--card-bg);z-index:2;
+  transition:padding .3s ease;
+}
+.sb-avatar{
+  width:44px;height:44px;border-radius:50%;
+  object-fit:cover;border:2px solid var(--color-primary);
+  background:#fff;flex-shrink:0;
+  transition:width .3s ease, height .3s ease;
+  box-shadow:0 2px 8px rgba(255,90,0,0.18);
+}
+.sb-brand{flex:1;min-width:0;transition:opacity .2s ease;}
+.sb-title{
+  font-size:0.88rem;font-weight:800;color:var(--color-white);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.sb-sub{
+  font-size:0.64rem;color:var(--color-muted);font-weight:600;
+  margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+.sb-pin{
+  width:32px;height:32px;border-radius:9px;
+  border:1.5px solid var(--border-color);background:transparent;
+  color:var(--color-muted);cursor:pointer;font-size:0.95rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .25s ease;flex-shrink:0;padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.sb-pin:hover{
+  background:rgba(255,90,0,0.08);
+  color:var(--color-primary);
+  border-color:rgba(255,90,0,0.3);
+}
+.sb-pin i{
+  transition:transform .3s ease;
+  display:inline-block;
+  font-size:1rem;
+}
+.sb-pin.pinned{
+  background:rgba(255,90,0,0.12);
+  color:var(--color-primary);
+  border-color:rgba(255,90,0,0.4);
+}
+.sb-pin.pinned i{transform:rotate(0deg);}
+.sb-pin:not(.pinned) i{transform:rotate(45deg);}
+
+.sb-close{
+  width:32px;height:32px;border-radius:9px;
+  border:1px solid var(--border-color);background:transparent;
+  color:var(--color-muted);cursor:pointer;font-size:1rem;
+  display:none;align-items:center;justify-content:center;
+  transition:all .2s ease;flex-shrink:0;
+}
+.sb-close:hover{background:rgba(239,68,68,.1);color:#EF4444;border-color:rgba(239,68,68,.3);}
+
+.sb-nav{padding:10px;display:flex;flex-direction:column;gap:2px;flex:1;transition:padding .3s ease;}
+.sb-section{
+  font-size:0.62rem;text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--color-muted);padding:12px 12px 5px;font-weight:700;
+  transition:opacity .2s ease;
+}
+.sb-item{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 13px;border-radius:12px;cursor:pointer;
+  transition:all .18s ease;color:var(--color-muted);
+  font-weight:600;text-decoration:none;font-size:0.86rem;
+  border:none;background:transparent;font-family:inherit;width:100%;
+  text-align:right;-webkit-tap-highlight-color:transparent;
+  position:relative;
+}
+.sb-item i{font-size:20px;width:24px;flex-shrink:0;text-align:center;transition:all .25s ease;}
+.sb-item:hover{background:rgba(255,90,0,0.08);color:var(--color-primary);}
+.sb-item.active{
+  background:rgba(255,90,0,0.12);
+  color:var(--color-primary);font-weight:800;
+}
+.sb-item.logout{color:#EF4444;}
+.sb-item.logout:hover{background:rgba(239,68,68,0.08);color:#EF4444;}
+.sb-badge{
+  margin-right:auto;min-width:20px;height:20px;padding:0 6px;
+  border-radius:10px;background:#EF4444;color:#fff;
+  font-size:0.62rem;font-weight:800;
+  display:inline-flex;align-items:center;justify-content:center;
+  transition:all .25s ease;
+}
+.sb-divider{height:1px;background:var(--border-color);margin:6px 12px;transition:margin .3s ease;}
+
+@media (min-width:1025px){
+  .sidebar{transform:translateX(0);}
+  .main-wrap{
+    margin-right:var(--sidebar-width);
+    padding-top:var(--header-height);
+    transition:margin-right .3s cubic-bezier(.4,0,.2,1);
+  }
+  body.sb-collapsed .main-wrap{margin-right:var(--sidebar-collapsed);}
+  body.sb-collapsed .sidebar{width:var(--sidebar-collapsed);}
+
+  body.sb-collapsed .sb-header{
+    padding:14px 0;
+    flex-direction:column;
+    gap:10px;
+    justify-content:center;
+    align-items:center;
+  }
+  body.sb-collapsed .sb-avatar{width:38px;height:38px;}
+  body.sb-collapsed .sb-brand{display:none;}
+  body.sb-collapsed .sb-nav{padding:8px;}
+  body.sb-collapsed .sb-section{display:none;}
+  body.sb-collapsed .sb-divider{margin:6px 14px;}
+  body.sb-collapsed .sb-item{
+    justify-content:center;
+    padding:12px 0;
+    gap:0;
+  }
+  body.sb-collapsed .sb-item span:not(.sb-badge){display:none;}
+  body.sb-collapsed .sb-item i{width:auto;font-size:20px;}
+  body.sb-collapsed .sb-badge{
+    position:absolute;
+    top:4px;
+    left:6px;
+    right:auto;
+    margin:0;
+    min-width:15px;
+    height:15px;
+    padding:0 4px;
+    font-size:0.52rem;
+    border-radius:8px;
+  }
+}
+
+@media (max-width:1024px){
+  .main-wrap{padding-top:var(--header-height);}
+  .sb-pin{display:none;}
+  .sb-close{display:flex;}
+  body.sb-collapsed .sidebar{width:var(--sidebar-width);}
+  body.sb-collapsed .main-wrap{margin-right:0;}
+  body.sb-collapsed .sb-header{padding:14px 12px;flex-direction:row;justify-content:flex-start;gap:10px;}
+  body.sb-collapsed .sb-avatar{width:44px;height:44px;}
+  body.sb-collapsed .sb-brand{display:block;}
+  body.sb-collapsed .sb-nav{padding:10px;}
+  body.sb-collapsed .sb-section{display:block;}
+  body.sb-collapsed .sb-divider{margin:6px 12px;}
+  body.sb-collapsed .sb-item{justify-content:flex-start;padding:11px 13px;gap:12px;}
+  body.sb-collapsed .sb-item span:not(.sb-badge){display:inline;}
+  body.sb-collapsed .sb-item i{width:24px;font-size:20px;}
+  body.sb-collapsed .sb-badge{position:static;margin-right:auto;min-width:20px;height:20px;padding:0 6px;font-size:0.62rem;border-radius:10px;}
+}
+
+.overlay{
+  position:fixed;
+  top:var(--header-height);
+  left:0;
+  right:0;
+  bottom:0;
+  background:rgba(0,0,0,0.45);
+  z-index:290;opacity:0;visibility:hidden;
+  transition:all .3s ease;backdrop-filter:blur(2px);
+}
+body.sb-open .overlay{opacity:1;visibility:visible;}
+@media (min-width:1025px){.overlay{display:none;}}
+
+main{flex:1;padding-bottom:24px;}
+@media (max-width:1024px){
+  main{padding-bottom:calc(var(--bottom-nav-height) + 24px);}
+}
+
+.bottom-mobile-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;
+  height:var(--bottom-nav-height);background:var(--card-bg);
+  border-top:1px solid var(--border-color);z-index:100;
+  padding:6px 8px;
+  padding-bottom:max(6px,env(safe-area-inset-bottom,6px));
+  box-shadow:0 -2px 12px rgba(0,0,0,0.08);
+  align-items:center;justify-content:space-around;gap:4px;
+}
+@media (max-width:1024px){.bottom-mobile-nav{display:flex;}}
+.bottom-nav-item{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:2px;flex:1;padding:8px 4px;
+  border-radius:12px;cursor:pointer;text-decoration:none;
+  color:var(--color-muted);font-size:0.68rem;font-weight:600;
+  transition:all .25s ease;position:relative;min-width:0;
+  -webkit-tap-highlight-color:transparent;user-select:none;
+  background:transparent;border:none;font-family:inherit;
+}
+.bottom-nav-item i{font-size:1.3rem;transition:all .25s ease;flex-shrink:0;}
+.bottom-nav-item span{
+  white-space:nowrap;text-overflow:ellipsis;overflow:hidden;
+  max-width:100%;font-size:0.63rem;letter-spacing:.2px;
+}
+.bottom-nav-item.active{color:var(--color-primary);}
+.bottom-nav-item.active i{font-size:1.45rem;}
+.bottom-nav-item-center{
+  position:relative;top:-20px;width:58px;height:58px;
+  border-radius:50%;background:var(--color-primary);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 12px rgba(255,90,0,0.4);
+  transition:all .3s ease;flex-shrink:0;flex:none;margin:0 4px;
+}
+.bottom-nav-item-center i{font-size:1.9rem;}
+.bottom-nav-item-center span{display:none;}
+.bottom-nav-item-center.active{background:#e04e00;color:#fff;}
+.nav-badge{
+  position:absolute;top:4px;left:50%;transform:translateX(-50%);
+  min-width:18px;height:18px;padding:0 4px;border-radius:9px;
+  background:#EF4444;color:#fff;font-size:.6rem;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+}
+.bottom-nav-item-center .nav-badge{
+  top:-4px;left:2px;transform:none;background:#1A1A1A;
+}
+
+.page-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;margin-bottom:20px;
+}
+.page-title{
+  font-size:1.25rem;font-weight:800;color:var(--color-white);
+  display:flex;align-items:center;gap:8px;
+}
+.page-title i{color:#FF5A00;}
+.page-sub{font-size:0.76rem;color:var(--color-muted);font-weight:600;margin-top:3px;}
+
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:12px;
+}
+.stat-card{
+  background:var(--card-bg);
+  border:1px solid var(--border-color);
+  border-radius:16px;
+  padding:14px;
+  box-shadow:var(--shadow-card);
+  transition:all .3s ease;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+.stat-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 8px 24px rgba(255,90,0,0.1);
+  border-color:rgba(255,90,0,0.3);
+}
+.stat-icon{
+  width:42px;height:42px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;flex-shrink:0;
+}
+.stat-body{min-width:0;flex:1;}
+.stat-value{font-size:1.15rem;font-weight:800;color:var(--color-white);line-height:1.2;}
+.stat-label{
+  font-size:0.7rem;color:var(--color-muted);font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+@media (max-width:1024px){.stats-grid{grid-template-columns:repeat(3,1fr);gap:10px;}}
+@media (max-width:640px){
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .stat-card{padding:10px;gap:8px;border-radius:12px;}
+  .stat-icon{width:34px;height:34px;font-size:1.05rem;border-radius:9px;}
+  .stat-value{font-size:1rem;}
+  .stat-label{font-size:0.65rem;}
+}
+
+.panel{
+  background:var(--card-bg);
+  border:1px solid var(--border-color);
+  border-radius:18px;
+  box-shadow:var(--shadow-card);
+  padding:16px;
+}
+.panel-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;margin-bottom:14px;flex-wrap:wrap;
+}
+.section-title{
+  font-size:1.02rem;font-weight:800;color:var(--color-white);
+  display:flex;align-items:center;gap:8px;
+}
+.section-title i{color:#FF5A00;}
+
+.btn{
+  border:none;border-radius:12px;padding:10px 16px;
+  font-family:inherit;font-weight:700;font-size:.82rem;
+  cursor:pointer;transition:all .2s ease;
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:6px;color:#fff;white-space:nowrap;text-decoration:none;
+}
+.btn-primary{background:var(--color-primary);box-shadow:0 2px 8px rgba(255,90,0,0.3);}
+.btn-primary:hover{background:#e04e00;}
+.btn-outline{
+  background:transparent;color:var(--color-muted);
+  border:1px solid var(--border-color);border-radius:12px;
+  padding:10px 16px;font-family:inherit;font-weight:700;
+  font-size:.82rem;cursor:pointer;transition:all .2s ease;
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:6px;white-space:nowrap;text-decoration:none;
+}
+.btn-outline:hover{background:var(--darker-bg);color:var(--color-white);}
+
+.rest-toolbar{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.search-box{position:relative;flex:1;min-width:210px;}
+.search-box i{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  color:var(--color-muted);font-size:1.1rem;pointer-events:none;
+}
+.search-box input{
+  width:100%;padding:11px 42px 11px 14px;border-radius:12px;
+  border:1px solid var(--border-color);background:var(--card-bg);
+  font-family:inherit;font-size:.82rem;font-weight:600;
+  color:var(--color-white);outline:none;transition:all .2s ease;
+}
+.search-box input::placeholder{color:var(--color-muted);font-weight:600;}
+.search-box input:focus{
+  border-color:rgba(255,90,0,.5);
+  box-shadow:0 0 0 3px rgba(255,90,0,.08);
+}
+
+.filter-tabs{
+  display:inline-flex;background:var(--darker-bg);
+  border-radius:12px;padding:4px;gap:3px;flex-wrap:wrap;
+}
+.filter-tabs button{
+  border:none;background:transparent;font-family:inherit;
+  font-size:.72rem;font-weight:800;color:var(--color-muted);
+  padding:7px 13px;border-radius:9px;cursor:pointer;
+  transition:all .2s ease;white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;
+  display:inline-flex;align-items:center;gap:5px;
+}
+.filter-tabs button:hover{color:var(--color-primary);}
+.filter-tabs button.active{
+  background:#fff;color:var(--color-primary);
+  box-shadow:0 1px 4px rgba(0,0,0,0.08);
+}
+.filter-tabs button .ft-count{
+  min-width:17px;height:17px;padding:0 5px;border-radius:9px;
+  background:rgba(0,0,0,0.07);color:inherit;
+  font-size:.6rem;font-weight:800;
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.filter-tabs button.active .ft-count{background:rgba(255,90,0,0.14);}
+
+.rest-count{
+  font-size:.72rem;font-weight:800;color:var(--color-muted);
+  white-space:nowrap;
+}
+
+.rest-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:14px;
+}
+
+.rest-card{
+  background:var(--card-bg);
+  border:1px solid var(--border-color);
+  border-radius:16px;
+  padding:14px;
+  box-shadow:var(--shadow-card);
+  transition:all .25s ease;
+  display:flex;flex-direction:column;gap:12px;
+  position:relative;overflow:hidden;
+  min-width:0;
+}
+.rest-card::before{
+  content:"";position:absolute;top:0;right:0;left:0;height:3px;
+}
+.rest-card[data-status="active"]::before{background:var(--c-active);}
+.rest-card[data-status="pending"]::before{background:var(--c-pending);}
+.rest-card[data-status="suspended"]::before{background:var(--c-suspended);}
+.rest-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 10px 26px rgba(255,90,0,0.12);
+  border-color:rgba(255,90,0,0.28);
+}
+
+.rest-card-top{
+  display:flex;align-items:flex-start;gap:11px;min-width:0;
+}
+.rest-logo{
+  width:56px;height:56px;border-radius:14px;object-fit:cover;
+  border:1px solid var(--border-color);background:#fff;flex-shrink:0;
+}
+.rest-info{flex:1;min-width:0;}
+.rest-name{
+  font-size:.9rem;font-weight:800;color:var(--color-white);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.rest-city{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:.68rem;font-weight:600;color:var(--color-muted);
+  margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.rest-city i{font-size:.85rem;}
+.rest-city .rest-id{
+  font-family:monospace;letter-spacing:.3px;
+  background:rgba(26,26,26,0.06);
+  padding:2px 6px;border-radius:7px;font-size:.6rem;font-weight:800;
+}
+
+.rest-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 9px;border-radius:20px;
+  font-size:.62rem;font-weight:800;white-space:nowrap;flex-shrink:0;
+}
+.badge-active{background:rgba(0,177,79,0.12);color:var(--c-active);}
+.badge-pending{background:rgba(245,158,11,0.15);color:var(--c-pending);}
+.badge-suspended{background:rgba(239,68,68,0.12);color:var(--c-suspended);}
+
+.rest-stats{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:8px;padding:10px 0;
+  border-top:1px dashed var(--border-color);
+  border-bottom:1px dashed var(--border-color);
+}
+.rest-stat{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  min-width:0;
+}
+.rs-val{
+  font-size:.9rem;font-weight:800;color:var(--color-white);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;
+}
+.rs-val.rating{color:var(--color-accent);}
+.rs-lbl{font-size:.62rem;font-weight:700;color:var(--color-muted);}
+
+.rest-actions{display:flex;align-items:center;gap:8px;}
+.btn-mini{
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  padding:8px 12px;border-radius:10px;font-family:inherit;
+  font-size:.72rem;font-weight:800;cursor:pointer;
+  border:1px solid var(--border-color);background:transparent;
+  color:var(--color-muted);transition:all .2s ease;flex:1;
+  white-space:nowrap;-webkit-tap-highlight-color:transparent;
+}
+.btn-mini:hover{background:var(--darker-bg);color:var(--color-white);}
+.btn-mini.success{
+  background:rgba(0,177,79,.1);color:#00B14F;
+  border-color:rgba(0,177,79,.25);
+}
+.btn-mini.success:hover{background:rgba(0,177,79,.18);color:#00B14F;}
+.btn-mini.danger{
+  background:rgba(239,68,68,.08);color:#EF4444;
+  border-color:rgba(239,68,68,.22);
+}
+.btn-mini.danger:hover{background:rgba(239,68,68,.16);color:#EF4444;}
+
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;padding:56px 16px;text-align:center;
+}
+.empty-state i{font-size:3rem;color:var(--color-muted);opacity:.5;}
+.empty-state p{font-size:.85rem;font-weight:700;color:var(--color-muted);}
+.empty-state span{font-size:.72rem;font-weight:600;color:var(--color-muted);opacity:.8;}
+
+.swal-form{text-align:right;font-family:'Noto Sans Arabic',sans-serif;}
+.swal-form label{
+  display:block;font-size:.75rem;font-weight:800;
+  color:#1A1A1A;margin:10px 0 5px;
+}
+.swal-form input{
+  width:100%;padding:10px 12px;border-radius:10px;
+  border:1px solid rgba(0,0,0,.12);font-family:inherit;
+  font-size:.82rem;font-weight:600;outline:none;
+  transition:all .2s ease;background:#fff;color:#1A1A1A;
+}
+.swal-form input:focus{
+  border-color:rgba(255,90,0,.5);
+  box-shadow:0 0 0 3px rgba(255,90,0,.08);
+}
+.swal-details{
+  text-align:right;font-size:.82rem;color:#1A1A1A;
+}
+.swal-details .row{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:8px 10px;border-radius:9px;background:#F7F9F8;
+  margin-bottom:6px;
+}
+.swal-details .row b{font-weight:800;}
+.swal-details .row span{font-weight:600;color:#717171;}
+
+@media (max-width:640px){
+  :root{--header-height:66px;}
+  .page-title{font-size:1.05rem;}
+  .brand-logo{height:48px;max-width:190px;}
+  .header-avatar-btn{width:40px;height:40px;}
+  .status-pill{padding:6px 10px;font-size:0.68rem;}
+  .panel{padding:13px;border-radius:16px;}
+  .rest-grid{grid-template-columns:1fr;gap:10px;}
+  .rest-card{padding:12px;border-radius:14px;}
+  .rest-logo{width:48px;height:48px;border-radius:12px;}
+  .rest-name{font-size:.84rem;}
+  .filter-tabs{width:100%;justify-content:space-between;}
+  .filter-tabs button{flex:1;justify-content:center;padding:7px 8px;font-size:.66rem;}
+  .btn{padding:9px 13px;font-size:.76rem;}
+  .btn-outline{padding:9px 13px;font-size:.76rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="main-wrap">
+
+  <header id="mainHeader">
+    <div class="header-brand">
+      <img src="https://sys.shadowza.space/logos/1.png" class="brand-logo" alt="logo">
+    </div>
+    <div class="header-actions">
+      <div class="status-pill open" id="appStatusPill">
+        <span class="dot"></span>
+        <span id="appStatusText">التطبيق يعمل</span>
+      </div>
+      <button class="notification-btn" id="notificationBtn" aria-label="الإشعارات">
+        <i class="las la-bell"></i>
+        <span class="notification-dot"></span>
+      </button>
+      <img id="headerAvatar" src="https://sys.shadowza.space/logos/1.png" class="header-avatar-btn" alt="avatar">
+    </div>
+  </header>
+
+  <main>
+    <div class="container mx-auto px-4 py-6 max-w-7xl" id="pageContent"></div>
+  </main>
+
+</div>
+
+<aside class="sidebar" id="sidebar" role="navigation" aria-label="القائمة الجانبية">
+  <div class="sb-header">
+    <img src="https://sys.shadowza.space/logos/1.png" class="sb-avatar" alt="admin avatar">
+    <div class="sb-brand">
+      <p class="sb-title">مدير التطبيق</p>
+      <p class="sb-sub">أدمن عام</p>
+    </div>
+    <button class="sb-pin pinned" id="sbPin" aria-label="تثبيت القائمة">
+      <i class="las la-thumbtack"></i>
+    </button>
+    <button class="sb-close" id="sidebarClose" aria-label="إغلاق"><i class="las la-times"></i></button>
+  </div>
+  <nav class="sb-nav">
+    <p class="sb-section">الرئيسية</p>
+    <a href="#" class="sb-item" data-page="dashboard"><i class="las la-chart-pie"></i><span>لوحة التحكم</span></a>
+    <a href="#" class="sb-item" data-page="orders"><i class="las la-receipt"></i><span>كل الطلبات</span><span class="sb-badge" id="sbOrdersBadge">5</span></a>
+    <a href="#" class="sb-item active" data-page="restaurants"><i class="las la-store"></i><span>المطاعم</span><span class="sb-badge" id="sbRestBadge">4</span></a>
+    <a href="#" class="sb-item" data-page="drivers"><i class="las la-motorcycle"></i><span>السائقين</span></a>
+    <a href="#" class="sb-item" data-page="customers"><i class="las la-users"></i><span>العملاء</span></a>
+    <div class="sb-divider"></div>
+    <p class="sb-section">المحتوى</p>
+    <a href="#" class="sb-item" data-page="categories"><i class="las la-th-large"></i><span>الأقسام</span></a>
+    <a href="#" class="sb-item" data-page="offers"><i class="las la-percent"></i><span>العروض والخصومات</span></a>
+    <a href="#" class="sb-item" data-page="banners"><i class="las la-image"></i><span>البانرات</span></a>
+    <div class="sb-divider"></div>
+    <p class="sb-section">المالية</p>
+    <a href="#" class="sb-item" data-page="finance"><i class="las la-wallet"></i><span>الأرباح والعمولات</span></a>
+    <a href="#" class="sb-item" data-page="payouts"><i class="las la-money-check-alt"></i><span>طلبات السحب</span><span class="sb-badge" id="sbPayoutBadge">3</span></a>
+    <a href="#" class="sb-item" data-page="reports"><i class="las la-chart-line"></i><span>التقارير</span></a>
+    <div class="sb-divider"></div>
+    <p class="sb-section">الإدارة</p>
+    <a href="#" class="sb-item" data-page="admins"><i class="las la-user-shield"></i><span>المشرفين والصلاحيات</span></a>
+    <a href="#" class="sb-item" data-page="support"><i class="las la-headset"></i><span>الدعم والشكاوى</span></a>
+    <a href="#" class="sb-item" data-page="settings"><i class="las la-cog"></i><span>إعدادات التطبيق</span></a>
+    <div class="sb-divider"></div>
+    <a href="#" class="sb-item logout" id="logoutBtn"><i class="las la-sign-out-alt"></i><span>تسجيل الخروج</span></a>
+    <div style="height:20px;"></div>
+  </nav>
+</aside>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="bottom-mobile-nav" id="bottomMobileNav">
+  <a href="#" class="bottom-nav-item" data-page="dashboard"><i class="las la-chart-pie"></i><span>الرئيسية</span></a>
+  <a href="#" class="bottom-nav-item active" data-page="restaurants"><i class="las la-store"></i><span>المطاعم</span></a>
+  <a href="#" class="bottom-nav-item bottom-nav-item-center" data-page="orders"><i class="las la-receipt"></i><span>الطلبات</span><span class="nav-badge" id="navOrdersBadge">5</span></a>
+  <a href="#" class="bottom-nav-item" data-page="drivers"><i class="las la-motorcycle"></i><span>السائقين</span></a>
+  <a href="#" class="bottom-nav-item" data-page="customers"><i class="las la-users"></i><span>العملاء</span></a>
+</div>
+
+<script>
+(function(){
+
+  var STORAGE_KEY = 'admin_sidebar_collapsed';
+
+  var pageContent = document.getElementById('pageContent');
+  var overlay = document.getElementById('overlay');
+  var sbPin = document.getElementById('sbPin');
+  var sidebarClose = document.getElementById('sidebarClose');
+  var appStatusPill = document.getElementById('appStatusPill');
+  var appStatusText = document.getElementById('appStatusText');
+  var notificationBtn = document.getElementById('notificationBtn');
+  var headerAvatar = document.getElementById('headerAvatar');
+  var logoutBtn = document.getElementById('logoutBtn');
+  var sbOrdersBadge = document.getElementById('sbOrdersBadge');
+  var sbRestBadge = document.getElementById('sbRestBadge');
+  var sbPayoutBadge = document.getElementById('sbPayoutBadge');
+  var navOrdersBadge = document.getElementById('navOrdersBadge');
+
+  var appOpen = true;
+  var currentFilter = 'all';
+  var searchQuery = '';
+
+  var restaurants = [
+    { id:'R-1001', name:'مطعم ابن حميدو', city:'شرم الشيخ', rating:4.9, orders:1240, logo:'https://sys.shadowza.space/logos/1.png', status:'active', phone:'0100 123 4567', joined:'2024-01-12' },
+    { id:'R-1002', name:'مطعم البحر الأحمر', city:'الغردقة', rating:4.7, orders:980, logo:'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=200&q=70', status:'active', phone:'0111 234 5678', joined:'2024-02-03' },
+    { id:'R-1003', name:'مشويات الشرق', city:'القاهرة', rating:4.5, orders:760, logo:'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=200&q=70', status:'active', phone:'0122 345 6789', joined:'2024-02-19' },
+    { id:'R-1004', name:'بيتزا روما', city:'الإسكندرية', rating:4.3, orders:520, logo:'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=200&q=70', status:'pending', phone:'0106 456 7890', joined:'2024-03-05' },
+    { id:'R-1005', name:'كشري التحرير', city:'القاهرة', rating:4.6, orders:1580, logo:'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=200&q=70', status:'active', phone:'0128 567 8901', joined:'2023-12-01' },
+    { id:'R-1006', name:'شاورما الشام', city:'المنصورة', rating:4.1, orders:410, logo:'https://images.unsplash.com/photo-1529006557810-274b9b2fc783?auto=format&fit=crop&w=200&q=70', status:'suspended', phone:'0114 678 9012', joined:'2024-03-21' },
+    { id:'R-1007', name:'مطعم الكرم', city:'أسوان', rating:4.4, orders:330, logo:'https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?auto=format&fit=crop&w=200&q=70', status:'pending', phone:'0109 789 0123', joined:'2024-04-02' },
+    { id:'R-1008', name:'برجر هاوس', city:'طنطا', rating:4.8, orders:890, logo:'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=200&q=70', status:'active', phone:'0115 890 1234', joined:'2024-01-28' }
+  ];
+
+  var drivers = [
+    { id:'D-201', name:'محمود سيد', status:'active' },
+    { id:'D-202', name:'عمرو خالد', status:'active' },
+    { id:'D-203', name:'طارق منير', status:'busy' },
+    { id:'D-204', name:'يوسف علي', status:'active' },
+    { id:'D-205', name:'حسن إبراهيم', status:'offline' }
+  ];
+
+  var customers = [
+    { id:'C-301', name:'أحمد محمد' },
+    { id:'C-302', name:'سارة علي' },
+    { id:'C-303', name:'محمود حسن' },
+    { id:'C-304', name:'ليلى أحمد' },
+    { id:'C-305', name:'خالد يوسف' }
+  ];
+
+  var payouts = [
+    { id:'P-9001', restaurant:'مطعم ابن حميدو', amount:12400, status:'pending' },
+    { id:'P-9002', restaurant:'كشري التحرير', amount:7300, status:'pending' },
+    { id:'P-9003', restaurant:'مشويات الشرق', amount:5150, status:'pending' },
+    { id:'P-9004', restaurant:'مطعم البحر الأحمر', amount:9820, status:'paid' }
+  ];
+
+  var orders = [
+    { id:'ORD-5021', restaurant:'مطعم ابن حميدو', customer:'أحمد محمد', total:405, status:'new' },
+    { id:'ORD-5020', restaurant:'مطعم البحر الأحمر', customer:'سارة علي', total:290, status:'new' },
+    { id:'ORD-5019', restaurant:'مشويات الشرق', customer:'محمود حسن', total:290, status:'new' },
+    { id:'ORD-5018', restaurant:'كشري التحرير', customer:'ليلى أحمد', total:275, status:'new' },
+    { id:'ORD-5017', restaurant:'مطعم ابن حميدو', customer:'خالد يوسف', total:385, status:'new' },
+    { id:'ORD-5016', restaurant:'مطعم البحر الأحمر', customer:'منى إبراهيم', total:570, status:'accepted' },
+    { id:'ORD-5015', restaurant:'كشري التحرير', customer:'عمر سالم', total:225, status:'accepted' },
+    { id:'ORD-5014', restaurant:'مشويات الشرق', customer:'هند محمد', total:145, status:'preparing' },
+    { id:'ORD-5013', restaurant:'مطعم ابن حميدو', customer:'يوسف علي', total:385, status:'preparing' },
+    { id:'ORD-5012', restaurant:'مطعم البحر الأحمر', customer:'نور الدين', total:180, status:'ready' },
+    { id:'ORD-5011', restaurant:'كشري التحرير', customer:'سلمى أحمد', total:55, status:'onway' },
+    { id:'ORD-5010', restaurant:'مطعم ابن حميدو', customer:'كريم فؤاد', total:380, status:'delivered' }
+  ];
+
+  var statusMap = {
+    active:{ label:'نشط', cls:'badge-active', icon:'las la-check-circle' },
+    pending:{ label:'قيد المراجعة', cls:'badge-pending', icon:'las la-hourglass-half' },
+    suspended:{ label:'موقوف', cls:'badge-suspended', icon:'las la-ban' }
+  };
+
+  function esc(v){
+    return String(v == null ? '' : v)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+  function restCounts(){
+    return {
+      all: restaurants.length,
+      active: restaurants.filter(function(r){ return r.status === 'active'; }).length,
+      pending: restaurants.filter(function(r){ return r.status === 'pending'; }).length,
+      suspended: restaurants.filter(function(r){ return r.status === 'suspended'; }).length,
+      orders: restaurants.reduce(function(s,r){ return s + r.orders; }, 0)
+    };
+  }
+
+  function updateBadges(){
+    var newOrders = orders.filter(function(o){ return o.status === 'new'; }).length;
+    sbOrdersBadge.textContent = newOrders;
+    navOrdersBadge.textContent = newOrders;
+
+    var activeRest = restaurants.filter(function(r){ return r.status === 'active'; }).length;
+    sbRestBadge.textContent = activeRest;
+    sbRestBadge.style.display = activeRest > 0 ? 'inline-flex' : 'none';
+
+    var pendingPayouts = payouts.filter(function(p){ return p.status === 'pending'; }).length;
+    sbPayoutBadge.textContent = pendingPayouts;
+    sbPayoutBadge.style.display = pendingPayouts > 0 ? 'inline-flex' : 'none';
+  }
+
+  function readStoredCollapsed(){
+    try {
+      return localStorage.getItem(STORAGE_KEY) === '1';
+    } catch(e){
+      return false;
+    }
+  }
+
+  function writeStoredCollapsed(val){
+    try {
+      localStorage.setItem(STORAGE_KEY, val ? '1' : '0');
+    } catch(e){}
+  }
+
+  function applyCollapsed(val){
+    if (val){
+      document.body.classList.add('sb-collapsed');
+      sbPin.classList.remove('pinned');
+      sbPin.setAttribute('aria-label','توسيع القائمة');
+    } else {
+      document.body.classList.remove('sb-collapsed');
+      sbPin.classList.add('pinned');
+      sbPin.setAttribute('aria-label','تثبيت القائمة');
+    }
+  }
+
+  function filteredRestaurants(){
+    var q = searchQuery.trim().toLowerCase();
+    return restaurants.filter(function(r){
+      var matchStatus = currentFilter === 'all' || r.status === currentFilter;
+      if (!matchStatus) return false;
+      if (!q) return true;
+      return r.name.toLowerCase().indexOf(q) !== -1 ||
+             r.city.toLowerCase().indexOf(q) !== -1 ||
+             r.id.toLowerCase().indexOf(q) !== -1;
+    });
+  }
+
+  function renderRestaurantsList(){
+    var list = filteredRestaurants();
+
+    if (!list.length){
+      return '<div class="empty-state">' +
+        '<i class="las la-store-slash"></i>' +
+        '<p>لا توجد مطاعم مطابقة</p>' +
+        '<span>جرّب تغيير كلمة البحث أو الفلتر</span>' +
+      '</div>';
+    }
+
+    var html = '<div class="rest-grid">';
+
+    list.forEach(function(r){
+      var st = statusMap[r.status] || statusMap.pending;
+      var actionLabel, actionIcon, actionCls;
+
+      if (r.status === 'pending'){
+        actionLabel = 'موافقة';
+        actionIcon = 'las la-check';
+        actionCls = 'success';
+      } else if (r.status === 'active'){
+        actionLabel = 'إيقاف';
+        actionIcon = 'las la-ban';
+        actionCls = 'danger';
+      } else {
+        actionLabel = 'تفعيل';
+        actionIcon = 'las la-power-off';
+        actionCls = 'success';
+      }
+
+      html +=
+        '<div class="rest-card" data-status="' + esc(r.status) + '">' +
+          '<div class="rest-card-top">' +
+            '<img class="rest-logo" src="' + esc(r.logo) + '" alt="">' +
+            '<div class="rest-info">' +
+              '<p class="rest-name">' + esc(r.name) + '</p>' +
+              '<p class="rest-city">' +
+                '<i class="las la-map-marker"></i> ' + esc(r.city) +
+                ' <span class="rest-id">' + esc(r.id) + '</span>' +
+              '</p>' +
+            '</div>' +
+            '<span class="rest-badge ' + st.cls + '"><i class="' + st.icon + '"></i> ' + st.label + '</span>' +
+          '</div>' +
+          '<div class="rest-stats">' +
+            '<div class="rest-stat">' +
+              '<span class="rs-val">' + r.orders + '</span>' +
+              '<span class="rs-lbl">إجمالي الطلبات</span>' +
+            '</div>' +
+            '<div class="rest-stat">' +
+              '<span class="rs-val rating">' + r.rating + '</span>' +
+              '<span class="rs-lbl">التقييم</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="rest-actions">' +
+            '<button type="button" class="btn-mini" data-action="view" data-id="' + esc(r.id) + '">' +
+              '<i class="las la-eye"></i> تفاصيل' +
+            '</button>' +
+            '<button type="button" class="btn-mini ' + actionCls + '" data-action="toggle" data-id="' + esc(r.id) + '">' +
+              '<i class="' + actionIcon + '"></i> ' + actionLabel +
+            '</button>' +
+          '</div>' +
+        '</div>';
+    });
+
+    html += '</div>';
+    return html;
+  }
+
+  function refreshList(){
+    var wrap = document.getElementById('restListWrap');
+    if (wrap) wrap.innerHTML = renderRestaurantsList();
+    var counter = document.getElementById('restCount');
+    if (counter){
+      counter.textContent = filteredRestaurants().length + ' من ' + restaurants.length + ' مطعم';
+    }
+    var counts = restCounts();
+    var tabAll = document.getElementById('ftAll');
+    var tabActive = document.getElementById('ftActive');
+    var tabPending = document.getElementById('ftPending');
+    var tabSuspended = document.getElementById('ftSuspended');
+    if (tabAll) tabAll.textContent = counts.all;
+    if (tabActive) tabActive.textContent = counts.active;
+    if (tabPending) tabPending.textContent = counts.pending;
+    if (tabSuspended) tabSuspended.textContent = counts.suspended;
+  }
+
+  function renderRestaurantsPage(){
+    var c = restCounts();
+
+    return '' +
+    '<div class="page-head">' +
+      '<div>' +
+        '<h2 class="page-title"><i class="las la-store"></i> إدارة المطاعم</h2>' +
+        '<p class="page-sub">متابعة كل المطاعم المسجلة في التطبيق وإدارة حالتها</p>' +
+      '</div>' +
+      '<div class="flex items-center gap-2 flex-wrap">' +
+        '<a href="#" class="btn-outline" data-dead><i class="las la-file-export"></i> تصدير</a>' +
+        '<button type="button" class="btn btn-primary" id="addRestBtn"><i class="las la-plus"></i> إضافة مطعم</button>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="stats-grid mb-6">' +
+      '<div class="stat-card">' +
+        '<div class="stat-icon" style="background:rgba(255,90,0,.12);color:#FF5A00;"><i class="las la-store"></i></div>' +
+        '<div class="stat-body"><p class="stat-label">إجمالي المطاعم</p><p class="stat-value">' + c.all + '</p></div>' +
+      '</div>' +
+      '<div class="stat-card">' +
+        '<div class="stat-icon" style="background:rgba(0,177,79,.12);color:#00B14F;"><i class="las la-check-circle"></i></div>' +
+        '<div class="stat-body"><p class="stat-label">مطاعم نشطة</p><p class="stat-value">' + c.active + '</p></div>' +
+      '</div>' +
+      '<div class="stat-card">' +
+        '<div class="stat-icon" style="background:rgba(245,158,11,.15);color:#F59E0B;"><i class="las la-hourglass-half"></i></div>' +
+        '<div class="stat-body"><p class="stat-label">قيد المراجعة</p><p class="stat-value">' + c.pending + '</p></div>' +
+      '</div>' +
+      '<div class="stat-card">' +
+        '<div class="stat-icon" style="background:rgba(239,68,68,.12);color:#EF4444;"><i class="las la-ban"></i></div>' +
+        '<div class="stat-body"><p class="stat-label">مطاعم موقوفة</p><p class="stat-value">' + c.suspended + '</p></div>' +
+      '</div>' +
+      '<div class="stat-card">' +
+        '<div class="stat-icon" style="background:rgba(59,130,246,.12);color:#3B82F6;"><i class="las la-receipt"></i></div>' +
+        '<div class="stat-body"><p class="stat-label">إجمالي الطلبات</p><p class="stat-value">' + c.orders.toLocaleString('en-US') + '</p></div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="panel">' +
+      '<div class="rest-toolbar mb-4">' +
+        '<div class="search-box">' +
+          '<i class="las la-search"></i>' +
+          '<input type="text" id="restSearch" placeholder="ابحث باسم المطعم أو المدينة أو المعرف...">' +
+        '</div>' +
+        '<div class="filter-tabs" id="restFilters">' +
+          '<button type="button" class="active" data-filter="all">الكل <span class="ft-count" id="ftAll">' + c.all + '</span></button>' +
+          '<button type="button" data-filter="active">نشط <span class="ft-count" id="ftActive">' + c.active + '</span></button>' +
+          '<button type="button" data-filter="pending">قيد المراجعة <span class="ft-count" id="ftPending">' + c.pending + '</span></button>' +
+          '<button type="button" data-filter="suspended">موقوف <span class="ft-count" id="ftSuspended">' + c.suspended + '</span></button>' +
+        '</div>' +
+        '<span class="rest-count" id="restCount">' + restaurants.length + ' من ' + restaurants.length + ' مطعم</span>' +
+      '</div>' +
+      '<div id="restListWrap">' + renderRestaurantsList() + '</div>' +
+    '</div>';
+  }
+
+  function findRestaurant(id){
+    for (var i = 0; i < restaurants.length; i++){
+      if (restaurants[i].id === id) return restaurants[i];
+    }
+    return null;
+  }
+
+  function showDevToast(){
+    Swal.fire({
+      toast:true,
+      position:'top-end',
+      icon:'info',
+      title:'هذه الصفحة قيد التطوير',
+      showConfirmButton:false,
+      timer:1600
+    });
+  }
+
+  function bindDeadLinks(){
+    var els = pageContent.querySelectorAll('[data-dead]');
+    for (var i = 0; i < els.length; i++){
+      els[i].addEventListener('click', function(e){
+        e.preventDefault();
+        showDevToast();
+      });
+    }
+  }
+
+  function openRestaurantDetails(id){
+    var r = findRestaurant(id);
+    if (!r) return;
+    var st = statusMap[r.status] || statusMap.pending;
+
+    Swal.fire({
+      title: esc(r.name),
+      html:
+        '<div class="swal-details">' +
+          '<div class="row"><b>المعرف</b><span>' + esc(r.id) + '</span></div>' +
+          '<div class="row"><b>المدينة</b><span>' + esc(r.city) + '</span></div>' +
+          '<div class="row"><b>الهاتف</b><span>' + esc(r.phone) + '</span></div>' +
+          '<div class="row"><b>تاريخ الانضمام</b><span>' + esc(r.joined) + '</span></div>' +
+          '<div class="row"><b>التقييم</b><span>⭐ ' + r.rating + '</span></div>' +
+          '<div class="row"><b>عدد الطلبات</b><span>' + r.orders + ' طلب</span></div>' +
+          '<div class="row"><b>الحالة</b><span>' + st.label + '</span></div>' +
+        '</div>',
+      imageUrl: r.logo,
+      imageWidth: 84,
+      imageHeight: 84,
+      confirmButtonColor: '#FF5A00',
+      confirmButtonText: 'إغلاق'
+    });
+  }
+
+  function toggleRestaurantStatus(id){
+    var r = findRestaurant(id);
+    if (!r) return;
+
+    var title, text, confirmText, confirmColor, successTitle, successText;
+
+    if (r.status === 'pending'){
+      title = 'الموافقة على المطعم';
+      text = 'هل تريد الموافقة على "' + r.name + '" وتفعيله في التطبيق؟';
+      confirmText = 'نعم، موافقة';
+      confirmColor = '#00B14F';
+      successTitle = 'تم التفعيل';
+      successText = 'تم تفعيل المطعم بنجاح';
+    } else if (r.status === 'active'){
+      title = 'إيقاف المطعم';
+      text = 'هل تريد إيقاف "' + r.name + '"؟ لن يستقبل طلبات جديدة.';
+      confirmText = 'نعم، إيقاف';
+      confirmColor = '#EF4444';
+      successTitle = 'تم الإيقاف';
+      successText = 'تم إيقاف المطعم بنجاح';
+    } else {
+      title = 'إعادة تفعيل المطعم';
+      text = 'هل تريد إعادة تفعيل "' + r.name + '"؟';
+      confirmText = 'نعم، تفعيل';
+      confirmColor = '#00B14F';
+      successTitle = 'تم التفعيل';
+      successText = 'تم إعادة تفعيل المطعم بنجاح';
+    }
+
+    Swal.fire({
+      title: title,
+      text: text,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: confirmColor,
+      cancelButtonColor: '#717171',
+      confirmButtonText: confirmText,
+      cancelButtonText: 'إلغاء'
+    }).then(function(result){
+      if (!result.isConfirmed) return;
+
+      if (r.status === 'pending' || r.status === 'suspended'){
+        r.status = 'active';
+      } else {
+        r.status = 'suspended';
+      }
+
+      refreshList();
+      updateBadges();
+
+      Swal.fire({
+        title: successTitle,
+        text: successText,
+        icon: 'success',
+        confirmButtonColor: '#FF5A00',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    });
+  }
+
+  function openAddRestaurant(){
+    Swal.fire({
+      title: 'إضافة مطعم جديد',
+      html:
+        '<div class="swal-form">' +
+          '<label>اسم المطعم</label>' +
+          '<input id="nrName" type="text" placeholder="مثال: مطعم النخيل">' +
+          '<label>المدينة</label>' +
+          '<input id="nrCity" type="text" placeholder="مثال: القاهرة">' +
+          '<label>رقم الهاتف</label>' +
+          '<input id="nrPhone" type="text" placeholder="مثال: 0100 000 0000">' +
+        '</div>',
+      showCancelButton: true,
+      confirmButtonColor: '#FF5A00',
+      cancelButtonColor: '#717171',
+      confirmButtonText: 'إضافة',
+      cancelButtonText: 'إلغاء',
+      focusConfirm: false,
+      preConfirm: function(){
+        var name = document.getElementById('nrName').value.trim();
+        var city = document.getElementById('nrCity').value.trim();
+        var phone = document.getElementById('nrPhone').value.trim();
+
+        if (!name){
+          Swal.showValidationMessage('يرجى إدخال اسم المطعم');
+          return false;
+        }
+        if (!city){
+          Swal.showValidationMessage('يرجى إدخال المدينة');
+          return false;
+        }
+
+        return { name:name, city:city, phone:phone || '—' };
+      }
+    }).then(function(result){
+      if (!result.isConfirmed || !result.value) return;
+
+      var v = result.value;
+      var newId = 'R-' + (1000 + restaurants.length + 1);
+
+      restaurants.unshift({
+        id: newId,
+        name: v.name,
+        city: v.city,
+        rating: 0,
+        orders: 0,
+        logo: 'https://sys.shadowza.space/logos/1.png',
+        status: 'pending',
+        phone: v.phone,
+        joined: new Date().toISOString().slice(0,10)
+      });
+
+      currentFilter = 'all';
+      searchQuery = '';
+      render();
+
+      Swal.fire({
+        title: 'تمت الإضافة',
+        text: 'تم إضافة المطعم بنجاح وهو الآن قيد المراجعة',
+        icon: 'success',
+        confirmButtonColor: '#FF5A00'
+      });
+    });
+  }
+
+  function bindPageEvents(){
+    var searchInput = document.getElementById('restSearch');
+    if (searchInput){
+      searchInput.addEventListener('input', function(){
+        searchQuery = this.value;
+        refreshList();
+      });
+    }
+
+    var filters = document.getElementById('restFilters');
+    if (filters){
+      filters.addEventListener('click', function(e){
+        var btn = e.target.closest('button[data-filter]');
+        if (!btn) return;
+        var buttons = filters.querySelectorAll('button[data-filter]');
+        for (var i = 0; i < buttons.length; i++){
+          buttons[i].classList.remove('active');
+        }
+        btn.classList.add('active');
+        currentFilter = btn.getAttribute('data-filter');
+        refreshList();
+      });
+    }
+
+    var listWrap = document.getElementById('restListWrap');
+    if (listWrap){
+      listWrap.addEventListener('click', function(e){
+        var btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        var action = btn.getAttribute('data-action');
+        var id = btn.getAttribute('data-id');
+        if (action === 'view') openRestaurantDetails(id);
+        else if (action === 'toggle') toggleRestaurantStatus(id);
+      });
+    }
+
+    var addBtn = document.getElementById('addRestBtn');
+    if (addBtn){
+      addBtn.addEventListener('click', openAddRestaurant);
+    }
+  }
+
+  function render(){
+    pageContent.innerHTML = renderRestaurantsPage();
+    updateBadges();
+    bindPageEvents();
+    bindDeadLinks();
+  }
+
+  function openSidebar(){ document.body.classList.add('sb-open'); }
+  function closeSidebar(){ document.body.classList.remove('sb-open'); }
+
+  sbPin.addEventListener('click', function(){
+    var willCollapse = !document.body.classList.contains('sb-collapsed');
+    applyCollapsed(willCollapse);
+    writeStoredCollapsed(willCollapse);
+  });
+
+  sidebarClose.addEventListener('click', closeSidebar);
+  overlay.addEventListener('click', closeSidebar);
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') closeSidebar();
+  });
+
+  var sbItems = document.querySelectorAll('.sb-item[data-page]');
+  for (var i = 0; i < sbItems.length; i++){
+    sbItems[i].addEventListener('click', function(e){
+      e.preventDefault();
+      var page = this.getAttribute('data-page');
+      if (page === 'restaurants'){
+        closeSidebar();
+        window.scrollTo({ top:0, behavior:'smooth' });
+        return;
+      }
+      showDevToast();
+    });
+  }
+
+  var bnItems = document.querySelectorAll('.bottom-nav-item[data-page]');
+  for (var j = 0; j < bnItems.length; j++){
+    bnItems[j].addEventListener('click', function(e){
+      e.preventDefault();
+      var page = this.getAttribute('data-page');
+      if (page === 'restaurants'){
+        window.scrollTo({ top:0, behavior:'smooth' });
+        return;
+      }
+      showDevToast();
+    });
+  }
+
+  appStatusPill.addEventListener('click', function(){
+    appOpen = !appOpen;
+    if (appOpen){
+      appStatusPill.classList.add('open');
+      appStatusPill.classList.remove('closed');
+      appStatusText.textContent = 'التطبيق يعمل';
+    } else {
+      appStatusPill.classList.add('closed');
+      appStatusPill.classList.remove('open');
+      appStatusText.textContent = 'التطبيق متوقف';
+    }
+    Swal.fire({
+      title: appOpen ? 'التطبيق يعمل الآن' : 'تم إيقاف التطبيق',
+      text: appOpen ? 'يمكن للمطاعم استقبال الطلبات من جديد' : 'لن يتم استقبال أي طلبات جديدة حتى إعادة التشغيل',
+      icon: appOpen ? 'success' : 'warning',
+      confirmButtonColor:'#FF5A00',
+      timer:1700,
+      showConfirmButton:false
+    });
+  });
+
+  notificationBtn.addEventListener('click', function(){
+    Swal.fire({
+      title:'إشعارات الإدارة',
+      html:'<div style="text-align:right;font-size:0.85rem;">' +
+        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">🔔 5 طلبات جديدة في كل المطاعم</p>' +
+        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">🏪 مطعم جديد بانتظار الموافقة: بيتزا روما</p>' +
+        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">💸 3 طلبات سحب بانتظار المراجعة</p>' +
+        '<p class="p-2 rounded" style="background:#FFF3E8;">⚠️ شكوى جديدة على مطعم شاورما الشام</p>' +
+        '</div>',
+      icon:'info',
+      confirmButtonColor:'#FF5A00',
+      confirmButtonText:'حسناً'
+    });
+  });
+
+  headerAvatar.addEventListener('click', function(){
+    if (window.innerWidth <= 1024){
+      if (document.body.classList.contains('sb-open')) closeSidebar();
+      else openSidebar();
+      return;
+    }
+    Swal.fire({
+      title:'حساب المدير العام',
+      html:'<div style="text-align:right;font-size:0.85rem;">' +
+        '<p class="mb-2"><b>الاسم:</b> مدير التطبيق</p>' +
+        '<p class="mb-2"><b>البريد:</b> admin@shadowza.space</p>' +
+        '<p class="mb-2"><b>الصلاحية:</b> أدمن عام</p>' +
+        '<p><b>آخر دخول:</b> اليوم 09:14 ص</p>' +
+        '</div>',
+      imageUrl:'https://sys.shadowza.space/logos/1.png',
+      imageWidth:80,
+      imageHeight:80,
+      confirmButtonColor:'#FF5A00',
+      confirmButtonText:'إغلاق'
+    });
+  });
+
+  logoutBtn.addEventListener('click', function(e){
+    e.preventDefault();
+    closeSidebar();
+    Swal.fire({
+      title:'تسجيل الخروج',
+      text:'هل أنت متأكد من تسجيل الخروج من لوحة إدارة التطبيق؟',
+      icon:'warning',
+      showCancelButton:true,
+      confirmButtonColor:'#FF5A00',
+      cancelButtonColor:'#717171',
+      confirmButtonText:'نعم، خروج',
+      cancelButtonText:'إلغاء'
+    }).then(function(result){
+      if (result.isConfirmed){
+        Swal.fire({
+          title:'تم بنجاح',
+          text:'تم تسجيل الخروج بنجاح',
+          icon:'success',
+          confirmButtonColor:'#FF5A00'
+        });
+      }
+    });
+  });
+
+  var lastIsDesktop = window.innerWidth >= 1025;
+
+  window.addEventListener('resize', function(){
+    var isDesktop = window.innerWidth >= 1025;
+    if (isDesktop !== lastIsDesktop){
+      lastIsDesktop = isDesktop;
+      if (isDesktop){
+        document.body.classList.remove('sb-open');
+        applyCollapsed(readStoredCollapsed());
+      } else {
+        document.body.classList.remove('sb-collapsed');
+        document.body.classList.remove('sb-open');
+      }
+    }
+  });
+
+  function init(){
+    applyCollapsed(readStoredCollapsed());
+    render();
+  }
+
+  init();
+
+})();
+</script>
+</body>
+</html>
