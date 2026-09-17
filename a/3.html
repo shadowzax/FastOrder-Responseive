@@ -1,0 +1,1805 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+<meta name="theme-color" content="#FF5A00">
+<title>سجل الطلبات - لوحة إدارة التطبيق</title>
+<meta name="description" content="سجل تفصيلي لكل الطلبات مع رسوم بيانية وتقارير">
+<link rel="icon" type="image/png" href="https://i.ibb.co/RqpGPYm/1788099660805-removebg-preview.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+tailwind.config = {
+  theme: { extend: { colors: {
+    primary: '#FF5A00', secondary: '#FF8C38', accent: '#FFB800',
+    dark: '#1A1A1A', muted: '#717171', success: '#00B14F'
+  }}}
+}
+</script>
+<style>
+:root{
+  --color-primary:#FF5A00; --color-secondary:#FF8C38; --color-accent:#FFB800;
+  --color-background:#F7F9F8; --color-card:#FFFFFF; --color-darker:#F0F4F3;
+  --color-white:#1A1A1A; --color-muted:#717171;
+  --border-subtle:rgba(0,0,0,0.08);
+  --card-bg:#FFFFFF; --border-color:rgba(0,0,0,0.1); --darker-bg:#F0F4F3;
+  --header-height:72px; --sidebar-width:262px; --sidebar-collapsed:72px;
+  --bottom-nav-height:68px; --shadow-card:0 2px 12px rgba(0,0,0,0.06);
+  --c-new:#FF5A00; --c-accepted:#8B5CF6; --c-preparing:#F59E0B;
+  --c-ready:#00B14F; --c-onway:#3B82F6; --c-delivered:#14B8A6;
+  --c-ended:#6B7280; --c-canceled:#EF4444;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;width:100%;overscroll-behavior:none;}
+body{
+  font-family:'Noto Sans Arabic',system-ui,sans-serif;
+  background-color:var(--color-background);
+  color:var(--color-white);
+  overflow-x:hidden;
+}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--color-background);border-radius:4px;}
+::-webkit-scrollbar-thumb{background:#FF8C38;border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:#FF5A00;}
+.main-wrap{min-height:100vh;display:flex;flex-direction:column;}
+
+#mainHeader{
+  position:fixed;top:0;left:0;right:0;height:var(--header-height);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px;border-bottom:1px solid var(--border-subtle);
+  background:var(--color-background);z-index:400;
+  box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.header-brand{display:flex;align-items:center;min-width:0;}
+.brand-logo{height:58px;width:auto;max-width:230px;object-fit:contain;display:block;flex-shrink:0;}
+.header-actions{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.notification-btn{
+  position:relative;background:none;border:none;cursor:pointer;
+  color:var(--color-muted);font-size:1.5rem;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:color .2s;flex-shrink:0;
+}
+.notification-btn:hover{color:#FF5A00;}
+.notification-btn .notification-dot{
+  position:absolute;top:2px;right:2px;width:8px;height:8px;
+  border-radius:50%;background:#FF5A00;border:2px solid var(--color-background);
+}
+.header-avatar-btn{
+  width:44px;height:44px;border-radius:50%;object-fit:cover;
+  border:2px solid var(--color-primary);cursor:pointer;
+  transition:all .2s;flex-shrink:0;background:#fff;
+}
+.header-avatar-btn:hover{transform:scale(1.05);}
+.status-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:40px;font-size:0.75rem;font-weight:700;
+  cursor:pointer;transition:all .25s ease;border:1px solid transparent;flex-shrink:0;
+}
+.status-pill.open{background:rgba(0,177,79,0.1);color:#00B14F;border-color:rgba(0,177,79,0.3);}
+.status-pill.closed{background:rgba(239,68,68,0.1);color:#EF4444;border-color:rgba(239,68,68,0.3);}
+.status-pill .dot{width:8px;height:8px;border-radius:50%;background:currentColor;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.sidebar{
+  position:fixed;top:var(--header-height);right:0;bottom:0;
+  width:var(--sidebar-width);max-width:86vw;background:var(--card-bg);
+  border-left:1px solid var(--border-color);border-top:1px solid var(--border-color);
+  z-index:300;transform:translateX(100%);
+  transition:transform .3s cubic-bezier(.4,0,.2,1), width .3s cubic-bezier(.4,0,.2,1);
+  overflow-y:auto;overscroll-behavior:contain;
+  box-shadow:-6px 0 30px rgba(0,0,0,0.12);
+  display:flex;flex-direction:column;
+}
+body.sb-open .sidebar{transform:translateX(0);}
+.sb-header{
+  display:flex;align-items:center;gap:10px;padding:14px 12px;
+  border-bottom:1px solid var(--border-color);
+  position:sticky;top:0;background:var(--card-bg);z-index:2;
+}
+.sb-avatar{
+  width:44px;height:44px;border-radius:50%;object-fit:cover;
+  border:2px solid var(--color-primary);background:#fff;flex-shrink:0;
+  box-shadow:0 2px 8px rgba(255,90,0,0.18);
+}
+.sb-brand{flex:1;min-width:0;}
+.sb-title{font-size:0.88rem;font-weight:800;color:var(--color-white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-sub{font-size:0.64rem;color:var(--color-muted);font-weight:600;margin-top:1px;}
+.sb-pin{
+  width:32px;height:32px;border-radius:9px;
+  border:1.5px solid var(--border-color);background:transparent;
+  color:var(--color-muted);cursor:pointer;font-size:0.95rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .25s ease;flex-shrink:0;padding:0;
+}
+.sb-pin:hover{background:rgba(255,90,0,0.08);color:var(--color-primary);border-color:rgba(255,90,0,0.3);}
+.sb-pin i{transition:transform .3s ease;display:inline-block;font-size:1rem;}
+.sb-pin.pinned{background:rgba(255,90,0,0.12);color:var(--color-primary);border-color:rgba(255,90,0,0.4);}
+.sb-pin.pinned i{transform:rotate(0deg);}
+.sb-pin:not(.pinned) i{transform:rotate(45deg);}
+.sb-close{
+  width:32px;height:32px;border-radius:9px;
+  border:1px solid var(--border-color);background:transparent;
+  color:var(--color-muted);cursor:pointer;font-size:1rem;
+  display:none;align-items:center;justify-content:center;
+}
+.sb-nav{padding:10px;display:flex;flex-direction:column;gap:2px;flex:1;}
+.sb-section{
+  font-size:0.62rem;text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--color-muted);padding:12px 12px 5px;font-weight:700;
+}
+.sb-item{
+  display:flex;align-items:center;gap:12px;padding:11px 13px;
+  border-radius:12px;cursor:pointer;transition:all .18s ease;
+  color:var(--color-muted);font-weight:600;text-decoration:none;
+  font-size:0.86rem;border:none;background:transparent;
+  font-family:inherit;width:100%;text-align:right;position:relative;
+}
+.sb-item i{font-size:20px;width:24px;flex-shrink:0;text-align:center;}
+.sb-item:hover{background:rgba(255,90,0,0.08);color:var(--color-primary);}
+.sb-item.active{background:rgba(255,90,0,0.12);color:var(--color-primary);font-weight:800;}
+.sb-item.logout{color:#EF4444;}
+.sb-divider{height:1px;background:var(--border-color);margin:6px 12px;}
+
+@media (min-width:1025px){
+  .sidebar{transform:translateX(0);}
+  .main-wrap{margin-right:var(--sidebar-width);padding-top:var(--header-height);
+    transition:margin-right .3s cubic-bezier(.4,0,.2,1);}
+  body.sb-collapsed .main-wrap{margin-right:var(--sidebar-collapsed);}
+  body.sb-collapsed .sidebar{width:var(--sidebar-collapsed);}
+  body.sb-collapsed .sb-header{padding:14px 0;flex-direction:column;gap:10px;justify-content:center;align-items:center;}
+  body.sb-collapsed .sb-avatar{width:38px;height:38px;}
+  body.sb-collapsed .sb-brand{display:none;}
+  body.sb-collapsed .sb-nav{padding:8px;}
+  body.sb-collapsed .sb-section{display:none;}
+  body.sb-collapsed .sb-item{justify-content:center;padding:12px 0;gap:0;}
+  body.sb-collapsed .sb-item span{display:none;}
+  body.sb-collapsed .sb-item i{width:auto;font-size:20px;}
+}
+@media (max-width:1024px){
+  .main-wrap{padding-top:var(--header-height);}
+  .sb-pin{display:none;}
+  .sb-close{display:flex;}
+}
+.overlay{
+  position:fixed;top:var(--header-height);left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.45);z-index:290;opacity:0;visibility:hidden;
+  transition:all .3s ease;backdrop-filter:blur(2px);
+}
+body.sb-open .overlay{opacity:1;visibility:visible;}
+@media (min-width:1025px){.overlay{display:none;}}
+
+main{flex:1;padding-bottom:24px;}
+@media (max-width:1024px){main{padding-bottom:calc(var(--bottom-nav-height) + 24px);}}
+
+.bottom-mobile-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;
+  height:var(--bottom-nav-height);background:var(--card-bg);
+  border-top:1px solid var(--border-color);z-index:100;
+  padding:6px 8px;padding-bottom:max(6px,env(safe-area-inset-bottom,6px));
+  box-shadow:0 -2px 12px rgba(0,0,0,0.08);
+  align-items:center;justify-content:space-around;gap:4px;
+}
+@media (max-width:1024px){.bottom-mobile-nav{display:flex;}}
+.bottom-nav-item{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;flex:1;padding:8px 4px;border-radius:12px;cursor:pointer;
+  text-decoration:none;color:var(--color-muted);font-size:0.68rem;
+  font-weight:600;transition:all .25s ease;position:relative;
+  min-width:0;background:transparent;border:none;font-family:inherit;
+}
+.bottom-nav-item i{font-size:1.3rem;flex-shrink:0;}
+.bottom-nav-item span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;font-size:0.63rem;}
+.bottom-nav-item.active{color:var(--color-primary);}
+.bottom-nav-item.active i{font-size:1.45rem;}
+.bottom-nav-item-center{
+  position:relative;top:-20px;width:58px;height:58px;border-radius:50%;
+  background:var(--color-primary);color:#fff;display:flex;align-items:center;
+  justify-content:center;box-shadow:0 4px 12px rgba(255,90,0,0.4);
+  flex-shrink:0;flex:none;margin:0 4px;
+}
+.bottom-nav-item-center i{font-size:1.9rem;}
+.bottom-nav-item-center span{display:none;}
+.bottom-nav-item-center.active{background:#e04e00;}
+.nav-badge{
+  position:absolute;top:4px;left:50%;transform:translateX(-50%);
+  min-width:18px;height:18px;padding:0 4px;border-radius:9px;
+  background:#EF4444;color:#fff;font-size:.6rem;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+}
+.bottom-nav-item-center .nav-badge{top:-4px;left:2px;transform:none;background:#1A1A1A;}
+
+.page-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;margin-bottom:20px;
+}
+.page-title{
+  font-size:1.25rem;font-weight:800;color:var(--color-white);
+  display:flex;align-items:center;gap:8px;
+}
+.page-title i{color:#FF5A00;}
+.page-sub{font-size:0.76rem;color:var(--color-muted);font-weight:600;margin-top:3px;}
+
+.btn{
+  border:none;border-radius:12px;padding:10px 16px;
+  font-family:inherit;font-weight:700;font-size:.82rem;
+  cursor:pointer;transition:all .2s ease;
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:6px;color:#fff;white-space:nowrap;text-decoration:none;
+}
+.btn-primary{background:#FF5A00;box-shadow:0 2px 8px rgba(255,90,0,0.3);}
+.btn-primary:hover{background:#e04e00;}
+.btn-outline{
+  background:transparent;color:var(--color-muted);
+  border:1px solid var(--border-color);border-radius:12px;
+  padding:10px 16px;font-family:inherit;font-weight:700;
+  font-size:.82rem;cursor:pointer;transition:all .2s ease;
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:6px;white-space:nowrap;
+}
+.btn-outline:hover{background:var(--darker-bg);color:var(--color-white);}
+
+.period-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.period-chip{
+  padding:9px 16px;border-radius:12px;cursor:pointer;
+  background:var(--card-bg);border:1px solid var(--border-color);
+  font-family:inherit;font-size:0.78rem;font-weight:700;
+  color:var(--color-muted);transition:all .2s;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.period-chip:hover{border-color:rgba(255,90,0,.35);color:var(--color-primary);}
+.period-chip.active{
+  background:linear-gradient(135deg,#FF5A00,#FF8C38);
+  color:#fff;border-color:transparent;
+  box-shadow:0 4px 12px rgba(255,90,0,.3);
+}
+.custom-range{
+  display:none;gap:10px;flex-wrap:wrap;margin-bottom:14px;
+  padding:14px;background:var(--darker-bg);border-radius:14px;
+  border:1px solid var(--border-color);
+}
+.custom-range.active{display:flex;}
+.custom-range label{
+  display:flex;flex-direction:column;gap:5px;
+  font-size:0.72rem;font-weight:700;color:var(--color-muted);
+  flex:1;min-width:150px;
+}
+.custom-range input{
+  padding:10px 12px;border-radius:11px;
+  border:1px solid var(--border-color);background:var(--card-bg);
+  font-family:inherit;font-size:0.82rem;font-weight:700;
+  color:var(--color-white);outline:none;
+}
+
+.filters-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+.filters-row .search-box{position:relative;flex:1;min-width:200px;}
+.filters-row .search-box i{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  color:var(--color-muted);font-size:1.05rem;pointer-events:none;
+}
+.filters-row .search-box input{
+  width:100%;padding:11px 42px 11px 14px;border-radius:13px;
+  border:1px solid var(--border-color);background:var(--card-bg);
+  font-family:inherit;font-size:0.84rem;font-weight:600;
+  color:var(--color-white);outline:none;
+}
+.filters-row .search-box input:focus{
+  border-color:rgba(255,90,0,.45);
+  box-shadow:0 0 0 3px rgba(255,90,0,.1);
+}
+.filters-row select{
+  padding:11px 14px;border-radius:13px;
+  border:1px solid var(--border-color);background:var(--card-bg);
+  font-family:inherit;font-size:0.8rem;font-weight:700;
+  color:var(--color-white);outline:none;cursor:pointer;min-width:140px;
+}
+.filters-row select:focus{
+  border-color:rgba(255,90,0,.45);
+  box-shadow:0 0 0 3px rgba(255,90,0,.1);
+}
+
+.stats-arrows{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+@media (max-width:1024px){.stats-arrows{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:520px){.stats-arrows{grid-template-columns:1fr;gap:8px;}}
+.stat-arrow{
+  background:var(--card-bg);border:1px solid var(--border-color);
+  border-radius:16px;padding:14px;box-shadow:var(--shadow-card);
+  transition:all .3s;position:relative;overflow:hidden;
+}
+.stat-arrow::after{content:"";position:absolute;top:-20px;right:-20px;width:70px;height:70px;border-radius:50%;opacity:.08;}
+.stat-arrow.up::after{background:#00B14F;}
+.stat-arrow.down::after{background:#EF4444;}
+.stat-arrow.flat::after{background:#717171;}
+.stat-arrow:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(255,90,0,.1);}
+.sa-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;}
+.sa-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;}
+.sa-trend{display:inline-flex;align-items:center;gap:3px;padding:4px 9px;border-radius:20px;font-size:0.7rem;font-weight:800;white-space:nowrap;}
+.sa-trend.up{background:rgba(0,177,79,.12);color:#00B14F;}
+.sa-trend.down{background:rgba(239,68,68,.12);color:#EF4444;}
+.sa-trend.flat{background:rgba(113,113,113,.12);color:#717171;}
+.sa-value{font-size:1.35rem;font-weight:800;color:var(--color-white);line-height:1.2;margin-bottom:4px;}
+.sa-label{font-size:0.72rem;color:var(--color-muted);font-weight:600;}
+
+.charts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px;}
+@media (max-width:900px){.charts-grid{grid-template-columns:1fr;}}
+.chart-card{
+  background:var(--card-bg);border:1px solid var(--border-color);
+  border-radius:16px;padding:16px;box-shadow:var(--shadow-card);
+  display:flex;flex-direction:column;min-height:290px;
+}
+.chart-card.span-2{grid-column:1/-1;}
+.chart-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+.chart-title{font-size:0.92rem;font-weight:800;color:var(--color-white);display:flex;align-items:center;gap:8px;}
+.chart-title i{color:#FF5A00;font-size:1.15rem;}
+.chart-sub{font-size:0.68rem;color:var(--color-muted);font-weight:600;margin-top:2px;}
+.chart-body{position:relative;flex:1;min-height:210px;}
+.chart-body canvas{max-width:100%;height:auto!important;}
+
+.log-panel{
+  background:var(--card-bg);border:1px solid var(--border-color);
+  border-radius:18px;box-shadow:var(--shadow-card);overflow:hidden;
+}
+.log-panel-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;padding:14px 16px;border-bottom:1px solid var(--border-color);
+  flex-wrap:wrap;
+}
+.log-panel-head h3{
+  font-size:1rem;font-weight:800;color:var(--color-white);
+  display:flex;align-items:center;gap:8px;
+}
+.log-panel-head h3 i{color:#FF5A00;}
+.log-head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.log-count{
+  font-size:0.72rem;color:var(--color-muted);font-weight:700;
+  padding:5px 12px;background:var(--darker-bg);border-radius:20px;
+}
+.per-page-wrap{
+  display:flex;align-items:center;gap:6px;
+  font-size:0.72rem;color:var(--color-muted);font-weight:700;
+}
+.per-page-select{
+  padding:6px 10px;border-radius:10px;
+  border:1px solid var(--border-color);background:var(--card-bg);
+  font-family:inherit;font-size:0.75rem;font-weight:700;
+  color:var(--color-white);outline:none;cursor:pointer;
+}
+.per-page-select:focus{
+  border-color:rgba(255,90,0,.45);
+  box-shadow:0 0 0 3px rgba(255,90,0,.1);
+}
+.log-table-wrap{overflow-x:auto;}
+.log-table{width:100%;border-collapse:collapse;min-width:950px;}
+.log-table th{
+  background:var(--darker-bg);padding:11px 12px;
+  font-size:0.72rem;font-weight:800;color:var(--color-muted);
+  text-align:right;white-space:nowrap;
+  border-bottom:2px solid var(--border-color);
+}
+.log-table td{
+  padding:11px 12px;font-size:0.76rem;font-weight:600;
+  color:var(--color-white);border-bottom:1px solid var(--border-color);
+  white-space:nowrap;
+}
+.log-table tbody tr{transition:background .15s;}
+.log-table tbody tr:hover{background:rgba(255,90,0,.03);}
+.log-table tbody tr:last-child td{border-bottom:none;}
+.log-status{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 9px;border-radius:20px;
+  font-size:0.66rem;font-weight:800;white-space:nowrap;
+}
+.log-total{font-weight:800;color:#FF5A00;}
+.log-date{color:var(--color-muted);font-size:0.72rem;font-family:'Courier New',monospace;}
+.log-id{font-family:'Courier New',monospace;font-size:0.72rem;color:var(--color-muted);}
+.log-trunc{max-width:180px;overflow:hidden;text-overflow:ellipsis;}
+.log-print-btn{
+  width:30px;height:30px;border-radius:8px;
+  border:1px solid var(--border-color);background:transparent;
+  color:var(--color-muted);cursor:pointer;font-size:0.85rem;
+  display:inline-flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.log-print-btn:hover{background:rgba(0,177,79,.08);color:#00B14F;border-color:rgba(0,177,79,.35);}
+
+.badge-new{background:rgba(255,90,0,0.12);color:var(--c-new);}
+.badge-accepted{background:rgba(139,92,246,0.12);color:var(--c-accepted);}
+.badge-preparing{background:rgba(245,158,11,0.15);color:var(--c-preparing);}
+.badge-ready{background:rgba(0,177,79,0.12);color:var(--c-ready);}
+.badge-onway{background:rgba(59,130,246,0.12);color:var(--c-onway);}
+.badge-delivered{background:rgba(20,184,166,0.12);color:var(--c-delivered);}
+.badge-ended{background:rgba(107,114,128,0.14);color:var(--c-ended);}
+.badge-canceled{background:rgba(239,68,68,0.12);color:var(--c-canceled);}
+
+.pagination{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:14px;flex-wrap:wrap;border-top:1px solid var(--border-color);
+}
+.page-btn{
+  min-width:44px;height:38px;padding:0 14px;border-radius:10px;
+  border:1px solid var(--border-color);background:transparent;
+  color:var(--color-muted);font-family:inherit;font-weight:700;
+  font-size:0.8rem;cursor:pointer;transition:all .2s;
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:5px;
+}
+.page-btn:hover:not(:disabled){border-color:rgba(255,90,0,.4);color:var(--color-primary);background:rgba(255,90,0,.05);}
+.page-btn:disabled{opacity:.35;cursor:not-allowed;}
+.page-info{
+  font-size:0.78rem;color:var(--color-muted);font-weight:700;
+  padding:0 10px;
+}
+
+.empty-state{text-align:center;padding:48px 20px;color:var(--color-muted);}
+.empty-state i{font-size:3rem;color:rgba(255,90,0,.35);display:block;margin-bottom:12px;}
+.empty-state p{font-size:0.9rem;font-weight:700;}
+
+#printArea{display:none;}
+#printReportArea{display:none;}
+
+@page{size:A4;margin:10mm;}
+
+@media print{
+  body{background:#fff !important;}
+  body > *:not(#printArea):not(#printReportArea){display:none !important;}
+  body.printing-receipt #printReportArea{display:none !important;}
+  body.printing-receipt #printArea{display:block !important;}
+  body.printing-receipt #printArea *{color:#000 !important;}
+  body.printing-report #printArea{display:none !important;}
+  body.printing-report #printReportArea{
+    display:block !important;
+    font-family:'Noto Sans Arabic',sans-serif;
+    color:#000; direction:rtl; padding:0;
+  }
+  body.printing-report #printReportArea *{color:#000 !important;box-sizing:border-box;}
+}
+
+.rep-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding-bottom:12px;margin-bottom:18px;
+  border-bottom:3px solid #000;gap:16px;
+}
+.rep-brand{display:flex;flex-direction:column;align-items:flex-start;gap:2px;}
+.rep-app{font-size:30px;font-weight:800;letter-spacing:2px;direction:ltr;line-height:1;}
+.rep-tag{font-size:11px;font-weight:700;color:#555;direction:ltr;letter-spacing:1px;}
+.rep-title{text-align:left;}
+.rep-title h1{font-size:20px;font-weight:800;margin:0 0 3px 0;}
+.rep-title p{font-size:11px;font-weight:700;margin:0;color:#555;}
+.rep-meta{
+  display:flex;justify-content:space-between;gap:12px;
+  background:#f4f4f4;border:1px solid #000;border-radius:6px;
+  padding:10px 14px;margin-bottom:16px;font-size:11px;font-weight:700;
+}
+.rep-section{
+  font-size:14px;font-weight:800;margin:16px 0 10px 0;
+  padding-bottom:6px;border-bottom:1.5px dashed #000;
+  display:flex;align-items:center;gap:8px;
+}
+.rep-section-dot{width:8px;height:8px;border-radius:50%;background:#000;display:inline-block;}
+.rep-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
+.rep-stat{border:1.5px solid #000;border-radius:6px;padding:8px 10px;background:#f9f9f9;}
+.rep-stat-lbl{font-size:10px;font-weight:700;color:#333;margin-bottom:4px;}
+.rep-stat-val{font-size:15px;font-weight:800;}
+.rep-table{width:100%;border-collapse:collapse;font-size:10px;margin-bottom:12px;table-layout:fixed;}
+.rep-table th{
+  background:#000 !important;color:#fff !important;
+  padding:6px 5px;font-size:10px;font-weight:800;
+  border:1px solid #000;text-align:right;white-space:nowrap;
+}
+.rep-table td{padding:5px 5px;border:0.5px solid #000;vertical-align:middle;word-break:break-word;}
+.rep-table tbody tr:nth-child(even){background:#f9f9f9;}
+.rep-table tfoot td{background:#efefef !important;font-weight:800;border:1px solid #000;}
+.rep-badge{
+  display:inline-block;padding:2px 6px;border-radius:8px;
+  font-size:9px;font-weight:800;border:0.5px solid #000;background:#efefef;
+}
+.rep-num{font-family:'Courier New',monospace;font-weight:700;}
+.rep-footer{
+  margin-top:20px;padding-top:12px;border-top:2px dashed #000;
+  text-align:center;font-size:10px;font-weight:600;color:#333;
+}
+.rep-footer p{margin:2px 0;}
+.rep-signature{display:flex;justify-content:space-between;margin-top:24px;padding-top:12px;gap:40px;}
+.rep-sig-line{flex:1;text-align:center;font-size:10px;font-weight:700;padding-top:32px;border-top:1px solid #000;}
+
+@media (max-width:640px){
+  :root{--header-height:66px;}
+  .page-title{font-size:1.05rem;}
+  .brand-logo{height:48px;max-width:190px;}
+  .header-avatar-btn{width:40px;height:40px;}
+  .status-pill{padding:6px 10px;font-size:0.68rem;}
+  .sa-value{font-size:1.15rem;}
+  .chart-card{padding:12px;min-height:250px;}
+  .filters-row select,.filters-row .search-box{min-width:100%;width:100%;}
+  .log-table td,.log-table th{padding:9px 8px;font-size:0.72rem;}
+  .page-btn{padding:0 10px;font-size:0.72rem;min-width:38px;height:34px;}
+}
+</style>
+</head>
+<body>
+
+<div class="main-wrap">
+  <header id="mainHeader">
+    <div class="header-brand">
+      <img src="https://i.ibb.co/RqpGPYm/1788099660805-removebg-preview.png" class="brand-logo" alt="logo">
+    </div>
+    <div class="header-actions">
+      <div class="status-pill open" id="appStatusPill">
+        <span class="dot"></span>
+        <span id="appStatusText">التطبيق يعمل</span>
+      </div>
+      <button class="notification-btn" id="notificationBtn" aria-label="الإشعارات">
+        <i class="las la-bell"></i>
+        <span class="notification-dot"></span>
+      </button>
+      <img id="headerAvatar" src="https://i.ibb.co/RqpGPYm/1788099660805-removebg-preview.png" class="header-avatar-btn" alt="avatar">
+    </div>
+  </header>
+
+  <main>
+    <div class="container mx-auto px-4 py-6 max-w-7xl" id="pageContent"></div>
+  </main>
+</div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sb-header">
+    <img src="https://i.ibb.co/RqpGPYm/1788099660805-removebg-preview.png" class="sb-avatar" alt="admin avatar">
+    <div class="sb-brand">
+      <p class="sb-title">مدير التطبيق</p>
+      <p class="sb-sub">أدمن عام</p>
+    </div>
+    <button class="sb-pin pinned" id="sbPin" aria-label="تثبيت القائمة">
+      <i class="las la-thumbtack"></i>
+    </button>
+    <button class="sb-close" id="sidebarClose" aria-label="إغلاق"><i class="las la-times"></i></button>
+  </div>
+  <nav class="sb-nav">
+    <p class="sb-section">الرئيسية</p>
+    <a href="#" class="sb-item" data-page="dashboard"><i class="las la-chart-pie"></i><span>لوحة التحكم</span></a>
+    <a href="#" class="sb-item active" data-page="orders-log"><i class="las la-history"></i><span>سجل الطلبات</span></a>
+    <a href="#" class="sb-item" data-page="restaurants"><i class="las la-store"></i><span>المطاعم</span></a>
+    <a href="#" class="sb-item" data-page="drivers"><i class="las la-motorcycle"></i><span>السائقين</span></a>
+    <a href="#" class="sb-item" data-page="customers"><i class="las la-users"></i><span>العملاء</span></a>
+    <div class="sb-divider"></div>
+    <p class="sb-section">المحتوى</p>
+    <a href="#" class="sb-item" data-page="categories"><i class="las la-th-large"></i><span>الأقسام</span></a>
+    <a href="#" class="sb-item" data-page="offers"><i class="las la-percent"></i><span>العروض والخصومات</span></a>
+    <a href="#" class="sb-item" data-page="banners"><i class="las la-image"></i><span>البانرات</span></a>
+    <div class="sb-divider"></div>
+    <p class="sb-section">المالية</p>
+    <a href="#" class="sb-item" data-page="finance"><i class="las la-wallet"></i><span>الأرباح والعمولات</span></a>
+    <a href="#" class="sb-item" data-page="payouts"><i class="las la-money-check-alt"></i><span>طلبات السحب</span></a>
+    <a href="#" class="sb-item" data-page="reports"><i class="las la-chart-line"></i><span>التقارير</span></a>
+    <div class="sb-divider"></div>
+    <p class="sb-section">الإدارة</p>
+    <a href="#" class="sb-item" data-page="admins"><i class="las la-user-shield"></i><span>المشرفين والصلاحيات</span></a>
+    <a href="#" class="sb-item" data-page="support"><i class="las la-headset"></i><span>الدعم والشكاوى</span></a>
+    <a href="#" class="sb-item" data-page="settings"><i class="las la-cog"></i><span>إعدادات التطبيق</span></a>
+    <div class="sb-divider"></div>
+    <a href="#" class="sb-item logout" id="logoutBtn"><i class="las la-sign-out-alt"></i><span>تسجيل الخروج</span></a>
+    <div style="height:20px;"></div>
+  </nav>
+</aside>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="bottom-mobile-nav">
+  <a href="#" class="bottom-nav-item" data-page="dashboard"><i class="las la-chart-pie"></i><span>الرئيسية</span></a>
+  <a href="#" class="bottom-nav-item" data-page="restaurants"><i class="las la-store"></i><span>المطاعم</span></a>
+  <a href="#" class="bottom-nav-item bottom-nav-item-center active" data-page="orders-log"><i class="las la-history"></i><span>السجل</span></a>
+  <a href="#" class="bottom-nav-item" data-page="drivers"><i class="las la-motorcycle"></i><span>السائقين</span></a>
+  <a href="#" class="bottom-nav-item" data-page="customers"><i class="las la-users"></i><span>العملاء</span></a>
+</div>
+
+<div id="printArea"></div>
+<div id="printReportArea"></div>
+
+<script>
+(function(){
+
+  var STORAGE_KEY = 'admin_sidebar_collapsed';
+  var LOGO_URL = 'https://i.ibb.co/RqpGPYm/1788099660805-removebg-preview.png';
+
+  var pageContent = document.getElementById('pageContent');
+  var overlay = document.getElementById('overlay');
+  var sbPin = document.getElementById('sbPin');
+  var sidebarClose = document.getElementById('sidebarClose');
+  var appStatusPill = document.getElementById('appStatusPill');
+  var appStatusText = document.getElementById('appStatusText');
+  var notificationBtn = document.getElementById('notificationBtn');
+  var headerAvatar = document.getElementById('headerAvatar');
+  var logoutBtn = document.getElementById('logoutBtn');
+  var printArea = document.getElementById('printArea');
+  var printReportArea = document.getElementById('printReportArea');
+
+  var appOpen = true;
+
+  /* ===== STATUS MAP (with ENDED) ===== */
+  var statusMap = {
+    new:{ label:'جديد', cls:'badge-new', color:'#FF5A00' },
+    accepted:{ label:'مقبول', cls:'badge-accepted', color:'#8B5CF6' },
+    preparing:{ label:'قيد التحضير', cls:'badge-preparing', color:'#F59E0B' },
+    ready:{ label:'جاهز', cls:'badge-ready', color:'#00B14F' },
+    onway:{ label:'في الطريق', cls:'badge-onway', color:'#3B82F6' },
+    delivered:{ label:'تم التسليم', cls:'badge-delivered', color:'#14B8A6' },
+    ended:{ label:'منتهية', cls:'badge-ended', color:'#6B7280' },
+    canceled:{ label:'ملغي', cls:'badge-canceled', color:'#EF4444' }
+  };
+
+  function paymentLabel(p){
+    if (p === 'cash') return 'كاش';
+    if (p === 'card') return 'بطاقة';
+    return 'محفظة';
+  }
+
+  function esc(v){
+    return String(v == null ? '' : v)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function formatDate(d){ return pad(d.getDate()) + '/' + pad(d.getMonth()+1) + '/' + d.getFullYear(); }
+  function formatDateTime(d){ return formatDate(d) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+  function formatDateKey(d){ return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
+
+  /* ===== GENERATE 90 DAYS OF DATA ===== */
+  var restaurantsList = ['مطعم ابن حميدو','مطعم البحر الأحمر','مشويات الشرق','كشري التحرير','بيتزا روما','شاورما الشام'];
+  var customersList = ['أحمد محمد','سارة علي','محمود حسن','ليلى أحمد','خالد يوسف','منى إبراهيم','عمر سالم','هند محمد','يوسف علي','نور الدين','سلمى أحمد','كريم فؤاد','رنا مصطفى','زياد طارق','فاطمة سمير'];
+  var phonesList = ['01012345678','01123456789','01234567890','01098765432','01187654321','01276543210','01065432109','01154321098'];
+  var addrsList = [
+    'شرم الشيخ - شارع السلام - عمارة 12',
+    'الغردقة - شارع النصر - برج اللؤلؤة',
+    'القاهرة - مدينة نصر - شارع عباس العقاد',
+    'القاهرة - التحرير - شارع طلعت حرب',
+    'الإسكندرية - سموحة - شارع فوزي معاذ',
+    'المنصورة - شارع الجمهورية',
+    'شرم الشيخ - الهضبة - فيلا 8',
+    'الغردقة - الدهار - شارع المصالح'
+  ];
+  var paymentsList = ['cash','card','wallet'];
+  var notesPool = [
+    'بدون بصل وبدون ثوم - يرجى التأكيد مع المطعم',
+    'الطقم رايح الدور الرابع - كلمني عند الوصول',
+    'يا ريت الطلب يكون حار شوية',
+    'العميل مستعجل جداً - أولوية عالية',
+    'العيش يكون بلدي طازة من الفرن',
+    '', '', '', ''
+  ];
+  var productsPool = [
+    {name:'كفتة مشوية', price:95},
+    {name:'أرز بخاري', price:45},
+    {name:'سمك مشوي', price:150},
+    {name:'جمبري مقلي', price:95},
+    {name:'طبق كشري وسط', price:65},
+    {name:'طبق كشري كبير', price:85},
+    {name:'شيش طاووق', price:110},
+    {name:'كباب مشوي', price:150},
+    {name:'حمام محشي', price:120},
+    {name:'مشروب غازي', price:15},
+    {name:'سلطة خضراء', price:25},
+    {name:'سلطة طحينة', price:20},
+    {name:'فرخة مشوية', price:165},
+    {name:'مكرونة بالبشاميل', price:55}
+  ];
+
+  function generateHistoricalOrders(){
+    var arr = [];
+    var today = new Date();
+    today.setHours(23,59,59,999);
+    var startDate = new Date(today.getTime() - 89*24*60*60*1000);
+    startDate.setHours(0,0,0,0);
+    var id = 4000;
+
+    for (var d = 0; d < 90; d++){
+      var date = new Date(startDate.getTime() + d*24*60*60*1000);
+      var dow = date.getDay();
+      var base = (dow === 5 || dow === 6) ? 9 : 5;
+      var count = base + Math.floor(Math.random()*4) - 1;
+      if (count < 3) count = 3;
+      if (d > 60) count = Math.round(count * 1.35);
+      if (d > 80) count = Math.round(count * 1.15);
+
+      for (var i = 0; i < count; i++){
+        id++;
+        var rest = restaurantsList[Math.floor(Math.random()*restaurantsList.length)];
+        var cust = customersList[Math.floor(Math.random()*customersList.length)];
+        var phone = phonesList[Math.floor(Math.random()*phonesList.length)];
+        var addr = addrsList[Math.floor(Math.random()*addrsList.length)];
+        var pay = paymentsList[Math.floor(Math.random()*paymentsList.length)];
+        var note = notesPool[Math.floor(Math.random()*notesPool.length)];
+        var daysAgo = 89 - d;
+
+        var status;
+        if (daysAgo > 2){
+          status = Math.random() > 0.06 ? 'delivered' : 'canceled';
+        } else if (daysAgo === 2){
+          status = Math.random() > 0.15 ? 'delivered' : 'canceled';
+        } else {
+          var r = Math.random();
+          if (r < 0.25) status = 'delivered';
+          else if (r < 0.4) status = 'onway';
+          else if (r < 0.55) status = 'ready';
+          else if (r < 0.7) status = 'preparing';
+          else if (r < 0.85) status = 'accepted';
+          else if (r < 0.95) status = 'new';
+          else status = 'canceled';
+        }
+
+        // Delivered > 7 days ago becomes "منتهية" (ended/archived)
+        if (status === 'delivered' && daysAgo > 7) status = 'ended';
+
+        var numProds = 1 + Math.floor(Math.random()*4);
+        var prods = [];
+        var subtotal = 0;
+        for (var p = 0; p < numProds; p++){
+          var pr = productsPool[Math.floor(Math.random()*productsPool.length)];
+          var qty = 1 + Math.floor(Math.random()*3);
+          prods.push({ name: pr.name, qty: qty, price: pr.price });
+          subtotal += pr.price * qty;
+        }
+        var delivery = 10 + Math.floor(Math.random()*15);
+        var tax = 5 + Math.floor(Math.random()*12);
+        var total = subtotal + delivery + tax;
+
+        var hour = 10 + Math.floor(Math.random()*13);
+        var minute = Math.floor(Math.random()*60);
+        var orderDate = new Date(date);
+        orderDate.setHours(hour, minute, 0, 0);
+
+        arr.push({
+          id: 'ORD-' + id,
+          restaurant: rest, customer: cust, phone: phone, address: addr,
+          items: prods.length, products: prods,
+          delivery: delivery, tax: tax, total: total,
+          payment: pay, status: status, date: orderDate, notes: note
+        });
+      }
+    }
+    return arr;
+  }
+
+  var allOrders = generateHistoricalOrders();
+
+  /* ===== STATE ===== */
+  var state = {
+    period: 'month',
+    customFrom: '',
+    customTo: '',
+    restaurant: 'all',
+    status: 'all',
+    search: '',
+    page: 1,
+    perPage: 15
+  };
+
+  var charts = {};
+
+  /* ===== DATE RANGE HELPERS ===== */
+  function getPeriodRange(){
+    var now = new Date();
+    now.setHours(23,59,59,999);
+    var from, to = new Date(now);
+
+    switch(state.period){
+      case 'today':
+        from = new Date(now); from.setHours(0,0,0,0);
+        break;
+      case 'week':
+        from = new Date(now.getTime() - 6*24*60*60*1000); from.setHours(0,0,0,0);
+        break;
+      case 'month':
+        from = new Date(now.getTime() - 29*24*60*60*1000); from.setHours(0,0,0,0);
+        break;
+      case '3months':
+        from = new Date(now.getTime() - 89*24*60*60*1000); from.setHours(0,0,0,0);
+        break;
+      case 'all':
+        from = new Date(allOrders[0].date); from.setHours(0,0,0,0);
+        break;
+      case 'custom':
+        from = state.customFrom ? new Date(state.customFrom + 'T00:00:00') : new Date(0);
+        to = state.customTo ? new Date(state.customTo + 'T23:59:59') : new Date(now);
+        break;
+      default:
+        from = new Date(now.getTime() - 29*24*60*60*1000); from.setHours(0,0,0,0);
+    }
+    return { from: from, to: to };
+  }
+
+  function getPreviousRange(current){
+    var span = current.to.getTime() - current.from.getTime();
+    var prevTo = new Date(current.from.getTime() - 1);
+    var prevFrom = new Date(prevTo.getTime() - span);
+    return { from: prevFrom, to: prevTo };
+  }
+
+  function filterOrders(orders, range){
+    return orders.filter(function(o){
+      if (o.date < range.from || o.date > range.to) return false;
+      if (state.restaurant !== 'all' && o.restaurant !== state.restaurant) return false;
+      if (state.status !== 'all' && o.status !== state.status) return false;
+      if (state.search){
+        var q = state.search.trim().toLowerCase();
+        if (q){
+          var hay = (o.id + ' ' + o.customer + ' ' + o.restaurant + ' ' + o.phone).toLowerCase();
+          if (hay.indexOf(q) === -1) return false;
+        }
+      }
+      return true;
+    });
+  }
+
+  function getCurrentOrders(){
+    return filterOrders(allOrders, getPeriodRange());
+  }
+  function getPreviousOrders(){
+    return filterOrders(allOrders, getPreviousRange(getPeriodRange()));
+  }
+
+  /* ===== STATS ===== */
+  function calcStats(orders){
+    var total = orders.length, revenue = 0, completed = 0, canceled = 0, ended = 0;
+    for (var i = 0; i < orders.length; i++){
+      revenue += orders[i].total;
+      if (orders[i].status === 'delivered') completed++;
+      if (orders[i].status === 'ended') ended++;
+      if (orders[i].status === 'canceled') canceled++;
+    }
+    return {
+      total: total, revenue: revenue,
+      completed: completed, canceled: canceled, ended: ended,
+      avg: total ? revenue / total : 0,
+      successRate: total ? ((completed + ended) / total * 100) : 0
+    };
+  }
+
+  /* ===== CHART HELPERS ===== */
+  function groupByDay(orders){
+    var map = {};
+    orders.forEach(function(o){
+      var k = formatDateKey(o.date);
+      if (!map[k]) map[k] = { count: 0, revenue: 0, min: Infinity, max: 0 };
+      map[k].count++;
+      map[k].revenue += o.total;
+      if (o.total < map[k].min) map[k].min = o.total;
+      if (o.total > map[k].max) map[k].max = o.total;
+    });
+    return { keys: Object.keys(map).sort(), map: map };
+  }
+
+  /* ===== RENDER PAGE ===== */
+  function renderPage(){
+    var currentOrders = getCurrentOrders();
+    var previousOrders = getPreviousOrders();
+    var current = calcStats(currentOrders);
+    var previous = calcStats(previousOrders);
+
+    return '' +
+      '<div class="page-head">' +
+        '<div>' +
+          '<h2 class="page-title"><i class="las la-history"></i> سجل الطلبات التفصيلي</h2>' +
+          '<p class="page-sub">كل الطلبات من بداية التطبيق مع رسوم بيانية وتقارير مفصلة</p>' +
+        '</div>' +
+        '<div class="flex items-center gap-2 flex-wrap">' +
+          '<button type="button" class="btn-outline" data-refresh><i class="las la-sync-alt"></i> تحديث</button>' +
+          '<button type="button" class="btn-outline" data-print-report><i class="las la-print"></i> طباعة التقرير</button>' +
+          '<button type="button" class="btn btn-primary" data-export><i class="las la-file-export"></i> تصدير CSV</button>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="period-chips" id="periodChips">' +
+        periodChip('today', 'اليوم', 'las la-calendar-day') +
+        periodChip('week', 'الأسبوع', 'las la-calendar-week') +
+        periodChip('month', 'الشهر', 'las la-calendar-alt') +
+        periodChip('3months', 'آخر 3 شهور', 'las la-calendar') +
+        periodChip('all', 'كل الفترات', 'las la-infinity') +
+        periodChip('custom', 'مخصص', 'las la-sliders-h') +
+      '</div>' +
+
+      '<div class="custom-range' + (state.period === 'custom' ? ' active' : '') + '" id="customRange">' +
+        '<label>من تاريخ<input type="date" id="customFrom" value="' + esc(state.customFrom) + '"></label>' +
+        '<label>إلى تاريخ<input type="date" id="customTo" value="' + esc(state.customTo) + '"></label>' +
+      '</div>' +
+
+      '<div class="filters-row">' +
+        '<div class="search-box">' +
+          '<i class="las la-search"></i>' +
+          '<input type="text" id="logSearch" placeholder="ابحث برقم الطلب / العميل / المطعم / الهاتف..." value="' + esc(state.search) + '">' +
+        '</div>' +
+        '<select id="restFilter">' +
+          '<option value="all"' + (state.restaurant === 'all' ? ' selected' : '') + '>كل المطاعم</option>' +
+          restaurantsList.map(function(r){
+            return '<option value="' + esc(r) + '"' + (state.restaurant === r ? ' selected' : '') + '>' + esc(r) + '</option>';
+          }).join('') +
+        '</select>' +
+        '<select id="statusFilter">' +
+          '<option value="all"' + (state.status === 'all' ? ' selected' : '') + '>كل الحالات</option>' +
+          Object.keys(statusMap).map(function(k){
+            return '<option value="' + k + '"' + (state.status === k ? ' selected' : '') + '>' + statusMap[k].label + '</option>';
+          }).join('') +
+        '</select>' +
+      '</div>' +
+
+      '<div class="stats-arrows">' +
+        statArrow('up', '#FF5A00', 'las la-receipt', current.total, previous.total, 'إجمالي الطلبات') +
+        statArrow('up', '#00B14F', 'las la-wallet', current.revenue.toLocaleString('en-US') + ' ج.م', previous.revenue, 'إجمالي الإيرادات') +
+        statArrow('up', '#3B82F6', 'las la-chart-line', current.avg.toFixed(0) + ' ج.م', previous.avg, 'متوسط قيمة الطلب') +
+        statArrow('down', '#EF4444', 'las la-times-circle', current.canceled, previous.canceled, 'الطلبات الملغاة', true) +
+      '</div>' +
+
+      '<div class="charts-grid">' +
+        '<div class="chart-card span-2">' +
+          '<div class="chart-head"><div>' +
+            '<h3 class="chart-title"><i class="las la-chart-area"></i> تطور عدد الطلبات</h3>' +
+            '<p class="chart-sub">عدد الطلبات يومياً خلال الفترة المحددة</p>' +
+          '</div></div>' +
+          '<div class="chart-body"><canvas id="chartOrdersTrend"></canvas></div>' +
+        '</div>' +
+
+        '<div class="chart-card">' +
+          '<div class="chart-head"><div>' +
+            '<h3 class="chart-title"><i class="las la-chart-bar"></i> الإيرادات اليومية</h3>' +
+            '<p class="chart-sub">إجمالي الإيرادات لكل يوم (ج.م)</p>' +
+          '</div></div>' +
+          '<div class="chart-body"><canvas id="chartRevenue"></canvas></div>' +
+        '</div>' +
+
+        '<div class="chart-card">' +
+          '<div class="chart-head"><div>' +
+            '<h3 class="chart-title"><i class="las la-chart-line"></i> نطاق أسعار الطلبات</h3>' +
+            '<p class="chart-sub">أقل وأعلى قيمة طلب يومياً</p>' +
+          '</div></div>' +
+          '<div class="chart-body"><canvas id="chartRange"></canvas></div>' +
+        '</div>' +
+
+        '<div class="chart-card">' +
+          '<div class="chart-head"><div>' +
+            '<h3 class="chart-title"><i class="las la-chart-pie"></i> توزيع حالات الطلبات</h3>' +
+            '<p class="chart-sub">نسبة كل حالة من الإجمالي</p>' +
+          '</div></div>' +
+          '<div class="chart-body"><canvas id="chartStatus"></canvas></div>' +
+        '</div>' +
+
+        '<div class="chart-card">' +
+          '<div class="chart-head"><div>' +
+            '<h3 class="chart-title"><i class="las la-clock"></i> الطلبات حسب الساعة</h3>' +
+            '<p class="chart-sub">أوقات الذروة خلال اليوم</p>' +
+          '</div></div>' +
+          '<div class="chart-body"><canvas id="chartHourly"></canvas></div>' +
+        '</div>' +
+
+        '<div class="chart-card span-2">' +
+          '<div class="chart-head"><div>' +
+            '<h3 class="chart-title"><i class="las la-trophy"></i> أعلى المطاعم إيرادات</h3>' +
+            '<p class="chart-sub">ترتيب المطاعم حسب الإيرادات في الفترة المحددة</p>' +
+          '</div></div>' +
+          '<div class="chart-body"><canvas id="chartRestaurants"></canvas></div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="log-panel">' +
+        '<div class="log-panel-head">' +
+          '<h3><i class="las la-list"></i> سجل الطلبات التفصيلي</h3>' +
+          '<div class="log-head-actions">' +
+            '<span class="log-count" id="logCount">' + currentOrders.length + ' طلب</span>' +
+            '<div class="per-page-wrap">' +
+              '<label for="perPageSelect">عدد الصفوف:</label>' +
+              '<select class="per-page-select" id="perPageSelect">' +
+                '<option value="10"' + (state.perPage === 10 ? ' selected' : '') + '>10</option>' +
+                '<option value="15"' + (state.perPage === 15 ? ' selected' : '') + '>15</option>' +
+                '<option value="25"' + (state.perPage === 25 ? ' selected' : '') + '>25</option>' +
+                '<option value="50"' + (state.perPage === 50 ? ' selected' : '') + '>50</option>' +
+                '<option value="100"' + (state.perPage === 100 ? ' selected' : '') + '>100</option>' +
+              '</select>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="log-table-wrap" id="logTableWrap">' + logTableHtml(currentOrders) + '</div>' +
+        '<div id="paginationWrap">' + paginationHtml(currentOrders.length) + '</div>' +
+      '</div>';
+  }
+
+  function periodChip(key, label, icon){
+    return '<button type="button" class="period-chip' + (state.period === key ? ' active' : '') + '" data-period="' + key + '">' +
+      '<i class="' + icon + '"></i> ' + label +
+    '</button>';
+  }
+
+  function statArrow(direction, color, icon, value, prevValue, label, invertTrend){
+    var prev = typeof prevValue === 'number' ? prevValue : 0;
+    var cur = typeof value === 'number' ? value : 0;
+    var trendMarkup;
+    if (!prev){
+      trendMarkup = '<span class="sa-trend flat"><i class="las la-minus"></i> —</span>';
+    } else {
+      var d = ((cur - prev) / prev) * 100;
+      if (Math.abs(d) < 0.5){
+        trendMarkup = '<span class="sa-trend flat"><i class="las la-minus"></i> 0%</span>';
+      } else if (d > 0){
+        trendMarkup = '<span class="sa-trend ' + (invertTrend ? 'down' : 'up') + '"><i class="las la-arrow-up"></i> ' + d.toFixed(1) + '%</span>';
+      } else {
+        trendMarkup = '<span class="sa-trend ' + (invertTrend ? 'up' : 'down') + '"><i class="las la-arrow-down"></i> ' + Math.abs(d).toFixed(1) + '%</span>';
+      }
+    }
+    return '' +
+      '<div class="stat-arrow ' + direction + '">' +
+        '<div class="sa-head">' +
+          '<div class="sa-icon" style="background:' + color + '1A;color:' + color + ';"><i class="' + icon + '"></i></div>' +
+          trendMarkup +
+        '</div>' +
+        '<div class="sa-value">' + value + '</div>' +
+        '<div class="sa-label">' + label + '</div>' +
+      '</div>';
+  }
+
+  function logTableHtml(orders){
+    if (!orders.length){
+      return '<div class="empty-state"><i class="las la-inbox"></i><p>لا توجد طلبات مطابقة للفلتر المحدد</p></div>';
+    }
+    var start = (state.page - 1) * state.perPage;
+    var slice = orders.slice(start, start + state.perPage);
+
+    var rows = slice.map(function(o){
+      var st = statusMap[o.status] || statusMap.new;
+      return '<tr>' +
+        '<td class="log-id">' + esc(o.id) + '</td>' +
+        '<td class="log-date">' + formatDateTime(o.date) + '</td>' +
+        '<td class="log-trunc">' + esc(o.customer) + '</td>' +
+        '<td class="log-trunc" style="color:#FF5A00;font-weight:700;">' + esc(o.restaurant) + '</td>' +
+        '<td>' + o.items + '</td>' +
+        '<td>' + paymentLabel(o.payment) + '</td>' +
+        '<td><span class="log-status ' + st.cls + '">' + st.label + '</span></td>' +
+        '<td class="log-total">' + o.total.toFixed(2) + ' ج.م</td>' +
+        '<td><button type="button" class="log-print-btn" data-print-order="' + esc(o.id) + '" title="طباعة الفاتورة">' +
+          '<i class="las la-print"></i></button></td>' +
+      '</tr>';
+    }).join('');
+
+    return '<table class="log-table">' +
+        '<thead><tr>' +
+          '<th>رقم الطلب</th><th>التاريخ والوقت</th><th>العميل</th>' +
+          '<th>المطعم</th><th>الأصناف</th><th>الدفع</th>' +
+          '<th>الحالة</th><th>الإجمالي</th><th></th>' +
+        '</tr></thead>' +
+        '<tbody>' + rows + '</tbody>' +
+      '</table>';
+  }
+
+  /* ===== SIMPLE PAGINATION (2 ARROWS ONLY) ===== */
+  function paginationHtml(total){
+    var totalPages = Math.max(1, Math.ceil(total / state.perPage));
+    if (total === 0) return '';
+    return '' +
+      '<div class="pagination">' +
+        '<button class="page-btn" data-page="prev"' + (state.page === 1 ? ' disabled' : '') + '>' +
+          '<i class="las la-angle-right"></i> السابق' +
+        '</button>' +
+        '<span class="page-info">صفحة ' + state.page + ' من ' + totalPages + '</span>' +
+        '<button class="page-btn" data-page="next"' + (state.page === totalPages ? ' disabled' : '') + '>' +
+          'التالي <i class="las la-angle-left"></i>' +
+        '</button>' +
+      '</div>';
+  }
+
+  /* ===== CHARTS ===== */
+  function destroyCharts(){
+    Object.keys(charts).forEach(function(k){
+      if (charts[k]) { try{ charts[k].destroy(); }catch(e){} }
+      charts[k] = null;
+    });
+  }
+
+  Chart.defaults.font.family = "'Noto Sans Arabic', system-ui, sans-serif";
+  Chart.defaults.font.size = 11;
+  Chart.defaults.color = '#717171';
+
+  function buildCharts(orders){
+    destroyCharts();
+    if (typeof Chart === 'undefined') return;
+
+    var grouped = groupByDay(orders);
+    var labels = grouped.keys.map(function(k){
+      var parts = k.split('-');
+      return parts[2] + '/' + parts[1];
+    });
+    var counts = grouped.keys.map(function(k){ return grouped.map[k].count; });
+
+    var ctx1 = document.getElementById('chartOrdersTrend');
+    if (ctx1) charts.trend = new Chart(ctx1, {
+      type: 'line',
+      data: { labels: labels, datasets: [{
+        label: 'عدد الطلبات', data: counts,
+        borderColor: '#FF5A00', backgroundColor: 'rgba(255,90,0,0.15)',
+        borderWidth: 2.5, fill: true, tension: 0.35,
+        pointRadius: 0, pointHoverRadius: 5
+      }]},
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#1A1A1A', displayColors:false, padding:10, cornerRadius:8 } },
+        scales:{ x:{ grid:{display:false}, ticks:{ maxRotation:0, autoSkip:true, maxTicksLimit:12 } },
+                 y:{ beginAtZero:true, grid:{color:'rgba(0,0,0,0.05)'}, ticks:{stepSize:1} } }
+      }
+    });
+
+    var revenues = grouped.keys.map(function(k){ return +grouped.map[k].revenue.toFixed(0); });
+    var ctx2 = document.getElementById('chartRevenue');
+    if (ctx2) charts.revenue = new Chart(ctx2, {
+      type: 'bar',
+      data: { labels: labels, datasets: [{
+        label:'الإيرادات', data: revenues,
+        backgroundColor:'#00B14F', borderRadius:6, borderSkipped:false
+      }]},
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#1A1A1A', displayColors:false, padding:10, cornerRadius:8,
+          callbacks:{ label:function(ctx){ return ctx.parsed.y.toLocaleString('en-US') + ' ج.م'; } } } },
+        scales:{ x:{ grid:{display:false}, ticks:{ maxRotation:0, autoSkip:true, maxTicksLimit:10 } },
+                 y:{ beginAtZero:true, grid:{color:'rgba(0,0,0,0.05)'} } }
+      }
+    });
+
+    var mins = [], maxs = [];
+    grouped.keys.forEach(function(k){
+      var m = grouped.map[k];
+      mins.push(m.min === Infinity ? 0 : m.min);
+      maxs.push(m.max);
+    });
+    var ctx3 = document.getElementById('chartRange');
+    if (ctx3) charts.range = new Chart(ctx3, {
+      type: 'bar',
+      data: { labels: labels, datasets: [{
+        label:'نطاق السعر', data: grouped.keys.map(function(k,i){ return [mins[i], maxs[i]]; }),
+        backgroundColor:'rgba(139,92,246,0.75)', borderColor:'#8B5CF6', borderWidth:1,
+        borderRadius:4, borderSkipped:false, barPercentage:0.6
+      }]},
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#1A1A1A', displayColors:false, padding:10, cornerRadius:8,
+          callbacks:{ label:function(ctx){
+            var v = ctx.raw;
+            if (Array.isArray(v)) return 'من ' + v[0].toFixed(0) + ' إلى ' + v[1].toFixed(0) + ' ج.م';
+            return ctx.parsed.y + ' ج.م';
+          } } } },
+        scales:{ x:{ grid:{display:false}, ticks:{ maxRotation:0, autoSkip:true, maxTicksLimit:10 } },
+                 y:{ beginAtZero:true, grid:{color:'rgba(0,0,0,0.05)'} } }
+      }
+    });
+
+    var statusCounts = {};
+    Object.keys(statusMap).forEach(function(k){ statusCounts[k] = 0; });
+    orders.forEach(function(o){ statusCounts[o.status] = (statusCounts[o.status] || 0) + 1; });
+    var statusKeys = Object.keys(statusCounts).filter(function(k){ return statusCounts[k] > 0; });
+
+    var ctx4 = document.getElementById('chartStatus');
+    if (ctx4) charts.status = new Chart(ctx4, {
+      type: 'doughnut',
+      data: {
+        labels: statusKeys.map(function(k){ return statusMap[k].label; }),
+        datasets: [{
+          data: statusKeys.map(function(k){ return statusCounts[k]; }),
+          backgroundColor: statusKeys.map(function(k){ return statusMap[k].color; }),
+          borderWidth: 3, borderColor:'#fff', hoverOffset: 6
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, cutout:'62%',
+        plugins:{
+          legend:{ position:'bottom', labels:{ padding:10, boxWidth:12, boxHeight:12, font:{size:11, weight:'700'}, usePointStyle:true, pointStyle:'circle' } },
+          tooltip:{ backgroundColor:'#1A1A1A', padding:10, cornerRadius:8,
+            callbacks:{ label:function(ctx){
+              var total = ctx.dataset.data.reduce(function(a,b){ return a+b; },0);
+              var pct = total ? ((ctx.parsed/total)*100).toFixed(1) : 0;
+              return ' ' + ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+            } } }
+        }
+      }
+    });
+
+    var hourBuckets = new Array(24).fill(0);
+    orders.forEach(function(o){ hourBuckets[o.date.getHours()]++; });
+    var hours = [];
+    for (var h = 0; h < 24; h++){ if (h >= 9 && h <= 23) hours.push(h); }
+    var hourData = hours.map(function(h){ return hourBuckets[h]; });
+
+    var ctx5 = document.getElementById('chartHourly');
+    if (ctx5) charts.hourly = new Chart(ctx5, {
+      type: 'bar',
+      data: { labels: hours.map(function(h){ return h + ':00'; }), datasets: [{
+        label:'الطلبات', data: hourData,
+        backgroundColor: hourData.map(function(v){
+          var max = Math.max.apply(null, hourData);
+          return 'rgba(255,90,0,' + (0.25 + (max ? v/max : 0) * 0.65) + ')';
+        }),
+        borderRadius:6, borderSkipped:false
+      }]},
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#1A1A1A', displayColors:false, padding:10, cornerRadius:8 } },
+        scales:{ x:{ grid:{display:false}, ticks:{font:{size:10}} },
+                 y:{ beginAtZero:true, grid:{color:'rgba(0,0,0,0.05)'}, ticks:{stepSize:1} } }
+      }
+    });
+
+    var restMap = {};
+    orders.forEach(function(o){
+      if (!restMap[o.restaurant]) restMap[o.restaurant] = { count:0, revenue:0 };
+      restMap[o.restaurant].count++;
+      restMap[o.restaurant].revenue += o.total;
+    });
+    var restArr = Object.keys(restMap).map(function(r){
+      return { name:r, count:restMap[r].count, revenue:restMap[r].revenue };
+    }).sort(function(a,b){ return b.revenue - a.revenue; }).slice(0, 8);
+
+    var ctx6 = document.getElementById('chartRestaurants');
+    if (ctx6) charts.restaurants = new Chart(ctx6, {
+      type: 'bar',
+      data: { labels: restArr.map(function(r){ return r.name; }), datasets: [{
+        label:'الإيرادات', data: restArr.map(function(r){ return +r.revenue.toFixed(0); }),
+        backgroundColor:'#FF5A00', borderRadius:6, borderSkipped:false, barPercentage:0.7
+      }]},
+      options:{
+        indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#1A1A1A', padding:10, cornerRadius:8, displayColors:false,
+          callbacks:{ label:function(ctx){
+            var r = restArr[ctx.dataIndex];
+            return ' ' + r.revenue.toLocaleString('en-US') + ' ج.م (' + r.count + ' طلب)';
+          } } } },
+        scales:{ x:{ beginAtZero:true, grid:{color:'rgba(0,0,0,0.05)'} },
+                 y:{ grid:{display:false}, ticks:{font:{size:11,weight:'700'}} } }
+      }
+    });
+  }
+
+  /* ===== BIND ===== */
+  function bindPage(){
+    var chips = document.querySelectorAll('#periodChips .period-chip');
+    for (var i = 0; i < chips.length; i++){
+      chips[i].addEventListener('click', function(){
+        state.period = this.getAttribute('data-period');
+        state.page = 1;
+        if (state.period === 'custom'){
+          var cr = document.getElementById('customRange');
+          if (cr) cr.classList.add('active');
+          if (!state.customFrom){
+            var t = new Date();
+            state.customTo = formatDateKey(t);
+            var f = new Date(t.getTime() - 30*24*60*60*1000);
+            state.customFrom = formatDateKey(f);
+          }
+        }
+        updateAll();
+      });
+    }
+
+    var cf = document.getElementById('customFrom');
+    var ct = document.getElementById('customTo');
+    if (cf) cf.addEventListener('change', function(){ state.customFrom = this.value; state.page = 1; updateAll(); });
+    if (ct) ct.addEventListener('change', function(){ state.customTo = this.value; state.page = 1; updateAll(); });
+
+    var search = document.getElementById('logSearch');
+    if (search){
+      var debounce;
+      search.addEventListener('input', function(){
+        var v = this.value;
+        clearTimeout(debounce);
+        debounce = setTimeout(function(){
+          state.search = v; state.page = 1; updateAll();
+        }, 300);
+      });
+    }
+
+    var rf = document.getElementById('restFilter');
+    if (rf) rf.addEventListener('change', function(){ state.restaurant = this.value; state.page = 1; updateAll(); });
+
+    var sf = document.getElementById('statusFilter');
+    if (sf) sf.addEventListener('change', function(){ state.status = this.value; state.page = 1; updateAll(); });
+
+    var pps = document.getElementById('perPageSelect');
+    if (pps) pps.addEventListener('change', function(){
+      state.perPage = parseInt(this.value, 10);
+      state.page = 1;
+      var orders = getCurrentOrders();
+      var wrap = document.getElementById('logTableWrap');
+      var pag = document.getElementById('paginationWrap');
+      if (wrap) wrap.innerHTML = logTableHtml(orders);
+      if (pag) pag.innerHTML = paginationHtml(orders.length);
+      bindTablePrint();
+    });
+
+    var pag = document.getElementById('paginationWrap');
+    if (pag){
+      pag.addEventListener('click', function(e){
+        var btn = e.target.closest('.page-btn');
+        if (!btn || btn.disabled) return;
+        var val = btn.getAttribute('data-page');
+        var orders = getCurrentOrders();
+        var totalPages = Math.max(1, Math.ceil(orders.length / state.perPage));
+        if (val === 'prev') state.page = Math.max(1, state.page - 1);
+        else if (val === 'next') state.page = Math.min(totalPages, state.page + 1);
+        var wrap = document.getElementById('logTableWrap');
+        if (wrap) wrap.innerHTML = logTableHtml(orders);
+        pag.innerHTML = paginationHtml(orders.length);
+        bindTablePrint();
+        var panel = document.querySelector('.log-panel');
+        if (panel){
+          window.scrollTo({ top: panel.offsetTop - 20, behavior: 'smooth' });
+        }
+      });
+    }
+
+    bindTablePrint();
+
+    var refreshBtn = pageContent.querySelector('[data-refresh]');
+    if (refreshBtn) refreshBtn.addEventListener('click', function(){
+      updateAll();
+      Swal.fire({ toast:true, position:'top-end', icon:'success',
+        title:'تم تحديث السجل', showConfirmButton:false, timer:1400 });
+    });
+
+    var exportBtn = pageContent.querySelector('[data-export]');
+    if (exportBtn) exportBtn.addEventListener('click', exportCSV);
+
+    var printBtn = pageContent.querySelector('[data-print-report]');
+    if (printBtn) printBtn.addEventListener('click', printReport);
+  }
+
+  function bindTablePrint(){
+    var wrap = document.getElementById('logTableWrap');
+    if (!wrap) return;
+    if (wrap.dataset.bound === '1') return;
+    wrap.dataset.bound = '1';
+    wrap.addEventListener('click', function(e){
+      var btn = e.target.closest('[data-print-order]');
+      if (btn) printOrderReceipt(btn.getAttribute('data-print-order'));
+    });
+  }
+
+  function updateAll(){
+    pageContent.innerHTML = renderPage();
+    bindPage();
+    setTimeout(function(){ buildCharts(getCurrentOrders()); }, 30);
+  }
+
+  /* ===== EXPORT CSV ===== */
+  function exportCSV(){
+    var orders = getCurrentOrders();
+    if (!orders.length){
+      Swal.fire({ toast:true, position:'top-end', icon:'warning',
+        title:'لا توجد بيانات للتصدير', showConfirmButton:false, timer:1600 });
+      return;
+    }
+    var rows = [['رقم الطلب','التاريخ','الوقت','العميل','الهاتف','المطعم','الأصناف','الدفع','الحالة','الإجمالي']];
+    orders.forEach(function(o){
+      rows.push([
+        o.id, formatDate(o.date),
+        pad(o.date.getHours()) + ':' + pad(o.date.getMinutes()),
+        o.customer, o.phone, o.restaurant, o.items,
+        paymentLabel(o.payment),
+        (statusMap[o.status] || {}).label || o.status,
+        o.total.toFixed(2)
+      ]);
+    });
+    var csv = '\uFEFF' + rows.map(function(r){
+      return r.map(function(c){
+        var s = String(c == null ? '' : c);
+        if (s.indexOf(',') !== -1 || s.indexOf('"') !== -1) return '"' + s.replace(/"/g,'""') + '"';
+        return s;
+      }).join(',');
+    }).join('\n');
+
+    var blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'orders-log-' + formatDateKey(new Date()) + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+
+    Swal.fire({ toast:true, position:'top-end', icon:'success',
+      title:'تم تصدير ' + orders.length + ' طلب', showConfirmButton:false, timer:1800 });
+  }
+
+  /* ===== PRINT REPORT ===== */
+  function buildReportHTML(){
+    var range = getPeriodRange();
+    var orders = getCurrentOrders();
+    var stats = calcStats(orders);
+
+    var periodText = '';
+    if (state.period === 'today') periodText = 'تقرير يوم ' + formatDate(range.to);
+    else if (state.period === 'week') periodText = 'تقرير الأسبوع (' + formatDate(range.from) + ' - ' + formatDate(range.to) + ')';
+    else if (state.period === 'month') periodText = 'تقرير الشهر (' + formatDate(range.from) + ' - ' + formatDate(range.to) + ')';
+    else if (state.period === '3months') periodText = 'تقرير آخر 3 شهور (' + formatDate(range.from) + ' - ' + formatDate(range.to) + ')';
+    else if (state.period === 'all') periodText = 'تقرير كل الفترات (' + formatDate(range.from) + ' - ' + formatDate(range.to) + ')';
+    else periodText = 'تقرير مخصص (' + formatDate(range.from) + ' - ' + formatDate(range.to) + ')';
+
+    var issueStr = formatDateTime(new Date());
+
+    var statusCounts = {};
+    Object.keys(statusMap).forEach(function(k){ statusCounts[k] = 0; });
+    orders.forEach(function(o){ statusCounts[o.status]++; });
+
+    var restMap = {};
+    orders.forEach(function(o){
+      if (!restMap[o.restaurant]) restMap[o.restaurant] = { count:0, revenue:0 };
+      restMap[o.restaurant].count++;
+      restMap[o.restaurant].revenue += o.total;
+    });
+    var restArr = Object.keys(restMap).map(function(r){
+      return { name:r, count:restMap[r].count, revenue:restMap[r].revenue };
+    }).sort(function(a,b){ return b.revenue - a.revenue; });
+
+    var ordersRows = orders.map(function(o, i){
+      var st = statusMap[o.status] || statusMap.new;
+      return '<tr>' +
+        '<td class="rep-num">' + (i+1) + '</td>' +
+        '<td class="rep-num">' + esc(o.id) + '</td>' +
+        '<td class="rep-num">' + formatDateTime(o.date) + '</td>' +
+        '<td>' + esc(o.customer) + '</td>' +
+        '<td>' + esc(o.restaurant) + '</td>' +
+        '<td style="text-align:center;">' + o.items + '</td>' +
+        '<td style="text-align:center;">' + paymentLabel(o.payment) + '</td>' +
+        '<td><span class="rep-badge">' + st.label + '</span></td>' +
+        '<td style="text-align:left;font-weight:800;">' + o.total.toFixed(2) + ' ج.م</td>' +
+      '</tr>';
+    }).join('');
+
+    var restRows = restArr.map(function(r, i){
+      return '<tr>' +
+        '<td style="text-align:center;">' + (i+1) + '</td>' +
+        '<td>' + esc(r.name) + '</td>' +
+        '<td style="text-align:center;">' + r.count + '</td>' +
+        '<td style="text-align:left;font-weight:800;">' + r.revenue.toLocaleString('en-US') + ' ج.م</td>' +
+      '</tr>';
+    }).join('');
+
+    var statusRows = Object.keys(statusCounts).filter(function(k){ return statusCounts[k] > 0; })
+      .map(function(k){
+        var pct = orders.length ? (statusCounts[k] / orders.length * 100).toFixed(1) : 0;
+        return '<tr><td>' + statusMap[k].label + '</td>' +
+          '<td style="text-align:center;">' + statusCounts[k] + '</td>' +
+          '<td style="text-align:center;">' + pct + '%</td></tr>';
+      }).join('');
+
+    return '' +
+      '<div class="rep-header">' +
+        '<div class="rep-brand">' +
+          '<div class="rep-app">SwivyGo</div>' +
+          '<div class="rep-tag">ORDERS MANAGEMENT SYSTEM</div>' +
+        '</div>' +
+        '<div class="rep-title">' +
+          '<h1>' + esc(periodText) + '</h1>' +
+          '<p>تاريخ الإصدار: ' + issueStr + '</p>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="rep-meta">' +
+        '<span>إجمالي الطلبات: <b>' + stats.total + '</b></span>' +
+        '<span>إجمالي الإيرادات: <b>' + stats.revenue.toLocaleString('en-US') + ' ج.م</b></span>' +
+        '<span>متوسط الطلب: <b>' + stats.avg.toFixed(2) + ' ج.م</b></span>' +
+        '<span>معدل النجاح: <b>' + stats.successRate.toFixed(1) + '%</b></span>' +
+      '</div>' +
+
+      '<div class="rep-stats">' +
+        '<div class="rep-stat"><div class="rep-stat-lbl">إجمالي الطلبات</div><div class="rep-stat-val">' + stats.total + '</div></div>' +
+        '<div class="rep-stat"><div class="rep-stat-lbl">تم التسليم + منتهية</div><div class="rep-stat-val">' + (stats.completed + stats.ended) + '</div></div>' +
+        '<div class="rep-stat"><div class="rep-stat-lbl">الملغاة</div><div class="rep-stat-val">' + stats.canceled + '</div></div>' +
+        '<div class="rep-stat"><div class="rep-stat-lbl">الإيرادات</div><div class="rep-stat-val">' + stats.revenue.toLocaleString('en-US') + ' ج.م</div></div>' +
+      '</div>' +
+
+      '<div class="rep-section"><span class="rep-section-dot"></span> توزيع حالات الطلبات</div>' +
+      '<table class="rep-table"><thead><tr><th>الحالة</th><th style="text-align:center;">العدد</th><th style="text-align:center;">النسبة</th></tr></thead>' +
+        '<tbody>' + statusRows + '</tbody></table>' +
+
+      '<div class="rep-section"><span class="rep-section-dot"></span> ترتيب المطاعم بالإيرادات</div>' +
+      '<table class="rep-table"><thead><tr><th style="width:50px;text-align:center;">#</th><th>المطعم</th><th style="text-align:center;">عدد الطلبات</th><th style="text-align:left;">الإيرادات</th></tr></thead>' +
+        '<tbody>' + restRows + '</tbody></table>' +
+
+      '<div class="rep-section"><span class="rep-section-dot"></span> سجل الطلبات التفصيلي (' + orders.length + ' طلب)</div>' +
+      '<table class="rep-table"><thead><tr>' +
+        '<th style="width:32px;text-align:center;">#</th>' +
+        '<th style="width:80px;">رقم الطلب</th>' +
+        '<th style="width:100px;">التاريخ</th>' +
+        '<th>العميل</th><th>المطعم</th>' +
+        '<th style="width:50px;text-align:center;">أصناف</th>' +
+        '<th style="width:60px;text-align:center;">الدفع</th>' +
+        '<th style="width:70px;">الحالة</th>' +
+        '<th style="width:85px;text-align:left;">الإجمالي</th>' +
+      '</tr></thead>' +
+      '<tbody>' + ordersRows + '</tbody>' +
+      '<tfoot><tr><td colspan="8" style="text-align:right;">الإجمالي العام</td>' +
+        '<td style="text-align:left;">' + stats.revenue.toFixed(2) + ' ج.م</td></tr></tfoot></table>' +
+
+      '<div class="rep-signature">' +
+        '<div class="rep-sig-line">توقيع المدير العام</div>' +
+        '<div class="rep-sig-line">توقيع المحاسب</div>' +
+      '</div>' +
+
+      '<div class="rep-footer">' +
+        '<p><b>SwivyGo</b> - نظام إدارة الطلبات</p>' +
+        '<p>هذا التقرير تم إنشاؤه إلكترونياً بواسطة لوحة تحكم SwivyGo</p>' +
+        '<p style="direction:ltr;">www.shadowza.space</p>' +
+      '</div>';
+  }
+
+  function printReport(){
+    printReportArea.innerHTML = buildReportHTML();
+    document.body.classList.add('printing-report');
+    document.body.classList.remove('printing-receipt');
+    setTimeout(function(){
+      window.focus();
+      window.print();
+      setTimeout(function(){ document.body.classList.remove('printing-report'); }, 500);
+    }, 150);
+  }
+
+  /* ===== SINGLE ORDER RECEIPT ===== */
+  function findOrder(id){
+    for (var i = 0; i < allOrders.length; i++){
+      if (allOrders[i].id === id) return allOrders[i];
+    }
+    return null;
+  }
+
+  function buildOrderReceiptHTML(order){
+    var issueStr = formatDateTime(new Date());
+    var st = statusMap[order.status] || statusMap.new;
+
+    var productsRows = '';
+    var subtotal = 0;
+    if (order.products && order.products.length){
+      order.products.forEach(function(p){
+        var lineTotal = p.price * p.qty;
+        subtotal += lineTotal;
+        productsRows +=
+          '<tr>' +
+            '<td style="text-align:right;font-weight:700;">' + esc(p.name) + '</td>' +
+            '<td style="text-align:center;font-weight:700;">' + p.qty + '</td>' +
+            '<td style="text-align:center;font-weight:700;">' + p.price.toFixed(2) + '</td>' +
+            '<td style="text-align:left;font-weight:800;">' + lineTotal.toFixed(2) + '</td>' +
+          '</tr>';
+      });
+    }
+
+    var delivery = order.delivery || 0;
+    var tax = order.tax || 0;
+    var computedTotal = subtotal + delivery + tax;
+    if (computedTotal === 0) computedTotal = order.total;
+
+    var notesHtml = '';
+    if (order.notes && order.notes.trim()){
+      notesHtml = '<div style="margin-top:10px;padding:8px 10px;border:1px dashed #000;background:#f4f4f4;font-size:10px;font-weight:700;line-height:1.5;">' +
+        '<div style="font-weight:800;margin-bottom:3px;">ملاحظات:</div>' + esc(order.notes) +
+      '</div>';
+    }
+
+    // Invoice status label
+    var invoiceStatus = '';
+    if (order.status === 'ended'){
+      invoiceStatus = '<div style="margin-top:8px;padding:6px 10px;text-align:center;background:#000;color:#fff;font-weight:800;font-size:11px;border-radius:4px;letter-spacing:1px;">✓ فاتورة منتهية - ENDED INVOICE</div>';
+    } else if (order.status === 'delivered'){
+      invoiceStatus = '<div style="margin-top:8px;padding:6px 10px;text-align:center;background:#00B14F;color:#fff;font-weight:800;font-size:11px;border-radius:4px;letter-spacing:1px;">✓ تم التسليم - DELIVERED</div>';
+    } else if (order.status === 'canceled'){
+      invoiceStatus = '<div style="margin-top:8px;padding:6px 10px;text-align:center;background:#EF4444;color:#fff;font-weight:800;font-size:11px;border-radius:4px;letter-spacing:1px;">✗ ملغاة - CANCELED</div>';
+    }
+
+    return '' +
+      '<div style="padding:8mm 6mm;font-family:\'Noto Sans Arabic\',sans-serif;direction:rtl;color:#000;">' +
+        '<div style="text-align:center;padding-bottom:8px;border-bottom:2px solid #000;margin-bottom:10px;">' +
+          '<div style="font-size:28px;font-weight:800;letter-spacing:2px;direction:ltr;">SwivyGo</div>' +
+          '<div style="font-size:14px;font-weight:800;margin-top:4px;">فاتورة طلب</div>' +
+          '<div style="font-size:10px;font-weight:600;direction:ltr;">Order Invoice</div>' +
+        '</div>' +
+
+        '<div style="background:#000;color:#fff;text-align:center;padding:6px;font-size:12px;font-weight:800;border-radius:4px;margin-bottom:10px;">' +
+          'رقم الفاتورة: ' + esc(order.id) +
+        '</div>' +
+
+        invoiceStatus +
+
+        '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:10px;margin-top:10px;">' +
+          '<tr><td style="padding:5px 6px;border:1px solid #000;background:#efefef;width:32%;font-weight:800;">رقم الطلب</td><td style="padding:5px 6px;border:1px solid #000;font-weight:700;font-family:monospace;">' + esc(order.id) + '</td></tr>' +
+          '<tr><td style="padding:5px 6px;border:1px solid #000;background:#efefef;font-weight:800;">تاريخ الإصدار</td><td style="padding:5px 6px;border:1px solid #000;font-weight:700;">' + issueStr + '</td></tr>' +
+          '<tr><td style="padding:5px 6px;border:1px solid #000;background:#efefef;font-weight:800;">العميل</td><td style="padding:5px 6px;border:1px solid #000;font-weight:700;">' + esc(order.customer) + '</td></tr>' +
+          '<tr><td style="padding:5px 6px;border:1px solid #000;background:#efefef;font-weight:800;">الهاتف</td><td style="padding:5px 6px;border:1px solid #000;font-weight:700;font-family:monospace;">' + esc(order.phone) + '</td></tr>' +
+          '<tr><td style="padding:5px 6px;border:1px solid #000;background:#efefef;font-weight:800;">المطعم</td><td style="padding:5px 6px;border:1px solid #000;font-weight:700;">' + esc(order.restaurant) + '</td></tr>' +
+          '<tr><td style="padding:5px 6px;border:1px solid #000;background:#efefef;font-weight:800;">العنوان</td><td style="padding:5px 6px;border:1px solid #000;font-weight:700;">' + esc(order.address) + '</td></tr>' +
+          '<tr><td style="padding:5px 6px;border:1px solid #000;background:#efefef;font-weight:800;">طريقة الدفع</td><td style="padding:5px 6px;border:1px solid #000;font-weight:700;">' + paymentLabel(order.payment) + '</td></tr>' +
+          '<tr><td style="padding:5px 6px;border:1px solid #000;background:#efefef;font-weight:800;">حالة الطلب</td><td style="padding:5px 6px;border:1px solid #000;font-weight:700;">' + st.label + '</td></tr>' +
+          '<tr><td style="padding:5px 6px;border:1px solid #000;background:#efefef;font-weight:800;">وقت الطلب</td><td style="padding:5px 6px;border:1px solid #000;font-weight:700;">' + formatDateTime(order.date) + '</td></tr>' +
+        '</table>' +
+
+        '<div style="font-size:12px;font-weight:800;margin:10px 0 6px 0;padding-bottom:4px;border-bottom:1px dashed #000;">تفاصيل الأصناف</div>' +
+
+        '<table style="width:100%;border-collapse:collapse;font-size:10px;margin-bottom:10px;table-layout:fixed;">' +
+          '<thead><tr>' +
+            '<th style="background:#efefef;border:1px solid #000;padding:5px;text-align:right;font-weight:800;">الصنف</th>' +
+            '<th style="background:#efefef;border:1px solid #000;padding:5px;text-align:center;font-weight:800;width:50px;">الكمية</th>' +
+            '<th style="background:#efefef;border:1px solid #000;padding:5px;text-align:center;font-weight:800;width:70px;">السعر</th>' +
+            '<th style="background:#efefef;border:1px solid #000;padding:5px;text-align:left;font-weight:800;width:80px;">الإجمالي</th>' +
+          '</tr></thead>' +
+          '<tbody>' + productsRows + '</tbody>' +
+        '</table>' +
+
+        '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;">' +
+          '<tr><td style="padding:6px 8px;border:1px solid #000;background:#efefef;font-weight:800;text-align:right;">المجموع الفرعي</td><td style="padding:6px 8px;border:1px solid #000;background:#efefef;font-weight:800;text-align:left;">' + subtotal.toFixed(2) + ' ج.م</td></tr>' +
+          '<tr><td style="padding:6px 8px;border:1px solid #000;background:#efefef;font-weight:800;text-align:right;">رسوم التوصيل</td><td style="padding:6px 8px;border:1px solid #000;background:#efefef;font-weight:800;text-align:left;">' + delivery.toFixed(2) + ' ج.م</td></tr>' +
+          '<tr><td style="padding:6px 8px;border:1px solid #000;background:#efefef;font-weight:800;text-align:right;">الضريبة</td><td style="padding:6px 8px;border:1px solid #000;background:#efefef;font-weight:800;text-align:left;">' + tax.toFixed(2) + ' ج.م</td></tr>' +
+          '<tr><td style="padding:10px 10px;border:1px solid #000;background:#000;color:#fff;font-weight:800;text-align:right;font-size:12px;">الإجمالي المستحق</td><td style="padding:10px 10px;border:1px solid #000;background:#000;color:#fff;font-weight:800;text-align:left;font-size:15px;">' + computedTotal.toFixed(2) + ' ج.م</td></tr>' +
+        '</table>' +
+
+        notesHtml +
+
+        '<div style="margin-top:14px;text-align:center;padding-top:10px;border-top:2px dashed #000;font-size:10px;">' +
+          '<div style="font-weight:800;font-size:12px;margin-bottom:4px;">شكراً لاستخدامكم خدمتنا</div>' +
+          '<div style="font-weight:600;color:#555;">هذه الفاتورة تم إنشاؤها إلكترونياً ولا تحتاج إلى ختم</div>' +
+          '<div style="font-weight:700;direction:ltr;margin-top:4px;">www.shadowza.space</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function printOrderReceipt(id){
+    var order = findOrder(id);
+    if (!order) return;
+    printArea.innerHTML = buildOrderReceiptHTML(order);
+    document.body.classList.add('printing-receipt');
+    document.body.classList.remove('printing-report');
+    setTimeout(function(){
+      window.focus();
+      window.print();
+      setTimeout(function(){ document.body.classList.remove('printing-receipt'); }, 500);
+    }, 150);
+  }
+
+  /* ===== SIDEBAR ===== */
+  function readStoredCollapsed(){
+    try { return localStorage.getItem(STORAGE_KEY) === '1'; } catch(e){ return false; }
+  }
+  function writeStoredCollapsed(v){
+    try { localStorage.setItem(STORAGE_KEY, v ? '1' : '0'); } catch(e){}
+  }
+  function applyCollapsed(val){
+    if (val){
+      document.body.classList.add('sb-collapsed');
+      sbPin.classList.remove('pinned');
+    } else {
+      document.body.classList.remove('sb-collapsed');
+      sbPin.classList.add('pinned');
+    }
+  }
+  function openSidebar(){ document.body.classList.add('sb-open'); }
+  function closeSidebar(){ document.body.classList.remove('sb-open'); }
+
+  sbPin.addEventListener('click', function(){
+    var willCollapse = !document.body.classList.contains('sb-collapsed');
+    applyCollapsed(willCollapse);
+    writeStoredCollapsed(willCollapse);
+  });
+  sidebarClose.addEventListener('click', closeSidebar);
+  overlay.addEventListener('click', closeSidebar);
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeSidebar(); });
+
+  var sbItems = document.querySelectorAll('.sb-item[data-page]');
+  for (var i = 0; i < sbItems.length; i++){
+    sbItems[i].addEventListener('click', function(e){
+      e.preventDefault();
+      var page = this.getAttribute('data-page');
+      if (page === 'orders-log'){
+        closeSidebar();
+        updateAll();
+        window.scrollTo({ top:0, behavior:'smooth' });
+        return;
+      }
+      Swal.fire({ toast:true, position:'top-end', icon:'info',
+        title:'هذه الصفحة قيد التطوير', showConfirmButton:false, timer:1500 });
+    });
+  }
+  var bnItems = document.querySelectorAll('.bottom-nav-item[data-page]');
+  for (var j = 0; j < bnItems.length; j++){
+    bnItems[j].addEventListener('click', function(e){
+      e.preventDefault();
+      var page = this.getAttribute('data-page');
+      if (page === 'orders-log'){
+        updateAll();
+        window.scrollTo({ top:0, behavior:'smooth' });
+        return;
+      }
+      Swal.fire({ toast:true, position:'top-end', icon:'info',
+        title:'هذه الصفحة قيد التطوير', showConfirmButton:false, timer:1500 });
+    });
+  }
+
+  appStatusPill.addEventListener('click', function(){
+    appOpen = !appOpen;
+    if (appOpen){
+      appStatusPill.classList.add('open');
+      appStatusPill.classList.remove('closed');
+      appStatusText.textContent = 'التطبيق يعمل';
+    } else {
+      appStatusPill.classList.add('closed');
+      appStatusPill.classList.remove('open');
+      appStatusText.textContent = 'التطبيق متوقف';
+    }
+    Swal.fire({
+      title: appOpen ? 'التطبيق يعمل الآن' : 'تم إيقاف التطبيق',
+      icon: appOpen ? 'success' : 'warning',
+      confirmButtonColor:'#FF5A00', timer:1500, showConfirmButton:false
+    });
+  });
+
+  notificationBtn.addEventListener('click', function(){
+    Swal.fire({
+      title:'إشعارات الإدارة',
+      html:'<div style="text-align:right;font-size:0.85rem;">' +
+        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">📊 إجمالي الطلبات في النظام: ' + allOrders.length + '</p>' +
+        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">✓ الطلبات المنتهية (ENDED): ' + allOrders.filter(function(o){ return o.status === 'ended'; }).length + '</p>' +
+        '<p class="p-2 rounded" style="background:#FFF3E8;">📈 يمكنك تصدير التقارير الآن</p>' +
+        '</div>',
+      icon:'info', confirmButtonColor:'#FF5A00', confirmButtonText:'حسناً'
+    });
+  });
+
+  headerAvatar.addEventListener('click', function(){
+    if (window.innerWidth <= 1024){
+      if (document.body.classList.contains('sb-open')) closeSidebar();
+      else openSidebar();
+      return;
+    }
+    Swal.fire({
+      title:'حساب المدير العام',
+      html:'<div style="text-align:right;font-size:0.85rem;">' +
+        '<p class="mb-2"><b>الاسم:</b> مدير التطبيق</p>' +
+        '<p class="mb-2"><b>البريد:</b> admin@shadowza.space</p>' +
+        '<p class="mb-2"><b>الصلاحية:</b> أدمن عام</p>' +
+        '</div>',
+      imageUrl: LOGO_URL, imageWidth:80, imageHeight:80,
+      confirmButtonColor:'#FF5A00', confirmButtonText:'إغلاق'
+    });
+  });
+
+  logoutBtn.addEventListener('click', function(e){
+    e.preventDefault(); closeSidebar();
+    Swal.fire({
+      title:'تسجيل الخروج', text:'هل أنت متأكد من تسجيل الخروج؟',
+      icon:'warning', showCancelButton:true,
+      confirmButtonColor:'#FF5A00', cancelButtonColor:'#717171',
+      confirmButtonText:'نعم، خروج', cancelButtonText:'إلغاء'
+    }).then(function(r){
+      if (r.isConfirmed){
+        Swal.fire({ title:'تم بنجاح', text:'تم تسجيل الخروج', icon:'success', confirmButtonColor:'#FF5A00' });
+      }
+    });
+  });
+
+  var lastIsDesktop = window.innerWidth >= 1025;
+  window.addEventListener('resize', function(){
+    var isDesktop = window.innerWidth >= 1025;
+    if (isDesktop !== lastIsDesktop){
+      lastIsDesktop = isDesktop;
+      if (isDesktop){
+        document.body.classList.remove('sb-open');
+        applyCollapsed(readStoredCollapsed());
+      } else {
+        document.body.classList.remove('sb-collapsed');
+        document.body.classList.remove('sb-open');
+      }
+    }
+  });
+
+  function init(){
+    applyCollapsed(readStoredCollapsed());
+    updateAll();
+  }
+  init();
+
+})();
+</script>
+</body>
+</html>
