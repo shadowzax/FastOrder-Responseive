@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+<meta name="theme-color" content="#FF5A00">
+<title>لوحة إدارة التطبيق - التقارير</title>
+<meta name="description" content="لوحة تحكم إدارة التطبيق - التقارير">
+<link rel="icon" type="image/png" href="https://sys.shadowza.space/logos/1.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        primary: '#FF5A00',
+        secondary: '#FF8C38',
+        accent: '#FFB800',
+        dark: '#1A1A1A',
+        muted: '#717171',
+        success: '#00B14F'
+      }
+    }
+  }
+}
+</script>
+<style>
+:root{
+  --color-primary:#FF5A00;
+  --color-secondary:#FF8C38;
+  --color-accent:#FFB800;
+  --color-background:#F7F9F8;
+  --color-card:#FFFFFF;
+  --color-darker:#F0F4F3;
+  --color-white:#1A1A1A;
+  --color-muted:#717171;
+  --border-subtle:rgba(0,0,0,0.08);
+  --card-bg:#FFFFFF;
+  --border-color:rgba(0,0,0,0.1);
+  --darker-bg:#F0F4F3;
+  --header-height:72px;
+  --sidebar-width:262px;
+  --sidebar-collapsed:72px;
+  --bottom-nav-height:68px;
+  --shadow-card:0 2px 12px rgba(0,0,0,0.06);
+  --c-active:#00B14F;
+  --c-inactive:#717171;
+  --c-blocked:#EF4444;
+  --c-vip:#FFB800;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;width:100%;overscroll-behavior:none;}
+body{
+  font-family:'Noto Sans Arabic',system-ui,sans-serif;
+  background-color:var(--color-background);
+  color:var(--color-white);
+  overflow-x:hidden;
+}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--color-background);border-radius:4px;}
+::-webkit-scrollbar-thumb{background:#FF8C38;border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:#FF5A00;}
+
+.main-wrap{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+#mainHeader{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:var(--header-height);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 16px;
+  border-bottom:1px solid var(--border-subtle);
+  background:var(--color-background);
+  z-index:400;
+  box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.header-brand{display:flex;align-items:center;min-width:0;}
+.brand-logo{
+  height:58px;
+  width:auto;
+  max-width:230px;
+  object-fit:contain;
+  display:block;
+  flex-shrink:0;
+}
+.header-actions{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.notification-btn{
+  position:relative;background:none;border:none;cursor:pointer;
+  color:var(--color-muted);font-size:1.5rem;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:color .2s;flex-shrink:0;
+}
+.notification-btn:hover{color:#FF5A00;}
+.notification-btn .notification-dot{
+  position:absolute;top:2px;right:2px;width:8px;height:8px;
+  border-radius:50%;background:#FF5A00;
+  border:2px solid var(--color-background);
+}
+.header-avatar-btn{
+  width:44px;height:44px;border-radius:50%;
+  object-fit:cover;border:2px solid var(--color-primary);
+  cursor:pointer;transition:all .2s;flex-shrink:0;background:#fff;
+}
+.header-avatar-btn:hover{transform:scale(1.05);}
+
+.status-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:40px;
+  font-size:0.75rem;font-weight:700;cursor:pointer;
+  transition:all .25s ease;border:1px solid transparent;flex-shrink:0;
+}
+.status-pill.open{
+  background:rgba(0,177,79,0.1);color:#00B14F;
+  border-color:rgba(0,177,79,0.3);
+}
+.status-pill.closed{
+  background:rgba(239,68,68,0.1);color:#EF4444;
+  border-color:rgba(239,68,68,0.3);
+}
+.status-pill .dot{
+  width:8px;height:8px;border-radius:50%;
+  background:currentColor;animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.sidebar{
+  position:fixed;
+  top:var(--header-height);
+  right:0;
+  bottom:0;
+  width:var(--sidebar-width);max-width:86vw;
+  background:var(--card-bg);
+  border-left:1px solid var(--border-color);
+  border-top:1px solid var(--border-color);
+  z-index:300;
+  transform:translateX(100%);
+  transition:transform .3s cubic-bezier(.4,0,.2,1), width .3s cubic-bezier(.4,0,.2,1);
+  overflow-y:auto;overscroll-behavior:contain;
+  box-shadow:-6px 0 30px rgba(0,0,0,0.12);
+  display:flex;flex-direction:column;
+}
+body.sb-open .sidebar{transform:translateX(0);}
+
+.sb-header{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 12px;border-bottom:1px solid var(--border-color);
+  position:sticky;top:0;background:var(--card-bg);z-index:2;
+  transition:padding .3s ease;
+}
+.sb-avatar{
+  width:44px;height:44px;border-radius:50%;
+  object-fit:cover;border:2px solid var(--color-primary);
+  background:#fff;flex-shrink:0;
+  transition:width .3s ease, height .3s ease;
+  box-shadow:0 2px 8px rgba(255,90,0,0.18);
+}
+.sb-brand{flex:1;min-width:0;transition:opacity .2s ease;}
+.sb-title{
+  font-size:0.88rem;font-weight:800;color:var(--color-white);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.sb-sub{
+  font-size:0.64rem;color:var(--color-muted);font-weight:600;
+  margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+.sb-pin{
+  width:32px;height:32px;border-radius:9px;
+  border:1.5px solid var(--border-color);background:transparent;
+  color:var(--color-muted);cursor:pointer;font-size:0.95rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .25s ease;flex-shrink:0;padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.sb-pin:hover{
+  background:rgba(255,90,0,0.08);
+  color:var(--color-primary);
+  border-color:rgba(255,90,0,0.3);
+}
+.sb-pin i{
+  transition:transform .3s ease;
+  display:inline-block;
+  font-size:1rem;
+}
+.sb-pin.pinned{
+  background:rgba(255,90,0,0.12);
+  color:var(--color-primary);
+  border-color:rgba(255,90,0,0.4);
+}
+.sb-pin.pinned i{transform:rotate(0deg);}
+.sb-pin:not(.pinned) i{transform:rotate(45deg);}
+
+.sb-close{
+  width:32px;height:32px;border-radius:9px;
+  border:1px solid var(--border-color);background:transparent;
+  color:var(--color-muted);cursor:pointer;font-size:1rem;
+  display:none;align-items:center;justify-content:center;
+  transition:all .2s ease;flex-shrink:0;
+}
+.sb-close:hover{background:rgba(239,68,68,.1);color:#EF4444;border-color:rgba(239,68,68,.3);}
+
+.sb-nav{padding:10px;display:flex;flex-direction:column;gap:2px;flex:1;transition:padding .3s ease;}
+.sb-section{
+  font-size:0.62rem;text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--color-muted);padding:12px 12px 5px;font-weight:700;
+  transition:opacity .2s ease;
+}
+.sb-item{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 13px;border-radius:12px;cursor:pointer;
+  transition:all .18s ease;color:var(--color-muted);
+  font-weight:600;text-decoration:none;font-size:0.86rem;
+  border:none;background:transparent;font-family:inherit;width:100%;
+  text-align:right;-webkit-tap-highlight-color:transparent;
+  position:relative;
+}
+.sb-item i{font-size:20px;width:24px;flex-shrink:0;text-align:center;transition:all .25s ease;}
+.sb-item:hover{background:rgba(255,90,0,0.08);color:var(--color-primary);}
+.sb-item.active{
+  background:rgba(255,90,0,0.12);
+  color:var(--color-primary);font-weight:800;
+}
+.sb-item.logout{color:#EF4444;}
+.sb-item.logout:hover{background:rgba(239,68,68,0.08);color:#EF4444;}
+.sb-badge{
+  margin-right:auto;min-width:20px;height:20px;padding:0 6px;
+  border-radius:10px;background:#EF4444;color:#fff;
+  font-size:0.62rem;font-weight:800;
+  display:inline-flex;align-items:center;justify-content:center;
+  transition:all .25s ease;
+}
+.sb-divider{height:1px;background:var(--border-color);margin:6px 12px;transition:margin .3s ease;}
+
+@media (min-width:1025px){
+  .sidebar{transform:translateX(0);}
+  .main-wrap{
+    margin-right:var(--sidebar-width);
+    padding-top:var(--header-height);
+    transition:margin-right .3s cubic-bezier(.4,0,.2,1);
+  }
+  body.sb-collapsed .main-wrap{margin-right:var(--sidebar-collapsed);}
+  body.sb-collapsed .sidebar{width:var(--sidebar-collapsed);}
+
+  body.sb-collapsed .sb-header{
+    padding:14px 0;
+    flex-direction:column;
+    gap:10px;
+    justify-content:center;
+    align-items:center;
+  }
+  body.sb-collapsed .sb-avatar{width:38px;height:38px;}
+  body.sb-collapsed .sb-brand{display:none;}
+  body.sb-collapsed .sb-nav{padding:8px;}
+  body.sb-collapsed .sb-section{display:none;}
+  body.sb-collapsed .sb-divider{margin:6px 14px;}
+  body.sb-collapsed .sb-item{
+    justify-content:center;
+    padding:12px 0;
+    gap:0;
+  }
+  body.sb-collapsed .sb-item span:not(.sb-badge){display:none;}
+  body.sb-collapsed .sb-item i{width:auto;font-size:20px;}
+  body.sb-collapsed .sb-badge{
+    position:absolute;
+    top:4px;
+    left:6px;
+    right:auto;
+    margin:0;
+    min-width:15px;
+    height:15px;
+    padding:0 4px;
+    font-size:0.52rem;
+    border-radius:8px;
+  }
+}
+
+@media (max-width:1024px){
+  .main-wrap{padding-top:var(--header-height);}
+  .sb-pin{display:none;}
+  .sb-close{display:flex;}
+  body.sb-collapsed .sidebar{width:var(--sidebar-width);}
+  body.sb-collapsed .main-wrap{margin-right:0;}
+  body.sb-collapsed .sb-header{padding:14px 12px;flex-direction:row;justify-content:flex-start;gap:10px;}
+  body.sb-collapsed .sb-avatar{width:44px;height:44px;}
+  body.sb-collapsed .sb-brand{display:block;}
+  body.sb-collapsed .sb-nav{padding:10px;}
+  body.sb-collapsed .sb-section{display:block;}
+  body.sb-collapsed .sb-divider{margin:6px 12px;}
+  body.sb-collapsed .sb-item{justify-content:flex-start;padding:11px 13px;gap:12px;}
+  body.sb-collapsed .sb-item span:not(.sb-badge){display:inline;}
+  body.sb-collapsed .sb-item i{width:24px;font-size:20px;}
+  body.sb-collapsed .sb-badge{position:static;margin-right:auto;min-width:20px;height:20px;padding:0 6px;font-size:0.62rem;border-radius:10px;}
+}
+
+.overlay{
+  position:fixed;
+  top:var(--header-height);
+  left:0;
+  right:0;
+  bottom:0;
+  background:rgba(0,0,0,0.45);
+  z-index:290;opacity:0;visibility:hidden;
+  transition:all .3s ease;backdrop-filter:blur(2px);
+}
+body.sb-open .overlay{opacity:1;visibility:visible;}
+@media (min-width:1025px){.overlay{display:none;}}
+
+main{flex:1;padding-bottom:24px;}
+@media (max-width:1024px){
+  main{padding-bottom:calc(var(--bottom-nav-height) + 24px);}
+}
+
+.bottom-mobile-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;
+  height:var(--bottom-nav-height);background:var(--card-bg);
+  border-top:1px solid var(--border-color);z-index:100;
+  padding:6px 8px;
+  padding-bottom:max(6px,env(safe-area-inset-bottom,6px));
+  box-shadow:0 -2px 12px rgba(0,0,0,0.08);
+  align-items:center;justify-content:space-around;gap:4px;
+}
+@media (max-width:1024px){.bottom-mobile-nav{display:flex;}}
+.bottom-nav-item{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:2px;flex:1;padding:8px 4px;
+  border-radius:12px;cursor:pointer;text-decoration:none;
+  color:var(--color-muted);font-size:0.68rem;font-weight:600;
+  transition:all .25s ease;position:relative;min-width:0;
+  -webkit-tap-highlight-color:transparent;user-select:none;
+  background:transparent;border:none;font-family:inherit;
+}
+.bottom-nav-item i{font-size:1.3rem;transition:all .25s ease;flex-shrink:0;}
+.bottom-nav-item span{
+  white-space:nowrap;text-overflow:ellipsis;overflow:hidden;
+  max-width:100%;font-size:0.63rem;letter-spacing:.2px;
+}
+.bottom-nav-item.active{color:var(--color-primary);}
+.bottom-nav-item.active i{font-size:1.45rem;}
+.bottom-nav-item-center{
+  position:relative;top:-20px;width:58px;height:58px;
+  border-radius:50%;background:var(--color-primary);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 12px rgba(255,90,0,0.4);
+  transition:all .3s ease;flex-shrink:0;flex:none;margin:0 4px;
+}
+.bottom-nav-item-center i{font-size:1.9rem;}
+.bottom-nav-item-center span{display:none;}
+.bottom-nav-item-center.active{background:#e04e00;color:#fff;}
+.nav-badge{
+  position:absolute;top:4px;left:50%;transform:translateX(-50%);
+  min-width:18px;height:18px;padding:0 4px;border-radius:9px;
+  background:#EF4444;color:#fff;font-size:.6rem;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+}
+.bottom-nav-item-center .nav-badge{
+  top:-4px;left:2px;transform:none;background:#1A1A1A;
+}
+
+.page-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;margin-bottom:20px;
+}
+.page-title{
+  font-size:1.25rem;font-weight:800;color:var(--color-white);
+  display:flex;align-items:center;gap:8px;
+}
+.page-title i{color:#FF5A00;}
+.page-sub{font-size:0.76rem;color:var(--color-muted);font-weight:600;margin-top:3px;}
+
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:12px;
+}
+.stat-card{
+  background:var(--card-bg);
+  border:1px solid var(--border-color);
+  border-radius:16px;
+  padding:14px;
+  box-shadow:var(--shadow-card);
+  transition:all .3s ease;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+.stat-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 8px 24px rgba(255,90,0,0.1);
+  border-color:rgba(255,90,0,0.3);
+}
+.stat-icon{
+  width:42px;height:42px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;flex-shrink:0;
+}
+.stat-body{min-width:0;flex:1;}
+.stat-value{font-size:1.15rem;font-weight:800;color:var(--color-white);line-height:1.2;}
+.stat-label{
+  font-size:0.7rem;color:var(--color-muted);font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+@media (max-width:1024px){.stats-grid{grid-template-columns:repeat(3,1fr);gap:10px;}}
+@media (max-width:640px){
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .stat-card{padding:10px;gap:8px;border-radius:12px;}
+  .stat-icon{width:34px;height:34px;font-size:1.05rem;border-radius:9px;}
+  .stat-value{font-size:1rem;}
+  .stat-label{font-size:0.65rem;}
+}
+
+.panel{
+  background:var(--card-bg);
+  border:1px solid var(--border-color);
+  border-radius:18px;
+  box-shadow:var(--shadow-card);
+  padding:16px;
+}
+.panel-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;margin-bottom:14px;flex-wrap:wrap;
+}
+.section-title{
+  font-size:1.02rem;font-weight:800;color:var(--color-white);
+  display:flex;align-items:center;gap:8px;
+}
+.section-title i{color:#FF5A00;}
+
+.btn{
+  border:none;border-radius:12px;padding:10px 16px;
+  font-family:inherit;font-weight:700;font-size:.82rem;
+  cursor:pointer;transition:all .2s ease;
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:6px;color:#fff;white-space:nowrap;text-decoration:none;
+}
+.btn-primary{background:var(--color-primary);box-shadow:0 2px 8px rgba(255,90,0,0.3);}
+.btn-primary:hover{background:#e04e00;}
+.btn-outline{
+  background:transparent;color:var(--color-muted);
+  border:1px solid var(--border-color);border-radius:12px;
+  padding:10px 16px;font-family:inherit;font-weight:700;
+  font-size:.82rem;cursor:pointer;transition:all .2s ease;
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:6px;white-space:nowrap;text-decoration:none;
+}
+.btn-outline:hover{background:var(--darker-bg);color:var(--color-white);}
+
+.customers-toolbar{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.search-box{position:relative;flex:1;min-width:210px;}
+.search-box i{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  color:var(--color-muted);font-size:1.1rem;pointer-events:none;
+}
+.search-box input{
+  width:100%;padding:11px 42px 11px 14px;border-radius:12px;
+  border:1px solid var(--border-color);background:var(--card-bg);
+  font-family:inherit;font-size:.82rem;font-weight:600;
+  color:var(--color-white);outline:none;transition:all .2s ease;
+}
+.search-box input::placeholder{color:var(--color-muted);font-weight:600;}
+.search-box input:focus{
+  border-color:rgba(255,90,0,.5);
+  box-shadow:0 0 0 3px rgba(255,90,0,.08);
+}
+
+.filter-tabs{
+  display:inline-flex;background:var(--darker-bg);
+  border-radius:12px;padding:4px;gap:3px;flex-wrap:wrap;
+}
+.filter-tabs button{
+  border:none;background:transparent;font-family:inherit;
+  font-size:.72rem;font-weight:800;color:var(--color-muted);
+  padding:7px 13px;border-radius:9px;cursor:pointer;
+  transition:all .2s ease;white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;
+  display:inline-flex;align-items:center;gap:5px;
+}
+.filter-tabs button:hover{color:var(--color-primary);}
+.filter-tabs button.active{
+  background:#fff;color:var(--color-primary);
+  box-shadow:0 1px 4px rgba(0,0,0,0.08);
+}
+.filter-tabs button .ft-count{
+  min-width:17px;height:17px;padding:0 5px;border-radius:9px;
+  background:rgba(0,0,0,0.07);color:inherit;
+  font-size:.6rem;font-weight:800;
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.filter-tabs button.active .ft-count{background:rgba(255,90,0,0.14);}
+
+.customers-count{
+  font-size:.72rem;font-weight:800;color:var(--color-muted);
+  white-space:nowrap;
+}
+
+.table-wrap{
+  width:100%;
+  overflow-x:auto;
+  border-radius:14px;
+  border:1px solid var(--border-color);
+  -webkit-overflow-scrolling:touch;
+}
+.table-wrap::-webkit-scrollbar{height:8px;}
+
+.customers-table{
+  width:100%;
+  min-width:1100px;
+  border-collapse:separate;
+  border-spacing:0;
+  font-size:0.82rem;
+}
+.customers-table thead th{
+  background:var(--darker-bg);
+  color:var(--color-muted);
+  font-size:0.68rem;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:0.6px;
+  padding:13px 14px;
+  text-align:right;
+  white-space:nowrap;
+  border-bottom:1px solid var(--border-color);
+  position:sticky;
+  top:0;
+  z-index:2;
+}
+.customers-table thead th:first-child{border-top-right-radius:13px;}
+.customers-table thead th:last-child{border-top-left-radius:13px;}
+
+.customers-table tbody td{
+  padding:12px 14px;
+  text-align:right;
+  vertical-align:middle;
+  border-bottom:1px solid var(--border-color);
+  white-space:nowrap;
+  color:var(--color-white);
+  font-weight:600;
+  background:var(--card-bg);
+  transition:background .18s ease;
+}
+.customers-table tbody tr:last-child td{border-bottom:none;}
+.customers-table tbody tr:hover td{background:rgba(255,90,0,0.035);}
+
+.report-cell{
+  display:flex;align-items:center;gap:11px;min-width:0;
+}
+.report-icon{
+  width:42px;height:42px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.15rem;flex-shrink:0;color:#fff;
+  box-shadow:0 3px 8px rgba(0,0,0,0.12);
+}
+.report-info{min-width:0;display:flex;flex-direction:column;gap:2px;}
+.report-name{
+  font-size:.85rem;font-weight:800;color:var(--color-white);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.report-id{
+  font-family:monospace;font-size:.62rem;font-weight:800;
+  color:var(--color-muted);letter-spacing:.3px;
+}
+.report-desc{
+  font-size:.65rem;color:var(--color-muted);font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:200px;
+}
+
+.cell-muted{color:var(--color-muted);font-weight:600;}
+
+.type-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 10px;border-radius:8px;
+  font-size:.66rem;font-weight:800;white-space:nowrap;
+}
+.type-chip i{font-size:.82rem;}
+.type-sales{background:rgba(255,90,0,.12);color:#FF5A00;}
+.type-orders{background:rgba(59,130,246,.12);color:#3B82F6;}
+.type-restaurants{background:rgba(139,92,246,.12);color:#8B5CF6;}
+.type-drivers{background:rgba(0,177,79,.12);color:#00B14F;}
+.type-customers{background:rgba(236,72,153,.12);color:#EC4899;}
+.type-finance{background:rgba(255,184,0,.14);color:#B8860B;}
+
+.period-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:8px;
+  background:var(--darker-bg);color:var(--color-muted);
+  font-size:.66rem;font-weight:800;white-space:nowrap;
+}
+.period-badge i{font-size:.78rem;}
+
+.size-cell{
+  font-family:monospace;font-size:.72rem;font-weight:800;
+  color:var(--color-muted);
+}
+
+.status-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 11px;border-radius:20px;
+  font-size:.66rem;font-weight:800;white-space:nowrap;
+}
+.status-badge .sb-dot{
+  width:7px;height:7px;border-radius:50%;background:currentColor;
+  flex-shrink:0;
+}
+.status-active{background:rgba(0,177,79,0.12);color:var(--c-active);}
+.status-pending{background:rgba(255,184,0,0.14);color:#B8860B;}
+.status-review{background:rgba(59,130,246,0.12);color:#3B82F6;}
+.status-blocked{background:rgba(239,68,68,0.12);color:var(--c-blocked);}
+
+.row-actions{
+  display:flex;align-items:center;gap:6px;justify-content:flex-start;
+}
+.icon-btn{
+  width:32px;height:32px;border-radius:9px;
+  border:1px solid var(--border-color);background:transparent;
+  color:var(--color-muted);cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:1rem;transition:all .2s ease;flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;padding:0;
+}
+.icon-btn:hover{background:var(--darker-bg);color:var(--color-white);}
+.icon-btn.view:hover{
+  background:rgba(59,130,246,0.1);color:#3B82F6;
+  border-color:rgba(59,130,246,0.3);
+}
+.icon-btn.success:hover{
+  background:rgba(0,177,79,0.1);color:#00B14F;
+  border-color:rgba(0,177,79,0.3);
+}
+.icon-btn.danger:hover{
+  background:rgba(239,68,68,0.1);color:#EF4444;
+  border-color:rgba(239,68,68,0.3);
+}
+.icon-btn.warn:hover{
+  background:rgba(255,184,0,0.14);color:#B8860B;
+  border-color:rgba(255,184,0,0.35);
+}
+
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;padding:56px 16px;text-align:center;
+}
+.empty-state i{font-size:3rem;color:var(--color-muted);opacity:.5;}
+.empty-state p{font-size:.85rem;font-weight:700;color:var(--color-muted);}
+.empty-state span{font-size:.72rem;font-weight:600;color:var(--color-muted);opacity:.8;}
+
+.swal-form{text-align:right;font-family:'Noto Sans Arabic',sans-serif;}
+.swal-form label{
+  display:block;font-size:.75rem;font-weight:800;
+  color:#1A1A1A;margin:10px 0 5px;
+}
+.swal-form input,
+.swal-form select{
+  width:100%;padding:10px 12px;border-radius:10px;
+  border:1px solid rgba(0,0,0,.12);font-family:inherit;
+  font-size:.82rem;font-weight:600;outline:none;
+  transition:all .2s ease;background:#fff;color:#1A1A1A;
+}
+.swal-form input:focus,
+.swal-form select:focus{
+  border-color:rgba(255,90,0,.5);
+  box-shadow:0 0 0 3px rgba(255,90,0,.08);
+}
+.swal-details{
+  text-align:right;font-size:.82rem;color:#1A1A1A;
+}
+.swal-details .row{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:8px 10px;border-radius:9px;background:#F7F9F8;
+  margin-bottom:6px;
+}
+.swal-details .row b{font-weight:800;}
+.swal-details .row span{font-weight:600;color:#717171;}
+
+@media (max-width:1024px){
+  .table-wrap{
+    border-radius:12px;
+  }
+  .customers-table{
+    min-width:1000px;
+    font-size:0.78rem;
+  }
+  .customers-table thead th{padding:11px 12px;font-size:0.64rem;}
+  .customers-table tbody td{padding:11px 12px;}
+  .report-icon{width:38px;height:38px;font-size:1rem;}
+  .report-name{font-size:0.8rem;}
+}
+
+@media (max-width:640px){
+  :root{--header-height:66px;}
+  .page-title{font-size:1.05rem;}
+  .brand-logo{height:48px;max-width:190px;}
+  .header-avatar-btn{width:40px;height:40px;}
+  .status-pill{padding:6px 10px;font-size:0.68rem;}
+  .panel{padding:13px;border-radius:16px;}
+  .filter-tabs{width:100%;justify-content:space-between;}
+  .filter-tabs button{flex:1;justify-content:center;padding:7px 8px;font-size:.66rem;}
+  .btn{padding:9px 13px;font-size:.76rem;}
+  .btn-outline{padding:9px 13px;font-size:.76rem;}
+  .customers-table{min-width:900px;}
+  .customers-table thead th{padding:10px 10px;font-size:0.6rem;}
+  .customers-table tbody td{padding:10px 10px;font-size:0.74rem;}
+  .report-icon{width:34px;height:34px;font-size:.9rem;border-radius:10px;}
+  .icon-btn{width:30px;height:30px;font-size:.92rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="main-wrap">
+
+  <header id="mainHeader">
+    <div class="header-brand">
+      <img src="https://sys.shadowza.space/logos/1.png" class="brand-logo" alt="logo">
+    </div>
+    <div class="header-actions">
+      <div class="status-pill open" id="appStatusPill">
+        <span class="dot"></span>
+        <span id="appStatusText">التطبيق يعمل</span>
+      </div>
+      <button class="notification-btn" id="notificationBtn" aria-label="الإشعارات">
+        <i class="las la-bell"></i>
+        <span class="notification-dot"></span>
+      </button>
+      <img id="headerAvatar" src="https://sys.shadowza.space/logos/1.png" class="header-avatar-btn" alt="avatar">
+    </div>
+  </header>
+
+  <main>
+    <div class="container mx-auto px-4 py-6 max-w-7xl" id="pageContent"></div>
+  </main>
+
+</div>
+
+<aside class="sidebar" id="sidebar" role="navigation" aria-label="القائمة الجانبية">
+  <div class="sb-header">
+    <img src="https://sys.shadowza.space/logos/1.png" class="sb-avatar" alt="admin avatar">
+    <div class="sb-brand">
+      <p class="sb-title">مدير التطبيق</p>
+      <p class="sb-sub">أدمن عام</p>
+    </div>
+    <button class="sb-pin pinned" id="sbPin" aria-label="تثبيت القائمة">
+      <i class="las la-thumbtack"></i>
+    </button>
+    <button class="sb-close" id="sidebarClose" aria-label="إغلاق"><i class="las la-times"></i></button>
+  </div>
+  <nav class="sb-nav">
+    <p class="sb-section">الرئيسية</p>
+    <a href="#" class="sb-item" data-page="dashboard"><i class="las la-chart-pie"></i><span>لوحة التحكم</span></a>
+    <a href="#" class="sb-item" data-page="orders"><i class="las la-receipt"></i><span>كل الطلبات</span><span class="sb-badge" id="sbOrdersBadge">5</span></a>
+    <a href="#" class="sb-item" data-page="restaurants"><i class="las la-store"></i><span>المطاعم</span><span class="sb-badge" id="sbRestBadge">4</span></a>
+    <a href="#" class="sb-item" data-page="drivers"><i class="las la-motorcycle"></i><span>السائقين</span></a>
+    <a href="#" class="sb-item" data-page="customers"><i class="las la-users"></i><span>العملاء</span></a>
+    <div class="sb-divider"></div>
+    <p class="sb-section">المحتوى</p>
+    <a href="#" class="sb-item" data-page="categories"><i class="las la-th-large"></i><span>الأقسام</span></a>
+    <a href="#" class="sb-item" data-page="offers"><i class="las la-percent"></i><span>العروض والخصومات</span></a>
+    <a href="#" class="sb-item" data-page="banners"><i class="las la-image"></i><span>البانرات</span></a>
+    <div class="sb-divider"></div>
+    <p class="sb-section">المالية</p>
+    <a href="#" class="sb-item" data-page="finance"><i class="las la-wallet"></i><span>الأرباح والعمولات</span></a>
+    <a href="#" class="sb-item" data-page="payouts"><i class="las la-money-check-alt"></i><span>طلبات السحب</span><span class="sb-badge" id="sbPayoutBadge">3</span></a>
+    <a href="#" class="sb-item active" data-page="reports"><i class="las la-chart-line"></i><span>التقارير</span></a>
+    <div class="sb-divider"></div>
+    <p class="sb-section">الإدارة</p>
+    <a href="#" class="sb-item" data-page="admins"><i class="las la-user-shield"></i><span>المشرفين والصلاحيات</span></a>
+    <a href="#" class="sb-item" data-page="support"><i class="las la-headset"></i><span>الدعم والشكاوى</span></a>
+    <a href="#" class="sb-item" data-page="settings"><i class="las la-cog"></i><span>إعدادات التطبيق</span></a>
+    <div class="sb-divider"></div>
+    <a href="#" class="sb-item logout" id="logoutBtn"><i class="las la-sign-out-alt"></i><span>تسجيل الخروج</span></a>
+    <div style="height:20px;"></div>
+  </nav>
+</aside>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="bottom-mobile-nav" id="bottomMobileNav">
+  <a href="#" class="bottom-nav-item" data-page="dashboard"><i class="las la-chart-pie"></i><span>الرئيسية</span></a>
+  <a href="#" class="bottom-nav-item" data-page="restaurants"><i class="las la-store"></i><span>المطاعم</span></a>
+  <a href="#" class="bottom-nav-item bottom-nav-item-center" data-page="orders"><i class="las la-receipt"></i><span>الطلبات</span><span class="nav-badge" id="navOrdersBadge">5</span></a>
+  <a href="#" class="bottom-nav-item" data-page="drivers"><i class="las la-motorcycle"></i><span>السائقين</span></a>
+  <a href="#" class="bottom-nav-item" data-page="reports"><i class="las la-chart-line"></i><span>التقارير</span></a>
+</div>
+
+<script>
+(function(){
+
+  var STORAGE_KEY = 'admin_sidebar_collapsed';
+
+  var pageContent = document.getElementById('pageContent');
+  var overlay = document.getElementById('overlay');
+  var sbPin = document.getElementById('sbPin');
+  var sidebarClose = document.getElementById('sidebarClose');
+  var appStatusPill = document.getElementById('appStatusPill');
+  var appStatusText = document.getElementById('appStatusText');
+  var notificationBtn = document.getElementById('notificationBtn');
+  var headerAvatar = document.getElementById('headerAvatar');
+  var logoutBtn = document.getElementById('logoutBtn');
+  var sbOrdersBadge = document.getElementById('sbOrdersBadge');
+  var sbRestBadge = document.getElementById('sbRestBadge');
+  var sbPayoutBadge = document.getElementById('sbPayoutBadge');
+  var navOrdersBadge = document.getElementById('navOrdersBadge');
+
+  var appOpen = true;
+  var currentFilter = 'all';
+  var searchQuery = '';
+
+  var reports = [
+    { id:'RPT-001', name:'تقرير المبيعات الشهري', type:'sales', period:'2024-09', status:'ready', size:'2.4 MB', records:12540, revenue:892400, generated:'2024-10-01', createdBy:'النظام تلقائياً', desc:'تقرير مبيعات كامل لشهر سبتمبر' },
+    { id:'RPT-002', name:'تقرير الطلبات اليومي', type:'orders', period:'2024-10-05', status:'ready', size:'340 KB', records:412, revenue:32150, generated:'2024-10-05', createdBy:'مدير التطبيق', desc:'تقرير الطلبات اليومي' },
+    { id:'RPT-003', name:'تقرير المطاعم الشامل', type:'restaurants', period:'2024-Q3', status:'ready', size:'5.1 MB', records:38, revenue:2450000, generated:'2024-10-02', createdBy:'النظام تلقائياً', desc:'أداء المطاعم في الربع الثالث' },
+    { id:'RPT-004', name:'تقرير أداء السائقين', type:'drivers', period:'2024-09', status:'ready', size:'1.8 MB', records:124, revenue:0, generated:'2024-10-01', createdBy:'النظام تلقائياً', desc:'أداء السائقين خلال الشهر' },
+    { id:'RPT-005', name:'تقرير العملاء الجدد', type:'customers', period:'2024-09', status:'ready', size:'920 KB', records:2840, revenue:0, generated:'2024-10-01', createdBy:'النظام تلقائياً', desc:'العملاء المسجلين في سبتمبر' },
+    { id:'RPT-006', name:'تقرير العمولات والأرباح', type:'finance', period:'2024-09', status:'ready', size:'1.2 MB', records:38, revenue:133860, generated:'2024-10-01', createdBy:'النظام تلقائياً', desc:'العمولات المستحقة لشهر سبتمبر' },
+    { id:'RPT-007', name:'تقرير المبيعات الأسبوعي', type:'sales', period:'2024-W40', status:'processing', size:'—', records:0, revenue:0, generated:'2024-10-07', createdBy:'مدير التطبيق', desc:'تقرير المبيعات للأسبوع 40' },
+    { id:'RPT-008', name:'تقرير الطلبات الملغاة', type:'orders', period:'2024-09', status:'ready', size:'420 KB', records:186, revenue:0, generated:'2024-10-01', createdBy:'النظام تلقائياً', desc:'الطلبات الملغاة وأسبابها' },
+    { id:'RPT-009', name:'تقرير أفضل المطاعم', type:'restaurants', period:'2024-09', status:'ready', size:'680 KB', records:10, revenue:452300, generated:'2024-10-02', createdBy:'مدير التطبيق', desc:'أفضل 10 مطاعم من حيث المبيعات' },
+    { id:'RPT-010', name:'تقرير محفظة السائقين', type:'finance', period:'2024-09', status:'pending', size:'—', records:0, revenue:0, generated:'2024-10-06', createdBy:'مدير التطبيق', desc:'أرصدة السائقين والمدفوعات' }
+  ];
+
+  var restaurants = [
+    { id:'R-1001', name:'مطعم ابن حميدو', status:'active' },
+    { id:'R-1002', name:'مطعم البحر الأحمر', status:'active' },
+    { id:'R-1003', name:'مشويات الشرق', status:'active' },
+    { id:'R-1004', name:'بيتزا روما', status:'pending' }
+  ];
+
+  var payouts = [
+    { id:'P-9001', restaurant:'مطعم ابن حميدو', amount:12400, status:'pending' },
+    { id:'P-9002', restaurant:'كشري التحرير', amount:7300, status:'pending' },
+    { id:'P-9003', restaurant:'مشويات الشرق', amount:5150, status:'pending' },
+    { id:'P-9004', restaurant:'مطعم البحر الأحمر', amount:9820, status:'paid' }
+  ];
+
+  var orders = [
+    { id:'ORD-5021', status:'new' },
+    { id:'ORD-5020', status:'new' },
+    { id:'ORD-5019', status:'new' },
+    { id:'ORD-5018', status:'new' },
+    { id:'ORD-5017', status:'new' },
+    { id:'ORD-5016', status:'accepted' },
+    { id:'ORD-5015', status:'accepted' },
+    { id:'ORD-5014', status:'preparing' },
+    { id:'ORD-5013', status:'preparing' },
+    { id:'ORD-5012', status:'ready' },
+    { id:'ORD-5011', status:'onway' },
+    { id:'ORD-5010', status:'delivered' }
+  ];
+
+  var statusMap = {
+    ready:{ label:'جاهز', cls:'status-active' },
+    processing:{ label:'قيد المعالجة', cls:'status-review' },
+    pending:{ label:'قيد الانتظار', cls:'status-pending' },
+    failed:{ label:'فشل', cls:'status-blocked' }
+  };
+
+  var typeMap = {
+    sales:{ label:'المبيعات', icon:'las la-chart-line', cls:'type-sales' },
+    orders:{ label:'الطلبات', icon:'las la-receipt', cls:'type-orders' },
+    restaurants:{ label:'المطاعم', icon:'las la-store', cls:'type-restaurants' },
+    drivers:{ label:'السائقين', icon:'las la-motorcycle', cls:'type-drivers' },
+    customers:{ label:'العملاء', icon:'las la-users', cls:'type-customers' },
+    finance:{ label:'المالية', icon:'las la-wallet', cls:'type-finance' }
+  };
+
+  function esc(v){
+    return String(v == null ? '' : v)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+  function formatNumber(n){
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+    return String(n);
+  }
+
+  function formatMoney(n){
+    return n.toLocaleString('en-US');
+  }
+
+  function reportCounts(){
+    var totalRecords = reports.reduce(function(s,r){ return s + r.records; }, 0);
+    var totalRevenue = reports.reduce(function(s,r){ return s + r.revenue; }, 0);
+
+    return {
+      all: reports.length,
+      ready: reports.filter(function(r){ return r.status === 'ready'; }).length,
+      processing: reports.filter(function(r){ return r.status === 'processing'; }).length,
+      pending: reports.filter(function(r){ return r.status === 'pending'; }).length,
+      records: totalRecords,
+      revenue: totalRevenue
+    };
+  }
+
+  function updateBadges(){
+    var newOrders = orders.filter(function(o){ return o.status === 'new'; }).length;
+    sbOrdersBadge.textContent = newOrders;
+    navOrdersBadge.textContent = newOrders;
+
+    var activeRest = restaurants.filter(function(r){ return r.status === 'active'; }).length;
+    sbRestBadge.textContent = activeRest;
+    sbRestBadge.style.display = activeRest > 0 ? 'inline-flex' : 'none';
+
+    var pendingPayouts = payouts.filter(function(p){ return p.status === 'pending'; }).length;
+    sbPayoutBadge.textContent = pendingPayouts;
+    sbPayoutBadge.style.display = pendingPayouts > 0 ? 'inline-flex' : 'none';
+  }
+
+  function readStoredCollapsed(){
+    try {
+      return localStorage.getItem(STORAGE_KEY) === '1';
+    } catch(e){
+      return false;
+    }
+  }
+
+  function writeStoredCollapsed(val){
+    try {
+      localStorage.setItem(STORAGE_KEY, val ? '1' : '0');
+    } catch(e){}
+  }
+
+  function applyCollapsed(val){
+    if (val){
+      document.body.classList.add('sb-collapsed');
+      sbPin.classList.remove('pinned');
+      sbPin.setAttribute('aria-label','توسيع القائمة');
+    } else {
+      document.body.classList.remove('sb-collapsed');
+      sbPin.classList.add('pinned');
+      sbPin.setAttribute('aria-label','تثبيت القائمة');
+    }
+  }
+
+  function filteredReports(){
+    var q = searchQuery.trim().toLowerCase();
+    return reports.filter(function(r){
+      var matchStatus = currentFilter === 'all' || r.status === currentFilter;
+      if (!matchStatus) return false;
+      if (!q) return true;
+      return r.name.toLowerCase().indexOf(q) !== -1 ||
+             r.id.toLowerCase().indexOf(q) !== -1 ||
+             r.period.toLowerCase().indexOf(q) !== -1 ||
+             r.desc.toLowerCase().indexOf(q) !== -1 ||
+             r.createdBy.toLowerCase().indexOf(q) !== -1;
+    });
+  }
+
+  function renderReportsTable(){
+    var list = filteredReports();
+
+    if (!list.length){
+      return '<div class="empty-state">' +
+        '<i class="las la-chart-line"></i>' +
+        '<p>لا يوجد تقارير مطابقة</p>' +
+        '<span>جرّب تغيير كلمة البحث أو الفلتر</span>' +
+      '</div>';
+    }
+
+    var html = '' +
+    '<div class="table-wrap">' +
+      '<table class="customers-table">' +
+        '<thead>' +
+          '<tr>' +
+            '<th>التقرير</th>' +
+            '<th>النوع</th>' +
+            '<th>الفترة</th>' +
+            '<th>عدد السجلات</th>' +
+            '<th>الإيراد المرتبط</th>' +
+            '<th>الحجم</th>' +
+            '<th>تاريخ الإنشاء</th>' +
+            '<th>الحالة</th>' +
+            '<th>إجراءات</th>' +
+          '</tr>' +
+        '</thead>' +
+        '<tbody>';
+
+    list.forEach(function(r){
+      var st = statusMap[r.status] || statusMap.pending;
+      var ty = typeMap[r.type] || typeMap.sales;
+
+      var iconColor = r.type === 'sales' ? '#FF5A00' :
+                      r.type === 'orders' ? '#3B82F6' :
+                      r.type === 'restaurants' ? '#8B5CF6' :
+                      r.type === 'drivers' ? '#00B14F' :
+                      r.type === 'customers' ? '#EC4899' : '#B8860B';
+
+      var recordsDisplay = r.records > 0 ? formatNumber(r.records) : '—';
+      var revenueDisplay = r.revenue > 0 ? formatMoney(r.revenue) + ' <small>ج.م</small>' : '—';
+
+      var downloadAction = '';
+      if (r.status === 'ready'){
+        downloadAction =
+          '<button type="button" class="icon-btn success" data-action="download" data-id="' + esc(r.id) + '" title="تحميل">' +
+            '<i class="las la-download"></i>' +
+          '</button>';
+      } else if (r.status === 'processing'){
+        downloadAction =
+          '<button type="button" class="icon-btn warn" data-action="view" data-id="' + esc(r.id) + '" title="قيد المعالجة">' +
+            '<i class="las la-spinner"></i>' +
+          '</button>';
+      } else {
+        downloadAction =
+          '<button type="button" class="icon-btn warn" data-action="generate" data-id="' + esc(r.id) + '" title="إنشاء">' +
+            '<i class="las la-play"></i>' +
+          '</button>';
+      }
+
+      html +=
+        '<tr>' +
+          '<td>' +
+            '<div class="report-cell">' +
+              '<span class="report-icon" style="background:' + iconColor + ';"><i class="' + ty.icon + '"></i></span>' +
+              '<div class="report-info">' +
+                '<span class="report-name">' + esc(r.name) + '</span>' +
+                '<span class="report-id">' + esc(r.id) + ' • ' + esc(r.createdBy) + '</span>' +
+                '<span class="report-desc">' + esc(r.desc) + '</span>' +
+              '</div>' +
+            '</div>' +
+          '</td>' +
+          '<td><span class="type-chip ' + ty.cls + '"><i class="' + ty.icon + '"></i> ' + ty.label + '</span></td>' +
+          '<td><span class="period-badge"><i class="las la-calendar"></i> ' + esc(r.period) + '</span></td>' +
+          '<td><span class="orders-count">' + recordsDisplay + '</span></td>' +
+          '<td><span class="money-cell">' + revenueDisplay + '</span></td>' +
+          '<td><span class="size-cell">' + esc(r.size) + '</span></td>' +
+          '<td><span class="cell-muted">' + esc(r.generated) + '</span></td>' +
+          '<td>' +
+            '<span class="status-badge ' + st.cls + '">' +
+              '<span class="sb-dot"></span> ' + st.label +
+            '</span>' +
+          '</td>' +
+          '<td>' +
+            '<div class="row-actions">' +
+              '<button type="button" class="icon-btn view" data-action="view" data-id="' + esc(r.id) + '" title="تفاصيل">' +
+                '<i class="las la-eye"></i>' +
+              '</button>' +
+              downloadAction +
+              '<button type="button" class="icon-btn danger" data-action="delete" data-id="' + esc(r.id) + '" title="حذف">' +
+                '<i class="las la-trash"></i>' +
+              '</button>' +
+            '</div>' +
+          '</td>' +
+        '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+    return html;
+  }
+
+  function refreshTable(){
+    var wrap = document.getElementById('reportsListWrap');
+    if (wrap) wrap.innerHTML = renderReportsTable();
+    var counter = document.getElementById('reportsCount');
+    if (counter){
+      counter.textContent = filteredReports().length + ' من ' + reports.length + ' تقرير';
+    }
+    var counts = reportCounts();
+    var tabAll = document.getElementById('ftAll');
+    var tabReady = document.getElementById('ftReady');
+    var tabProcessing = document.getElementById('ftProcessing');
+    var tabPending = document.getElementById('ftPending');
+    var tabFailed = document.getElementById('ftFailed');
+    if (tabAll) tabAll.textContent = counts.all;
+    if (tabReady) tabReady.textContent = counts.ready;
+    if (tabProcessing) tabProcessing.textContent = counts.processing;
+    if (tabPending) tabPending.textContent = counts.pending;
+    if (tabFailed) tabFailed.textContent = reports.filter(function(r){ return r.status === 'failed'; }).length;
+  }
+
+  function renderReportsPage(){
+    var c = reportCounts();
+
+    return '' +
+    '<div class="page-head">' +
+      '<div>' +
+        '<h2 class="page-title"><i class="las la-chart-line"></i> التقارير</h2>' +
+        '<p class="page-sub">تقارير شاملة عن المبيعات والطلبات والمطاعم والعملاء</p>' +
+      '</div>' +
+      '<div class="flex items-center gap-2 flex-wrap">' +
+        '<a href="#" class="btn-outline" data-dead><i class="las la-file-export"></i> تصدير الكل</a>' +
+        '<button type="button" class="btn btn-primary" id="addReportBtn"><i class="las la-plus"></i> إنشاء تقرير</button>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="stats-grid mb-6">' +
+      '<div class="stat-card">' +
+        '<div class="stat-icon" style="background:rgba(255,90,0,.12);color:#FF5A00;"><i class="las la-file-alt"></i></div>' +
+        '<div class="stat-body"><p class="stat-label">إجمالي التقارير</p><p class="stat-value">' + c.all + '</p></div>' +
+      '</div>' +
+      '<div class="stat-card">' +
+        '<div class="stat-icon" style="background:rgba(0,177,79,.12);color:#00B14F;"><i class="las la-check-circle"></i></div>' +
+        '<div class="stat-body"><p class="stat-label">تقارير جاهزة</p><p class="stat-value">' + c.ready + '</p></div>' +
+      '</div>' +
+      '<div class="stat-card">' +
+        '<div class="stat-icon" style="background:rgba(59,130,246,.12);color:#3B82F6;"><i class="las la-spinner"></i></div>' +
+        '<div class="stat-body"><p class="stat-label">قيد المعالجة</p><p class="stat-value">' + c.processing + '</p></div>' +
+      '</div>' +
+      '<div class="stat-card">' +
+        '<div class="stat-icon" style="background:rgba(139,92,246,.12);color:#8B5CF6;"><i class="las la-database"></i></div>' +
+        '<div class="stat-body"><p class="stat-label">إجمالي السجلات</p><p class="stat-value">' + formatNumber(c.records) + '</p></div>' +
+      '</div>' +
+      '<div class="stat-card">' +
+        '<div class="stat-icon" style="background:rgba(255,184,0,.15);color:#B8860B;"><i class="las la-coins"></i></div>' +
+        '<div class="stat-body"><p class="stat-label">إجمالي الإيرادات</p><p class="stat-value">' + formatNumber(c.revenue) + '</p></div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="panel">' +
+      '<div class="customers-toolbar mb-4">' +
+        '<div class="search-box">' +
+          '<i class="las la-search"></i>' +
+          '<input type="text" id="reportSearch" placeholder="ابحث باسم التقرير أو المعرف أو الفترة...">' +
+        '</div>' +
+        '<div class="filter-tabs" id="reportFilters">' +
+          '<button type="button" class="active" data-filter="all">الكل <span class="ft-count" id="ftAll">' + c.all + '</span></button>' +
+          '<button type="button" data-filter="ready">جاهز <span class="ft-count" id="ftReady">' + c.ready + '</span></button>' +
+          '<button type="button" data-filter="processing">قيد المعالجة <span class="ft-count" id="ftProcessing">' + c.processing + '</span></button>' +
+          '<button type="button" data-filter="pending">قيد الانتظار <span class="ft-count" id="ftPending">' + c.pending + '</span></button>' +
+          '<button type="button" data-filter="failed">فشل <span class="ft-count" id="ftFailed">' + reports.filter(function(r){ return r.status === 'failed'; }).length + '</span></button>' +
+        '</div>' +
+        '<span class="customers-count" id="reportsCount">' + reports.length + ' من ' + reports.length + ' تقرير</span>' +
+      '</div>' +
+      '<div id="reportsListWrap">' + renderReportsTable() + '</div>' +
+    '</div>';
+  }
+
+  function findReport(id){
+    for (var i = 0; i < reports.length; i++){
+      if (reports[i].id === id) return reports[i];
+    }
+    return null;
+  }
+
+  function showDevToast(){
+    Swal.fire({
+      toast:true,
+      position:'top-end',
+      icon:'info',
+      title:'هذه الصفحة قيد التطوير',
+      showConfirmButton:false,
+      timer:1600
+    });
+  }
+
+  function bindDeadLinks(){
+    var els = pageContent.querySelectorAll('[data-dead]');
+    for (var i = 0; i < els.length; i++){
+      els[i].addEventListener('click', function(e){
+        e.preventDefault();
+        showDevToast();
+      });
+    }
+  }
+
+  function openReportDetails(id){
+    var r = findReport(id);
+    if (!r) return;
+    var st = statusMap[r.status] || statusMap.pending;
+    var ty = typeMap[r.type] || typeMap.sales;
+
+    Swal.fire({
+      title: esc(r.name),
+      html:
+        '<div class="swal-details">' +
+          '<div class="row"><b>المعرف</b><span>' + esc(r.id) + '</span></div>' +
+          '<div class="row"><b>الوصف</b><span>' + esc(r.desc) + '</span></div>' +
+          '<div class="row"><b>النوع</b><span>' + ty.label + '</span></div>' +
+          '<div class="row"><b>الفترة</b><span>' + esc(r.period) + '</span></div>' +
+          '<div class="row"><b>عدد السجلات</b><span>' + (r.records > 0 ? r.records.toLocaleString('en-US') : '—') + '</span></div>' +
+          '<div class="row"><b>الإيراد المرتبط</b><span>' + (r.revenue > 0 ? formatMoney(r.revenue) + ' ج.م' : '—') + '</span></div>' +
+          '<div class="row"><b>حجم الملف</b><span>' + esc(r.size) + '</span></div>' +
+          '<div class="row"><b>تاريخ الإنشاء</b><span>' + esc(r.generated) + '</span></div>' +
+          '<div class="row"><b>أنشأه</b><span>' + esc(r.createdBy) + '</span></div>' +
+          '<div class="row"><b>الحالة</b><span>' + st.label + '</span></div>' +
+        '</div>',
+      imageHtml:
+        '<span style="display:inline-flex;align-items:center;justify-content:center;width:84px;height:84px;border-radius:22px;background:' +
+          (r.status === 'ready' ? '#00B14F' : (r.status === 'processing' ? '#3B82F6' : (r.status === 'pending' ? '#FF5A00' : '#EF4444'))) +
+          ';color:#fff;font-size:2rem;">' +
+          '<i class="' + ty.icon + '"></i>' +
+        '</span>',
+      imageWidth: 84,
+      imageHeight: 84,
+      confirmButtonColor: '#FF5A00',
+      confirmButtonText: 'إغلاق'
+    });
+  }
+
+  function downloadReport(id){
+    var r = findReport(id);
+    if (!r) return;
+
+    Swal.fire({
+      title: 'تحميل التقرير',
+      text: 'سيبدأ تحميل "' + r.name + '" الآن',
+      icon: 'success',
+      confirmButtonColor: '#FF5A00',
+      confirmButtonText: 'حسناً'
+    });
+  }
+
+  function generateReport(id){
+    var r = findReport(id);
+    if (!r) return;
+
+    Swal.fire({
+      title: 'إنشاء التقرير',
+      text: 'هل تريد بدء إنشاء "' + r.name + '"؟',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#FF5A00',
+      cancelButtonColor: '#717171',
+      confirmButtonText: 'نعم، ابدأ',
+      cancelButtonText: 'إلغاء'
+    }).then(function(result){
+      if (!result.isConfirmed) return;
+
+      r.status = 'processing';
+
+      refreshTable();
+
+      Swal.fire({
+        title: 'جاري المعالجة',
+        text: 'سيتم إنشاء التقرير خلال دقائق',
+        icon: 'info',
+        confirmButtonColor: '#FF5A00',
+        timer: 1800,
+        showConfirmButton: false
+      });
+    });
+  }
+
+  function deleteReport(id){
+    var r = findReport(id);
+    if (!r) return;
+
+    Swal.fire({
+      title: 'حذف التقرير',
+      text: 'هل تريد حذف "' + r.name + '"? لا يمكن التراجع.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#EF4444',
+      cancelButtonColor: '#717171',
+      confirmButtonText: 'نعم، حذف',
+      cancelButtonText: 'إلغاء'
+    }).then(function(result){
+      if (!result.isConfirmed) return;
+
+      for (var i = 0; i < reports.length; i++){
+        if (reports[i].id === id){
+          reports.splice(i, 1);
+          break;
+        }
+      }
+
+      currentFilter = 'all';
+      searchQuery = '';
+      render();
+
+      Swal.fire({
+        title: 'تم الحذف',
+        text: 'تم حذف التقرير بنجاح',
+        icon: 'success',
+        confirmButtonColor: '#FF5A00',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    });
+  }
+
+  function openAddReport(){
+    Swal.fire({
+      title: 'إنشاء تقرير جديد',
+      html:
+        '<div class="swal-form">' +
+          '<label>اسم التقرير</label>' +
+          '<input id="nrName" type="text" placeholder="مثال: تقرير المبيعات الشهري">' +
+          '<label>النوع</label>' +
+          '<select id="nrType">' +
+            '<option value="sales">المبيعات</option>' +
+            '<option value="orders">الطلبات</option>' +
+            '<option value="restaurants">المطاعم</option>' +
+            '<option value="drivers">السائقين</option>' +
+            '<option value="customers">العملاء</option>' +
+            '<option value="finance">المالية</option>' +
+          '</select>' +
+          '<label>الفترة</label>' +
+          '<input id="nrPeriod" type="text" placeholder="مثال: 2024-10 أو 2024-Q4">' +
+          '<label>الوصف</label>' +
+          '<input id="nrDesc" type="text" placeholder="وصف مختصر للتقرير">' +
+        '</div>',
+      showCancelButton: true,
+      confirmButtonColor: '#FF5A00',
+      cancelButtonColor: '#717171',
+      confirmButtonText: 'إنشاء',
+      cancelButtonText: 'إلغاء',
+      focusConfirm: false,
+      preConfirm: function(){
+        var name = document.getElementById('nrName').value.trim();
+        var type = document.getElementById('nrType').value;
+        var period = document.getElementById('nrPeriod').value.trim();
+        var desc = document.getElementById('nrDesc').value.trim();
+
+        if (!name){
+          Swal.showValidationMessage('يرجى إدخال اسم التقرير');
+          return false;
+        }
+        if (!period){
+          Swal.showValidationMessage('يرجى إدخال الفترة');
+          return false;
+        }
+
+        return { name:name, type:type, period:period, desc:desc || '—' };
+      }
+    }).then(function(result){
+      if (!result.isConfirmed || !result.value) return;
+
+      var v = result.value;
+      var nextNum = reports.length + 1;
+      var newId = 'RPT-' + (nextNum < 10 ? '00' + nextNum : (nextNum < 100 ? '0' + nextNum : nextNum));
+
+      reports.unshift({
+        id: newId,
+        name: v.name,
+        type: v.type,
+        period: v.period,
+        status: 'processing',
+        size: '—',
+        records: 0,
+        revenue: 0,
+        generated: new Date().toISOString().slice(0,10),
+        createdBy: 'مدير التطبيق',
+        desc: v.desc
+      });
+
+      currentFilter = 'all';
+      searchQuery = '';
+      render();
+
+      Swal.fire({
+        title: 'تم الإنشاء',
+        text: 'تم إنشاء التقرير وبدأت معالجته',
+        icon: 'success',
+        confirmButtonColor: '#FF5A00'
+      });
+    });
+  }
+
+  function bindPageEvents(){
+    var searchInput = document.getElementById('reportSearch');
+    if (searchInput){
+      searchInput.addEventListener('input', function(){
+        searchQuery = this.value;
+        refreshTable();
+      });
+    }
+
+    var filters = document.getElementById('reportFilters');
+    if (filters){
+      filters.addEventListener('click', function(e){
+        var btn = e.target.closest('button[data-filter]');
+        if (!btn) return;
+        var buttons = filters.querySelectorAll('button[data-filter]');
+        for (var i = 0; i < buttons.length; i++){
+          buttons[i].classList.remove('active');
+        }
+        btn.classList.add('active');
+        currentFilter = btn.getAttribute('data-filter');
+        refreshTable();
+      });
+    }
+
+    var listWrap = document.getElementById('reportsListWrap');
+    if (listWrap){
+      listWrap.addEventListener('click', function(e){
+        var btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        var action = btn.getAttribute('data-action');
+        var id = btn.getAttribute('data-id');
+        if (action === 'view') openReportDetails(id);
+        else if (action === 'download') downloadReport(id);
+        else if (action === 'generate') generateReport(id);
+        else if (action === 'delete') deleteReport(id);
+      });
+    }
+
+    var addBtn = document.getElementById('addReportBtn');
+    if (addBtn){
+      addBtn.addEventListener('click', openAddReport);
+    }
+  }
+
+  function render(){
+    pageContent.innerHTML = renderReportsPage();
+    updateBadges();
+    bindPageEvents();
+    bindDeadLinks();
+  }
+
+  function openSidebar(){ document.body.classList.add('sb-open'); }
+  function closeSidebar(){ document.body.classList.remove('sb-open'); }
+
+  sbPin.addEventListener('click', function(){
+    var willCollapse = !document.body.classList.contains('sb-collapsed');
+    applyCollapsed(willCollapse);
+    writeStoredCollapsed(willCollapse);
+  });
+
+  sidebarClose.addEventListener('click', closeSidebar);
+  overlay.addEventListener('click', closeSidebar);
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') closeSidebar();
+  });
+
+  var sbItems = document.querySelectorAll('.sb-item[data-page]');
+  for (var i = 0; i < sbItems.length; i++){
+    sbItems[i].addEventListener('click', function(e){
+      e.preventDefault();
+      var page = this.getAttribute('data-page');
+      if (page === 'reports'){
+        closeSidebar();
+        window.scrollTo({ top:0, behavior:'smooth' });
+        return;
+      }
+      showDevToast();
+    });
+  }
+
+  var bnItems = document.querySelectorAll('.bottom-nav-item[data-page]');
+  for (var j = 0; j < bnItems.length; j++){
+    bnItems[j].addEventListener('click', function(e){
+      e.preventDefault();
+      var page = this.getAttribute('data-page');
+      if (page === 'reports'){
+        window.scrollTo({ top:0, behavior:'smooth' });
+        return;
+      }
+      showDevToast();
+    });
+  }
+
+  appStatusPill.addEventListener('click', function(){
+    appOpen = !appOpen;
+    if (appOpen){
+      appStatusPill.classList.add('open');
+      appStatusPill.classList.remove('closed');
+      appStatusText.textContent = 'التطبيق يعمل';
+    } else {
+      appStatusPill.classList.add('closed');
+      appStatusPill.classList.remove('open');
+      appStatusText.textContent = 'التطبيق متوقف';
+    }
+    Swal.fire({
+      title: appOpen ? 'التطبيق يعمل الآن' : 'تم إيقاف التطبيق',
+      text: appOpen ? 'يمكن للمطاعم استقبال الطلبات من جديد' : 'لن يتم استقبال أي طلبات جديدة حتى إعادة التشغيل',
+      icon: appOpen ? 'success' : 'warning',
+      confirmButtonColor:'#FF5A00',
+      timer:1700,
+      showConfirmButton:false
+    });
+  });
+
+  notificationBtn.addEventListener('click', function(){
+    Swal.fire({
+      title:'إشعارات الإدارة',
+      html:'<div style="text-align:right;font-size:0.85rem;">' +
+        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">🔔 5 طلبات جديدة في كل المطاعم</p>' +
+        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">🏪 مطعم جديد بانتظار الموافقة: بيتزا روما</p>' +
+        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">💸 3 طلبات سحب بانتظار المراجعة</p>' +
+        '<p class="p-2 rounded" style="background:#FFF3E8;">📊 تقرير المبيعات الشهري جاهز للتحميل</p>' +
+        '</div>',
+      icon:'info',
+      confirmButtonColor:'#FF5A00',
+      confirmButtonText:'حسناً'
+    });
+  });
+
+  headerAvatar.addEventListener('click', function(){
+    if (window.innerWidth <= 1024){
+      if (document.body.classList.contains('sb-open')) closeSidebar();
+      else openSidebar();
+      return;
+    }
+    Swal.fire({
+      title:'حساب المدير العام',
+      html:'<div style="text-align:right;font-size:0.85rem;">' +
+        '<p class="mb-2"><b>الاسم:</b> مدير التطبيق</p>' +
+        '<p class="mb-2"><b>البريد:</b> admin@shadowza.space</p>' +
+        '<p class="mb-2"><b>الصلاحية:</b> أدمن عام</p>' +
+        '<p><b>آخر دخول:</b> اليوم 09:14 ص</p>' +
+        '</div>',
+      imageUrl:'https://sys.shadowza.space/logos/1.png',
+      imageWidth:80,
+      imageHeight:80,
+      confirmButtonColor:'#FF5A00',
+      confirmButtonText:'إغلاق'
+    });
+  });
+
+  logoutBtn.addEventListener('click', function(e){
+    e.preventDefault();
+    closeSidebar();
+    Swal.fire({
+      title:'تسجيل الخروج',
+      text:'هل أنت متأكد من تسجيل الخروج من لوحة إدارة التطبيق؟',
+      icon:'warning',
+      showCancelButton:true,
+      confirmButtonColor:'#FF5A00',
+      cancelButtonColor:'#717171',
+      confirmButtonText:'نعم، خروج',
+      cancelButtonText:'إلغاء'
+    }).then(function(result){
+      if (result.isConfirmed){
+        Swal.fire({
+          title:'تم بنجاح',
+          text:'تم تسجيل الخروج بنجاح',
+          icon:'success',
+          confirmButtonColor:'#FF5A00'
+        });
+      }
+    });
+  });
+
+  var lastIsDesktop = window.innerWidth >= 1025;
+
+  window.addEventListener('resize', function(){
+    var isDesktop = window.innerWidth >= 1025;
+    if (isDesktop !== lastIsDesktop){
+      lastIsDesktop = isDesktop;
+      if (isDesktop){
+        document.body.classList.remove('sb-open');
+        applyCollapsed(readStoredCollapsed());
+      } else {
+        document.body.classList.remove('sb-collapsed');
+        document.body.classList.remove('sb-open');
+      }
+    }
+  });
+
+  function init(){
+    applyCollapsed(readStoredCollapsed());
+    render();
+  }
+
+  init();
+
+})();
+</script>
+</body>
+</html>
