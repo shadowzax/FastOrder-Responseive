@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+<meta name="theme-color" content="#FF5A00">
+<title>لوحة إدارة التطبيق - طلبات السحب</title>
+<meta name="description" content="لوحة تحكم إدارة التطبيق - إدارة طلبات السحب">
+<link rel="icon" type="image/png" href="https://sys.shadowza.space/logos/1.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        primary: '#FF5A00',
+        secondary: '#FF8C38',
+        accent: '#FFB800',
+        dark: '#1A1A1A',
+        muted: '#717171',
+        success: '#00B14F'
+      }
+    }
+  }
+}
+</script>
+<style>
+:root{
+  --color-primary:#FF5A00;
+  --color-secondary:#FF8C38;
+  --color-accent:#FFB800;
+  --color-background:#F7F9F8;
+  --color-card:#FFFFFF;
+  --color-darker:#F0F4F3;
+  --color-white:#1A1A1A;
+  --color-muted:#717171;
+  --border-subtle:rgba(0,0,0,0.08);
+  --card-bg:#FFFFFF;
+  --border-color:rgba(0,0,0,0.1);
+  --darker-bg:#F0F4F3;
+  --header-height:72px;
+  --sidebar-width:262px;
+  --sidebar-collapsed:72px;
+  --bottom-nav-height:68px;
+  --shadow-card:0 2px 12px rgba(0,0,0,0.06);
+  --c-active:#00B14F;
+  --c-inactive:#717171;
+  --c-blocked:#EF4444;
+  --c-vip:#FFB800;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;width:100%;overscroll-behavior:none;}
+body{
+  font-family:'Noto Sans Arabic',system-ui,sans-serif;
+  background-color:var(--color-background);
+  color:var(--color-white);
+  overflow-x:hidden;
+}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--color-background);border-radius:4px;}
+::-webkit-scrollbar-thumb{background:#FF8C38;border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:#FF5A00;}
+
+.main-wrap{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+#mainHeader{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:var(--header-height);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 16px;
+  border-bottom:1px solid var(--border-subtle);
+  background:var(--color-background);
+  z-index:400;
+  box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.header-brand{display:flex;align-items:center;min-width:0;}
+.brand-logo{
+  height:58px;
+  width:auto;
+  max-width:230px;
+  object-fit:contain;
+  display:block;
+  flex-shrink:0;
+}
+.header-actions{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.notification-btn{
+  position:relative;background:none;border:none;cursor:pointer;
+  color:var(--color-muted);font-size:1.5rem;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:color .2s;flex-shrink:0;
+}
+.notification-btn:hover{color:#FF5A00;}
+.notification-btn .notification-dot{
+  position:absolute;top:2px;right:2px;width:8px;height:8px;
+  border-radius:50%;background:#FF5A00;
+  border:2px solid var(--color-background);
+}
+.header-avatar-btn{
+  width:44px;height:44px;border-radius:50%;
+  object-fit:cover;border:2px solid var(--color-primary);
+  cursor:pointer;transition:all .2s;flex-shrink:0;background:#fff;
+}
+.header-avatar-btn:hover{transform:scale(1.05);}
+
+.status-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:40px;
+  font-size:0.75rem;font-weight:700;cursor:pointer;
+  transition:all .25s ease;border:1px solid transparent;flex-shrink:0;
+}
+.status-pill.open{
+  background:rgba(0,177,79,0.1);color:#00B14F;
+  border-color:rgba(0,177,79,0.3);
+}
+.status-pill.closed{
+  background:rgba(239,68,68,0.1);color:#EF4444;
+  border-color:rgba(239,68,68,0.3);
+}
+.status-pill .dot{
+  width:8px;height:8px;border-radius:50%;
+  background:currentColor;animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.sidebar{
+  position:fixed;
+  top:var(--header-height);
+  right:0;
+  bottom:0;
+  width:var(--sidebar-width);max-width:86vw;
+  background:var(--card-bg);
+  border-left:1px solid var(--border-color);
+  border-top:1px solid var(--border-color);
+  z-index:300;
+  transform:translateX(100%);
+  transition:transform .3s cubic-bezier(.4,0,.2,1), width .3s cubic-bezier(.4,0,.2,1);
+  overflow-y:auto;overscroll-behavior:contain;
+  box-shadow:-6px 0 30px rgba(0,0,0,0.12);
+  display:flex;flex-direction:column;
+}
+body.sb-open .sidebar{transform:translateX(0);}
+
+.sb-header{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 12px;border-bottom:1px solid var(--border-color);
+  position:sticky;top:0;background:var(--card-bg);z-index:2;
+  transition:padding .3s ease;
+}
+.sb-avatar{
+  width:44px;height:44px;border-radius:50%;
+  object-fit:cover;border:2px solid var(--color-primary);
+  background:#fff;flex-shrink:0;
+  transition:width .3s ease, height .3s ease;
+  box-shadow:0 2px 8px rgba(255,90,0,0.18);
+}
+.sb-brand{flex:1;min-width:0;transition:opacity .2s ease;}
+.sb-title{
+  font-size:0.88rem;font-weight:800;color:var(--color-white);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.sb-sub{
+  font-size:0.64rem;color:var(--color-muted);font-weight:600;
+  margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+.sb-pin{
+  width:32px;height:32px;border-radius:9px;
+  border:1.5px solid var(--border-color);background:transparent;
+  color:var(--color-muted);cursor:pointer;font-size:0.95rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .25s ease;flex-shrink:0;padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.sb-pin:hover{
+  background:rgba(255,90,0,0.08);
+  color:var(--color-primary);
+  border-color:rgba(255,90,0,0.3);
+}
+.sb-pin i{
+  transition:transform .3s ease;
+  display:inline-block;
+  font-size:1rem;
+}
+.sb-pin.pinned{
+  background:rgba(255,90,0,0.12);
+  color:var(--color-primary);
+  border-color:rgba(255,90,0,0.4);
+}
+.sb-pin.pinned i{transform:rotate(0deg);}
+.sb-pin:not(.pinned) i{transform:rotate(45deg);}
+
+.sb-close{
+  width:32px;height:32px;border-radius:9px;
+  border:1px solid var(--border-color);background:transparent;
+  color:var(--color-muted);cursor:pointer;font-size:1rem;
+  display:none;align-items:center;justify-content:center;
+  transition:all .2s ease;flex-shrink:0;
+}
+.sb-close:hover{background:rgba(239,68,68,.1);color:#EF4444;border-color:rgba(239,68,68,.3);}
+
+.sb-nav{padding:10px;display:flex;flex-direction:column;gap:2px;flex:1;transition:padding .3s ease;}
+.sb-section{
+  font-size:0.62rem;text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--color-muted);padding:12px 12px 5px;font-weight:700;
+  transition:opacity .2s ease;
+}
+.sb-item{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 13px;border-radius:12px;cursor:pointer;
+  transition:all .18s ease;color:var(--color-muted);
+  font-weight:600;text-decoration:none;font-size:0.86rem;
+  border:none;background:transparent;font-family:inherit;width:100%;
+  text-align:right;-webkit-tap-highlight-color:transparent;
+  position:relative;
+}
+.sb-item i{font-size:20px;width:24px;flex-shrink:0;text-align:center;transition:all .25s ease;}
+.sb-item:hover{background:rgba(255,90,0,0.08);color:var(--color-primary);}
+.sb-item.active{
+  background:rgba(255,90,0,0.12);
+  color:var(--color-primary);font-weight:800;
+}
+.sb-item.logout{color:#EF4444;}
+.sb-item.logout:hover{background:rgba(239,68,68,0.08);color:#EF4444;}
+.sb-badge{
+  margin-right:auto;min-width:20px;height:20px;padding:0 6px;
+  border-radius:10px;background:#EF4444;color:#fff;
+  font-size:0.62rem;font-weight:800;
+  display:inline-flex;align-items:center;justify-content:center;
+  transition:all .25s ease;
+}
+.sb-divider{height:1px;background:var(--border-color);margin:6px 12px;transition:margin .3s ease;}
+
+@media (min-width:1025px){
+  .sidebar{transform:translateX(0);}
+  .main-wrap{
+    margin-right:var(--sidebar-width);
+    padding-top:var(--header-height);
+    transition:margin-right .3s cubic-bezier(.4,0,.2,1);
+  }
+  body.sb-collapsed .main-wrap{margin-right:var(--sidebar-collapsed);}
+  body.sb-collapsed .sidebar{width:var(--sidebar-collapsed);}
+
+  body.sb-collapsed .sb-header{
+    padding:14px 0;
+    flex-direction:column;
+    gap:10px;
+    justify-content:center;
+    align-items:center;
+  }
+  body.sb-collapsed .sb-avatar{width:38px;height:38px;}
+  body.sb-collapsed .sb-brand{display:none;}
+  body.sb-collapsed .sb-nav{padding:8px;}
+  body.sb-collapsed .sb-section{display:none;}
+  body.sb-collapsed .sb-divider{margin:6px 14px;}
+  body.sb-collapsed .sb-item{
+    justify-content:center;
+    padding:12px 0;
+    gap:0;
+  }
+  body.sb-collapsed .sb-item span:not(.sb-badge){display:none;}
+  body.sb-collapsed .sb-item i{width:auto;font-size:20px;}
+  body.sb-collapsed .sb-badge{
+    position:absolute;
+    top:4px;
+    left:6px;
+    right:auto;
+    margin:0;
+    min-width:15px;
+    height:15px;
+    padding:0 4px;
+    font-size:0.52rem;
+    border-radius:8px;
+  }
+}
+
+@media (max-width:1024px){
+  .main-wrap{padding-top:var(--header-height);}
+  .sb-pin{display:none;}
+  .sb-close{display:flex;}
+  body.sb-collapsed .sidebar{width:var(--sidebar-width);}
+  body.sb-collapsed .main-wrap{margin-right:0;}
+  body.sb-collapsed .sb-header{padding:14px 12px;flex-direction:row;justify-content:flex-start;gap:10px;}
+  body.sb-collapsed .sb-avatar{width:44px;height:44px;}
+  body.sb-collapsed .sb-brand{display:block;}
+  body.sb-collapsed .sb-nav{padding:10px;}
+  body.sb-collapsed .sb-section{display:block;}
+  body.sb-collapsed .sb-divider{margin:6px 12px;}
+  body.sb-collapsed .sb-item{justify-content:flex-start;padding:11px 13px;gap:12px;}
+  body.sb-collapsed .sb-item span:not(.sb-badge){display:inline;}
+  body.sb-collapsed .sb-item i{width:24px;font-size:20px;}
+  body.sb-collapsed .sb-badge{position:static;margin-right:auto;min-width:20px;height:20px;padding:0 6px;font-size:0.62rem;border-radius:10px;}
+}
+
+.overlay{
+  position:fixed;
+  top:var(--header-height);
+  left:0;
+  right:0;
+  bottom:0;
+  background:rgba(0,0,0,0.45);
+  z-index:290;opacity:0;visibility:hidden;
+  transition:all .3s ease;backdrop-filter:blur(2px);
+}
+body.sb-open .overlay{opacity:1;visibility:visible;}
+@media (min-width:1025px){.overlay{display:none;}}
+
+main{flex:1;padding-bottom:24px;}
+@media (max-width:1024px){
+  main{padding-bottom:calc(var(--bottom-nav-height) + 24px);}
+}
+
+.bottom-mobile-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;
+  height:var(--bottom-nav-height);background:var(--card-bg);
+  border-top:1px solid var(--border-color);z-index:100;
+  padding:6px 8px;
+  padding-bottom:max(6px,env(safe-area-inset-bottom,6px));
+  box-shadow:0 -2px 12px rgba(0,0,0,0.08);
+  align-items:center;justify-content:space-around;gap:4px;
+}
+@media (max-width:1024px){.bottom-mobile-nav{display:flex;}}
+.bottom-nav-item{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:2px;flex:1;padding:8px 4px;
+  border-radius:12px;cursor:pointer;text-decoration:none;
+  color:var(--color-muted);font-size:0.68rem;font-weight:600;
+  transition:all .25s ease;position:relative;min-width:0;
+  -webkit-tap-highlight-color:transparent;user-select:none;
+  background:transparent;border:none;font-family:inherit;
+}
+.bottom-nav-item i{font-size:1.3rem;transition:all .25s ease;flex-shrink:0;}
+.bottom-nav-item span{
+  white-space:nowrap;text-overflow:ellipsis;overflow:hidden;
+  max-width:100%;font-size:0.63rem;letter-spacing:.2px;
+}
+.bottom-nav-item.active{color:var(--color-primary);}
+.bottom-nav-item.active i{font-size:1.45rem;}
+.bottom-nav-item-center{
+  position:relative;top:-20px;width:58px;height:58px;
+  border-radius:50%;background:var(--color-primary);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 12px rgba(255,90,0,0.4);
+  transition:all .3s ease;flex-shrink:0;flex:none;margin:0 4px;
+}
+.bottom-nav-item-center i{font-size:1.9rem;}
+.bottom-nav-item-center span{display:none;}
+.bottom-nav-item-center.active{background:#e04e00;color:#fff;}
+.nav-badge{
+  position:absolute;top:4px;left:50%;transform:translateX(-50%);
+  min-width:18px;height:18px;padding:0 4px;border-radius:9px;
+  background:#EF4444;color:#fff;font-size:.6rem;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+}
+.bottom-nav-item-center .nav-badge{
+  top:-4px;left:2px;transform:none;background:#1A1A1A;
+}
+
+.page-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;margin-bottom:20px;
+}
+.page-title{
+  font-size:1.25rem;font-weight:800;color:var(--color-white);
+  display:flex;align-items:center;gap:8px;
+}
+.page-title i{color:#FF5A00;}
+.page-sub{font-size:0.76rem;color:var(--color-muted);font-weight:600;margin-top:3px;}
+
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:12px;
+}
+.stat-card{
+  background:var(--card-bg);
+  border:1px solid var(--border-color);
+  border-radius:16px;
+  padding:14px;
+  box-shadow:var(--shadow-card);
+  transition:all .3s ease;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+.stat-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 8px 24px rgba(255,90,0,0.1);
+  border-color:rgba(255,90,0,0.3);
+}
+.stat-icon{
+  width:42px;height:42px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;flex-shrink:0;
+}
+.stat-body{min-width:0;flex:1;}
+.stat-value{font-size:1.15rem;font-weight:800;color:var(--color-white);line-height:1.2;}
+.stat-label{
+  font-size:0.7rem;color:var(--color-muted);font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+@media (max-width:1024px){.stats-grid{grid-template-columns:repeat(3,1fr);gap:10px;}}
+@media (max-width:640px){
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .stat-card{padding:10px;gap:8px;border-radius:12px;}
+  .stat-icon{width:34px;height:34px;font-size:1.05rem;border-radius:9px;}
+  .stat-value{font-size:1rem;}
+  .stat-label{font-size:0.65rem;}
+}
+
+.panel{
+  background:var(--card-bg);
+  border:1px solid var(--border-color);
+  border-radius:18px;
+  box-shadow:var(--shadow-card);
+  padding:16px;
+}
+.panel-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;margin-bottom:14px;flex-wrap:wrap;
+}
+.section-title{
+  font-size:1.02rem;font-weight:800;color:var(--color-white);
+  display:flex;align-items:center;gap:8px;
+}
+.section-title i{color:#FF5A00;}
+
+.btn{
+  border:none;border-radius:12px;padding:10px 16px;
+  font-family:inherit;font-weight:700;font-size:.82rem;
+  cursor:pointer;transition:all .2s ease;
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:6px;color:#fff;white-space:nowrap;text-decoration:none;
+}
+.btn-primary{background:var(--color-primary);box-shadow:0 2px 8px rgba(255,90,0,0.3);}
+.btn-primary:hover{background:#e04e00;}
+.btn-outline{
+  background:transparent;color:var(--color-muted);
+  border:1px solid var(--border-color);border-radius:12px;
+  padding:10px 16px;font-family:inherit;font-weight:700;
+  font-size:.82rem;cursor:pointer;transition:all .2s ease;
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:6px;white-space:nowrap;text-decoration:none;
+}
+.btn-outline:hover{background:var(--darker-bg);color:var(--color-white);}
+
+.customers-toolbar{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.search-box{position:relative;flex:1;min-width:210px;}
+.search-box i{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  color:var(--color-muted);font-size:1.1rem;pointer-events:none;
+}
+.search-box input{
+  width:100%;padding:11px 42px 11px 14px;border-radius:12px;
+  border:1px solid var(--border-color);background:var(--card-bg);
+  font-family:inherit;font-size:.82rem;font-weight:600;
+  color:var(--color-white);outline:none;transition:all .2s ease;
+}
+.search-box input::placeholder{color:var(--color-muted);font-weight:600;}
+.search-box input:focus{
+  border-color:rgba(255,90,0,.5);
+  box-shadow:0 0 0 3px rgba(255,90,0,.08);
+}
+
+.filter-tabs{
+  display:inline-flex;background:var(--darker-bg);
+  border-radius:12px;padding:4px;gap:3px;flex-wrap:wrap;
+}
+.filter-tabs button{
+  border:none;background:transparent;font-family:inherit;
+  font-size:.72rem;font-weight:800;color:var(--color-muted);
+  padding:7px 13px;border-radius:9px;cursor:pointer;
+  transition:all .2s ease;white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;
+  display:inline-flex;align-items:center;gap:5px;
+}
+.filter-tabs button:hover{color:var(--color-primary);}
+.filter-tabs button.active{
+  background:#fff;color:var(--color-primary);
+  box-shadow:0 1px 4px rgba(0,0,0,0.08);
+}
+.filter-tabs button .ft-count{
+  min-width:17px;height:17px;padding:0 5px;border-radius:9px;
+  background:rgba(0,0,0,0.07);color:inherit;
+  font-size:.6rem;font-weight:800;
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.filter-tabs button.active .ft-count{background:rgba(255,90,0,0.14);}
+
+.customers-count{
+  font-size:.72rem;font-weight:800;color:var(--color-muted);
+  white-space:nowrap;
+}
+
+.table-wrap{
+  width:100%;
+  overflow-x:auto;
+  border-radius:14px;
+  border:1px solid var(--border-color);
+  -webkit-overflow-scrolling:touch;
+}
+.table-wrap::-webkit-scrollbar{height:8px;}
+
+.customers-table{
+  width:100%;
+  min-width:1150px;
+  border-collapse:separate;
+  border-spacing:0;
+  font-size:0.82rem;
+}
+.customers-table thead th{
+  background:var(--darker-bg);
+  color:var(--color-muted);
+  font-size:0.68rem;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:0.6px;
+  padding:13px 14px;
+  text-align:right;
+  white-space:nowrap;
+  border-bottom:1px solid var(--border-color);
+  position:sticky;
+  top:0;
+  z-index:2;
+}
+.customers-table thead th:first-child{border-top-right-radius:13px;}
+.customers-table thead th:last-child{border-top-left-radius:13px;}
+
+.customers-table tbody td{
+  padding:12px 14px;
+  text-align:right;
+  vertical-align:middle;
+  border-bottom:1px solid var(--border-color);
+  white-space:nowrap;
+  color:var(--color-white);
+  font-weight:600;
+  background:var(--card-bg);
+  transition:background .18s ease;
+}
+.customers-table tbody tr:last-child td{border-bottom:none;}
+.customers-table tbody tr:hover td{background:rgba(255,90,0,0.035);}
+
+.payout-cell{
+  display:flex;align-items:center;gap:11px;min-width:0;
+}
+.payout-avatar{
+  width:42px;height:42px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;flex-shrink:0;color:#fff;
+  box-shadow:0 3px 8px rgba(0,0,0,0.12);
+}
+.payout-info{min-width:0;display:flex;flex-direction:column;gap:2px;}
+.payout-name{
+  font-size:.85rem;font-weight:800;color:var(--color-white);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.payout-id{
+  font-family:monospace;font-size:.62rem;font-weight:800;
+  color:var(--color-muted);letter-spacing:.3px;
+}
+
+.cell-muted{color:var(--color-muted);font-weight:600;}
+
+.money-cell{
+  font-weight:800;
+  font-variant-numeric:tabular-nums;
+  font-size:.85rem;
+  color:var(--color-white);
+  direction:ltr;
+  text-align:right;
+  display:inline-block;
+}
+.money-cell small{
+  font-size:.6rem;color:var(--color-muted);font-weight:700;margin-right:2px;
+}
+.money-positive{
+  color:var(--c-active);
+  font-weight:800;
+  font-variant-numeric:tabular-nums;
+  font-size:.85rem;
+  direction:ltr;
+  display:inline-block;
+}
+.money-positive small{
+  font-size:.6rem;color:var(--color-muted);font-weight:700;margin-right:2px;
+}
+.money-pending{
+  color:#B8860B;
+  font-weight:800;
+  font-variant-numeric:tabular-nums;
+  font-size:.85rem;
+  direction:ltr;
+  display:inline-block;
+}
+.money-pending small{
+  font-size:.6rem;color:var(--color-muted);font-weight:700;margin-right:2px;
+}
+.money-negative{
+  color:#EF4444;
+  font-weight:800;
+  font-variant-numeric:tabular-nums;
+  font-size:.85rem;
+  direction:ltr;
+  display:inline-block;
+}
+.money-negative small{
+  font-size:.6rem;color:var(--color-muted);font-weight:700;margin-right:2px;
+}
+
+.method-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 10px;border-radius:8px;
+  background:var(--darker-bg);color:var(--color-muted);
+  font-size:.66rem;font-weight:800;white-space:nowrap;
+}
+.method-chip i{font-size:.82rem;}
+.method-chip.bank{background:rgba(59,130,246,.12);color:#3B82F6;}
+.method-chip.wallet{background:rgba(139,92,246,.12);color:#8B5CF6;}
+.method-chip.cash{background:rgba(0,177,79,.12);color:#00B14F;}
+
+.status-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 11px;border-radius:20px;
+  font-size:.66rem;font-weight:800;white-space:nowrap;
+}
+.status-badge .sb-dot{
+  width:7px;height:7px;border-radius:50%;background:currentColor;
+  flex-shrink:0;
+}
+.status-active{background:rgba(0,177,79,0.12);color:var(--c-active);}
+.status-pending{background:rgba(255,184,0,0.14);color:#B8860B;}
+.status-review{background:rgba(59,130,246,0.12);color:#3B82F6;}
+.status-blocked{background:rgba(239,68,68,0.12);color:var(--c-blocked);}
+
+.row-actions{
+  display:flex;align-items:center;gap:6px;justify-content:flex-start;
+}
+.icon-btn{
+  width:32px;height:32px;border-radius:9px;
+  border:1px solid var(--border-color);background:transparent;
+  color:var(--color-muted);cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:1rem;transition:all .2s ease;flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;padding:0;
+}
+.icon-btn:hover{background:var(--darker-bg);color:var(--color-white);}
+.icon-btn.view:hover{
+  background:rgba(59,130,246,0.1);color:#3B82F6;
+  border-color:rgba(59,130,246,0.3);
+}
+.icon-btn.success:hover{
+  background:rgba(0,177,79,0.1);color:#00B14F;
+  border-color:rgba(0,177,79,0.3);
+}
+.icon-btn.danger:hover{
+  background:rgba(239,68,68,0.1);color:#EF4444;
+  border-color:rgba(239,68,68,0.3);
+}
+.icon-btn.warn:hover{
+  background:rgba(255,184,0,0.14);color:#B8860B;
+  border-color:rgba(255,184,0,0.35);
+}
+
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;padding:56px 16px;text-align:center;
+}
+.empty-state i{font-size:3rem;color:var(--color-muted);opacity:.5;}
+.empty-state p{font-size:.85rem;font-weight:700;color:var(--color-muted);}
+.empty-state span{font-size:.72rem;font-weight:600;color:var(--color-muted);opacity:.8;}
+
+.swal-form{text-align:right;font-family:'Noto Sans Arabic',sans-serif;}
+.swal-form label{
+  display:block;font-size:.75rem;font-weight:800;
+  color:#1A1A1A;margin:10px 0 5px;
+}
+.swal-form input,
+.swal-form select{
+  width:100%;padding:10px 12px;border-radius:10px;
+  border:1px solid rgba(0,0,0,.12);font-family:inherit;
+  font-size:.82rem;font-weight:600;outline:none;
+  transition:all .2s ease;background:#fff;color:#1A1A1A;
+}
+.swal-form input:focus,
+.swal-form select:focus{
+  border-color:rgba(255,90,0,.5);
+  box-shadow:0 0 0 3px rgba(255,90,0,.08);
+}
+.swal-details{
+  text-align:right;font-size:.82rem;color:#1A1A1A;
+}
+.swal-details .row{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:8px 10px;border-radius:9px;background:#F7F9F8;
+  margin-bottom:6px;
+}
+.swal-details .row b{font-weight:800;}
+.swal-details .row span{font-weight:600;color:#717171;}
+
+@media (max-width:1024px){
+  .table-wrap{
+    border-radius:12px;
+  }
+  .customers-table{
+    min-width:1000px;
+    font-size:0.78rem;
+  }
+  .customers-table thead th{padding:11px 12px;font-size:0.64rem;}
+  .customers-table tbody td{padding:11px 12px;}
+  .payout-avatar{width:38px;height:38px;font-size:1rem;}
+  .payout-name{font-size:0.8rem;}
+}
+
+@media (max-width:640px){
+  :root{--header-height:66px;}
+  .page-title{font-size:1.05rem;}
+  .brand-logo{height:48px;max-width:190px;}
+  .header-avatar-btn{width:40px;height:40px;}
+  .status-pill{padding:6px 10px;font-size:0.68rem;}
+  .panel{padding:13px;border-radius:16px;}
+  .filter-tabs{width:100%;justify-content:space-between;}
+  .filter-tabs button{flex:1;justify-content:center;padding:7px 8px;font-size:.66rem;}
+  .btn{padding:9px 13px;font-size:.76rem;}
+  .btn-outline{padding:9px 13px;font-size:.76rem;}
+  .customers-table{min-width:900px;}
+  .customers-table thead th{padding:10px 10px;font-size:0.6rem;}
+  .customers-table tbody td{padding:10px 10px;font-size:0.74rem;}
+  .payout-avatar{width:34px;height:34px;font-size:.9rem;border-radius:10px;}
+  .icon-btn{width:30px;height:30px;font-size:.92rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="main-wrap">
+
+  <header id="mainHeader">
+    <div class="header-brand">
+      <img src="https://sys.shadowza.space/logos/1.png" class="brand-logo" alt="logo">
+    </div>
+    <div class="header-actions">
+      <div class="status-pill open" id="appStatusPill">
+        <span class="dot"></span>
+        <span id="appStatusText">التطبيق يعمل</span>
+      </div>
+      <button class="notification-btn" id="notificationBtn" aria-label="الإشعارات">
+        <i class="las la-bell"></i>
+        <span class="notification-dot"></span>
+      </button>
+      <img id="headerAvatar" src="https://sys.shadowza.space/logos/1.png" class="header-avatar-btn" alt="avatar">
+    </div>
+  </header>
+
+  <main>
+    <div class="container mx-auto px-4 py-6 max-w-7xl" id="pageContent"></div>
+  </main>
+
+</div>
+
+<aside class="sidebar" id="sidebar" role="navigation" aria-label="القائمة الجانبية">
+  <div class="sb-header">
+    <img src="https://sys.shadowza.space/logos/1.png" class="sb-avatar" alt="admin avatar">
+    <div class="sb-brand">
+      <p class="sb-title">مدير التطبيق</p>
+      <p class="sb-sub">أدمن عام</p>
+    </div>
+    <button class="sb-pin pinned" id="sbPin" aria-label="تثبيت القائمة">
+      <i class="las la-thumbtack"></i>
+    </button>
+    <button class="sb-close" id="sidebarClose" aria-label="إغلاق"><i class="las la-times"></i></button>
+  </div>
+  <nav class="sb-nav">
+    <p class="sb-section">الرئيسية</p>
+    <a href="#" class="sb-item" data-page="dashboard"><i class="las la-chart-pie"></i><span>لوحة التحكم</span></a>
+    <a href="#" class="sb-item" data-page="orders"><i class="las la-receipt"></i><span>كل الطلبات</span><span class="sb-badge" id="sbOrdersBadge">5</span></a>
+    <a href="#" class="sb-item" data-page="restaurants"><i class="las la-store"></i><span>المطاعم</span><span class="sb-badge" id="sbRestBadge">4</span></a>
+    <a href="#" class="sb-item" data-page="drivers"><i class="las la-motorcycle"></i><span>السائقين</span></a>
+    <a href="#" class="sb-item" data-page="customers"><i class="las la-users"></i><span>العملاء</span></a>
+    <div class="sb-divider"></div>
+    <p class="sb-section">المحتوى</p>
+    <a href="#" class="sb-item" data-page="categories"><i class="las la-th-large"></i><span>الأقسام</span></a>
+    <a href="#" class="sb-item" data-page="offers"><i class="las la-percent"></i><span>العروض والخصومات</span></a>
+    <a href="#" class="sb-item" data-page="banners"><i class="las la-image"></i><span>البانرات</span></a>
+    <div class="sb-divider"></div>
+    <p class="sb-section">المالية</p>
+    <a href="#" class="sb-item" data-page="finance"><i class="las la-wallet"></i><span>الأرباح والعمولات</span></a>
+    <a href="#" class="sb-item active" data-page="payouts"><i class="las la-money-check-alt"></i><span>طلبات السحب</span><span class="sb-badge" id="sbPayoutBadge">3</span></a>
+    <a href="#" class="sb-item" data-page="reports"><i class="las la-chart-line"></i><span>التقارير</span></a>
+    <div class="sb-divider"></div>
+    <p class="sb-section">الإدارة</p>
+    <a href="#" class="sb-item" data-page="admins"><i class="las la-user-shield"></i><span>المشرفين والصلاحيات</span></a>
+    <a href="#" class="sb-item" data-page="support"><i class="las la-headset"></i><span>الدعم والشكاوى</span></a>
+    <a href="#" class="sb-item" data-page="settings"><i class="las la-cog"></i><span>إعدادات التطبيق</span></a>
+    <div class="sb-divider"></div>
+    <a href="#" class="sb-item logout" id="logoutBtn"><i class="las la-sign-out-alt"></i><span>تسجيل الخروج</span></a>
+    <div style="height:20px;"></div>
+  </nav>
+</aside>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="bottom-mobile-nav" id="bottomMobileNav">
+  <a href="#" class="bottom-nav-item" data-page="dashboard"><i class="las la-chart-pie"></i><span>الرئيسية</span></a>
+  <a href="#" class="bottom-nav-item" data-page="restaurants"><i class="las la-store"></i><span>المطاعم</span></a>
+  <a href="#" class="bottom-nav-item bottom-nav-item-center" data-page="orders"><i class="las la-receipt"></i><span>الطلبات</span><span class="nav-badge" id="navOrdersBadge">5</span></a>
+  <a href="#" class="bottom-nav-item" data-page="drivers"><i class="las la-motorcycle"></i><span>السائقين</span></a>
+  <a href="#" class="bottom-nav-item" data-page="payouts"><i class="las la-money-check-alt"></i><span>السحب</span></a>
+</div>
+
+<script>
+(function(){
+
+  var STORAGE_KEY = 'admin_sidebar_collapsed';
+
+  var pageContent = document.getElementById('pageContent');
+  var overlay = document.getElementById('overlay');
+  var sbPin = document.getElementById('sbPin');
+  var sidebarClose = document.getElementById('sidebarClose');
+  var appStatusPill = document.getElementById('appStatusPill');
+  var appStatusText = document.getElementById('appStatusText');
+  var notificationBtn = document.getElementById('notificationBtn');
+  var headerAvatar = document.getElementById('headerAvatar');
+  var logoutBtn = document.getElementById('logoutBtn');
+  var sbOrdersBadge = document.getElementById('sbOrdersBadge');
+  var sbRestBadge = document.getElementById('sbRestBadge');
+  var sbPayoutBadge = document.getElementById('sbPayoutBadge');
+  var navOrdersBadge = document.getElementById('navOrdersBadge');
+
+  var appOpen = true;
+  var currentFilter = 'all';
+  var searchQuery = '';
+
+  var payouts = [
+    { id:'WD-2401', restaurant:'مطعم ابن حميدو', owner:'أحمد الشريف', amount:12400, method:'bank', bankName:'البنك الأهلي المصري', account:'1234 **** **** 5678', status:'pending', requestDate:'2024-09-28', processedDate:'—', notes:'طلب سحب شهري', balance:45800 },
+    { id:'WD-2402', restaurant:'كشري التحرير', owner:'محمود عبد الله', amount:7300, method:'wallet', bankName:'فودافون كاش', account:'010 6372 0595', status:'pending', requestDate:'2024-09-29', processedDate:'—', notes:'سحب سريع', balance:18200 },
+    { id:'WD-2403', restaurant:'مشويات الشرق', owner:'سامي إبراهيم', amount:5150, method:'bank', bankName:'بنك مصر', account:'9876 **** **** 4321', status:'pending', requestDate:'2024-09-30', processedDate:'—', notes:'', balance:12400 },
+    { id:'WD-2404', restaurant:'مطعم البحر الأحمر', owner:'كريم فؤاد', amount:9820, method:'bank', bankName:'البنك التجاري الدولي', account:'5555 **** **** 1111', status:'approved', requestDate:'2024-09-25', processedDate:'2024-09-26', notes:'تم التحويل بنجاح', balance:32500 },
+    { id:'WD-2405', restaurant:'بيتزا روما', owner:'لؤي سمير', amount:3400, method:'wallet', bankName:'إتصالات كاش', account:'011 1222 3344', status:'approved', requestDate:'2024-09-22', processedDate:'2024-09-23', notes:'', balance:8900 },
+    { id:'WD-2406', restaurant:'شاورما الشام', owner:'ياسر حسن', amount:6800, method:'cash', bankName:'تسليم نقدي', account:'فرع مدينة نصر', status:'review', requestDate:'2024-09-30', processedDate:'—', notes:'بانتظار مراجعة المستندات', balance:15600 },
+    { id:'WD-2407', restaurant:'مطعم البركة', owner:'حسام الدين', amount:2200, method:'bank', bankName:'بنك القاهرة', account:'7777 **** **** 9999', status:'rejected', requestDate:'2024-09-20', processedDate:'2024-09-21', notes:'الرصيد غير كافٍ بعد خصم العمولات', balance:800 },
+    { id:'WD-2408', restaurant:'مطعم النيل', owner:'أيمن رشاد', amount:15600, method:'bank', bankName:'البنك الأهلي المصري', account:'2222 **** **** 3333', status:'approved', requestDate:'2024-09-18', processedDate:'2024-09-19', notes:'تم التحويل', balance:42000 },
+    { id:'WD-2409', restaurant:'فطاطري التحرير', owner:'عمر سيد', amount:4100, method:'wallet', bankName:'فودافون كاش', account:'010 5555 6666', status:'pending', requestDate:'2024-10-01', processedDate:'—', notes:'سحب جديد', balance:9300 },
+    { id:'WD-2410', restaurant:'مطعم الشرقاوي', owner:'مصطفى الشرقاوي', amount:18500, method:'bank', bankName:'بنك الإسكندرية', account:'8888 **** **** 4444', status:'approved', requestDate:'2024-09-15', processedDate:'2024-09-16', notes:'تم التحويل', balance:52000 }
+  ];
+
+  var restaurants = [
+    { id:'R-1001', name:'مطعم ابن حميدو', status:'active' },
+    { id:'R-1002', name:'مطعم البحر الأحمر', status:'active' },
+    { id:'R-1003', name:'مشويات الشرق', status:'active' },
+    { id:'R-1004', name:'بيتزا روما', status:'pending' }
+  ];
+
+  var orders = [
+    { id:'ORD-5021', status:'new' },
+    { id:'ORD-5020', status:'new' },
+    { id:'ORD-5019', status:'new' },
+    { id:'ORD-5018', status:'new' },
+    { id:'ORD-5017', status:'new' },
+    { id:'ORD-5016', status:'accepted' },
+    { id:'ORD-5015', status:'accepted' },
+    { id:'ORD-5014', status:'preparing' },
+    { id:'ORD-5013', status:'preparing' },
+    { id:'ORD-5012', status:'ready' },
+    { id:'ORD-5011', status:'onway' },
+    { id:'ORD-5010', status:'delivered' }
+  ];
+
+  var statusMap = {
+    pending:{ label:'معلّق', cls:'status-pending' },
+    review:{ label:'قيد المراجعة', cls:'status-review' },
+    approved:{ label:'تمت الموافقة', cls:'status-active' },
+    rejected:{ label:'مرفوض', cls:'status-blocked' }
+  };
+
+  var methodMap = {
+    bank:{ label:'تحويل بنكي', icon:'las la-university', cls:'bank' },
+    wallet:{ label:'محفظة إلكترونية', icon:'las la-mobile-alt', cls:'wallet' },
+    cash:{ label:'تسليم نقدي', icon:'las la-money-bill-wave', cls:'cash' }
+  };
+
+  function esc(v){
+    return String(v == null ? '' : v)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+  function formatNumber(n){
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+    return String(n);
+  }
+
+  function formatMoney(n){
+    return n.toLocaleString('en-US');
+  }
+
+  function payoutCounts(){
+    var totalRequested = payouts.reduce(function(s,p){ return s + p.amount; }, 0);
+    var pending = payouts.filter(function(p){ return p.status === 'pending' || p.status === 'review'; });
+    var pendingAmount = pending.reduce(function(s,p){ return s + p.amount; }, 0);
+    var approved = payouts.filter(function(p){ return p.status === 'approved'; });
+    var approvedAmount = approved.reduce(function(s,p){ return s + p.amount; }, 0);
+
+    return {
+      all: payouts.length,
+      pending: pending.length,
+      approved: approved.length,
+      rejected: payouts.filter(function(p){ return p.status === 'rejected'; }).length,
+      totalRequested: totalRequested,
+      pendingAmount: pendingAmount,
+      approvedAmount: approvedAmount
+    };
+  }
+
+  function updateBadges(){
+    var newOrders = orders.filter(function(o){ return o.status === 'new'; }).length;
+    sbOrdersBadge.textContent = newOrders;
+    navOrdersBadge.textContent = newOrders;
+
+    var activeRest = restaurants.filter(function(r){ return r.status === 'active'; }).length;
+    sbRestBadge.textContent = activeRest;
+    sbRestBadge.style.display = activeRest > 0 ? 'inline-flex' : 'none';
+
+    var pendingPayouts = payouts.filter(function(p){ return p.status === 'pending' || p.status === 'review'; }).length;
+    sbPayoutBadge.textContent = pendingPayouts;
+    sbPayoutBadge.style.display = pendingPayouts > 0 ? 'inline-flex' : 'none';
+  }
+
+  function readStoredCollapsed(){
+    try {
+      return localStorage.getItem(STORAGE_KEY) === '1';
+    } catch(e){
+      return false;
+    }
+  }
+
+  function writeStoredCollapsed(val){
+    try {
+      localStorage.setItem(STORAGE_KEY, val ? '1' : '0');
+    } catch(e){}
+  }
+
+  function applyCollapsed(val){
+    if (val){
+      document.body.classList.add('sb-collapsed');
+      sbPin.classList.remove('pinned');
+      sbPin.setAttribute('aria-label','توسيع القائمة');
+    } else {
+      document.body.classList.remove('sb-collapsed');
+      sbPin.classList.add('pinned');
+      sbPin.setAttribute('aria-label','تثبيت القائمة');
+    }
+  }
+
+  function filteredPayouts(){
+    var q = searchQuery.trim().toLowerCase();
+    return payouts.filter(function(p){
+      var matchStatus = currentFilter === 'all' || p.status === currentFilter;
+      if (!matchStatus) return false;
+      if (!q) return true;
+      return p.restaurant.toLowerCase().indexOf(q) !== -1 ||
+             p.owner.toLowerCase().indexOf(q) !== -1 ||
+             p.id.toLowerCase().indexOf(q) !== -1 ||
+             p.bankName.toLowerCase().indexOf(q) !== -1 ||
+             p.notes.toLowerCase().indexOf(q) !== -1;
+    });
+  }
+
+  function renderPayoutsTable(){
+    var list = filteredPayouts();
+
+    if (!list.length){
+      return '<div class="empty-state">' +
+        '<i class="las la-money-check-alt"></i>' +
+        '<p>لا يوجد طلبات سحب مطابقة</p>' +
+        '<span>جرّب تغيير كلمة البحث أو الفلتر</span>' +
+      '</div>';
+    }
+
+    var html = '' +
+    '<div class="table-wrap">' +
+      '<table class="customers-table">' +
+        '<thead>' +
+          '<tr>' +
+            '<th>المطعم</th>' +
+            '<th>المبلغ المطلوب</th>' +
+            '<th>الرصيد المتاح</th>' +
+            '<th>طريقة السحب</th>' +
+            '<th>الحساب / الوجهة</th>' +
+            '<th>تاريخ الطلب</th>' +
+            '<th>تاريخ المعالجة</th>' +
+            '<th>الحالة</th>' +
+            '<th>إجراءات</th>' +
+          '</tr>' +
+        '</thead>' +
+        '<tbody>';
+
+    list.forEach(function(p){
+      var st = statusMap[p.status] || statusMap.pending;
+      var m = methodMap[p.method] || methodMap.bank;
+
+      var statusColor = p.status === 'approved' ? '#00B14F' : (p.status === 'pending' ? '#FF5A00' : (p.status === 'review' ? '#3B82F6' : '#EF4444'));
+      var initial = p.restaurant.replace('مطعم ','').replace('كشري ','').substring(0,2);
+
+      var amountClass = p.status === 'approved' ? 'money-positive' : (p.status === 'rejected' ? 'money-negative' : 'money-pending');
+
+      var approveAction = '';
+      if (p.status === 'pending' || p.status === 'review'){
+        approveAction =
+          '<button type="button" class="icon-btn success" data-action="approve" data-id="' + esc(p.id) + '" title="موافقة">' +
+            '<i class="las la-check"></i>' +
+          '</button>' +
+          '<button type="button" class="icon-btn danger" data-action="reject" data-id="' + esc(p.id) + '" title="رفض">' +
+            '<i class="las la-times"></i>' +
+          '</button>';
+      } else {
+        approveAction =
+          '<button type="button" class="icon-btn warn" data-action="reopen" data-id="' + esc(p.id) + '" title="إعادة الفتح">' +
+            '<i class="las la-redo"></i>' +
+          '</button>';
+      }
+
+      html +=
+        '<tr>' +
+          '<td>' +
+            '<div class="payout-cell">' +
+              '<span class="payout-avatar" style="background:' + statusColor + ';">' + esc(initial) + '</span>' +
+              '<div class="payout-info">' +
+                '<span class="payout-name">' + esc(p.restaurant) + '</span>' +
+                '<span class="payout-id">' + esc(p.owner) + ' • ' + esc(p.id) + '</span>' +
+              '</div>' +
+            '</div>' +
+          '</td>' +
+          '<td><span class="' + amountClass + '">' + formatMoney(p.amount) + ' <small>ج.م</small></span></td>' +
+          '<td><span class="money-cell">' + formatMoney(p.balance) + ' <small>ج.م</small></span></td>' +
+          '<td><span class="method-chip ' + m.cls + '"><i class="' + m.icon + '"></i> ' + m.label + '</span></td>' +
+          '<td><div style="display:flex;flex-direction:column;gap:1px;">' +
+            '<span style="font-size:.72rem;font-weight:800;color:var(--color-white);">' + esc(p.bankName) + '</span>' +
+            '<span style="font-size:.62rem;color:var(--color-muted);font-weight:600;font-family:monospace;direction:ltr;">' + esc(p.account) + '</span>' +
+          '</div></td>' +
+          '<td><span class="cell-muted">' + esc(p.requestDate) + '</span></td>' +
+          '<td><span class="cell-muted">' + esc(p.processedDate) + '</span></td>' +
+          '<td>' +
+            '<span class="status-badge ' + st.cls + '">' +
+              '<span class="sb-dot"></span> ' + st.label +
+            '</span>' +
+          '</td>' +
+          '<td>' +
+            '<div class="row-actions">' +
+              '<button type="button" class="icon-btn view" data-action="view" data-id="' + esc(p.id) + '" title="تفاصيل">' +
+                '<i class="las la-eye"></i>' +
+              '</button>' +
+              approveAction +
+            '</div>' +
+          '</td>' +
+        '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+    return html;
+  }
+
+  function refreshTable(){
+    var wrap = document.getElementById('payoutsListWrap');
+    if (wrap) wrap.innerHTML = renderPayoutsTable();
+    var counter = document.getElementById('payoutsCount');
+    if (counter){
+      counter.textContent = filteredPayouts().length + ' من ' + payouts.length + ' طلب';
+    }
+    var counts = payoutCounts();
+    var tabAll = document.getElementById('ftAll');
+    var tabPending = document.getElementById('ftPending');
+    var tabReview = document.getElementById('ftReview');
+    var tabApproved = document.getElementById('ftApproved');
+    var tabRejected = document.getElementById('ftRejected');
+    if (tabAll) tabAll.textContent = counts.all;
+    if (tabPending) tabPending.textContent = payouts.filter(function(p){ return p.status === 'pending'; }).length;
+    if (tabReview) tabReview.textContent = payouts.filter(function(p){ return p.status === 'review'; }).length;
+    if (tabApproved) tabApproved.textContent = counts.approved;
+    if (tabRejected) tabRejected.textContent = counts.rejected;
+  }
+
+  function renderPayoutsPage(){
+    var c = payoutCounts();
+
+    return '' +
+    '<div class="page-head">' +
+      '<div>' +
+        '<h2 class="page-title"><i class="las la-money-check-alt"></i> طلبات السحب</h2>' +
+        '<p class="page-sub">إدارة طلبات سحب الأرباح من المطاعم والموردين</p>' +
+      '</div>' +
+      '<div class="flex items-center gap-2 flex-wrap">' +
+        '<a href="#" class="btn-outline" data-dead><i class="las la-file-export"></i> تصدير</a>' +
+        '<button type="button" class="btn btn-primary" id="addPayoutBtn"><i class="las la-plus"></i> طلب سحب جديد</button>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="stats-grid mb-6">' +
+      '<div class="stat-card">' +
+        '<div class="stat-icon" style="background:rgba(255,90,0,.12);color:#FF5A00;"><i class="las la-list-alt"></i></div>' +
+        '<div class="stat-body"><p class="stat-label">إجمالي الطلبات</p><p class="stat-value">' + c.all + '</p></div>' +
+      '</div>' +
+      '<div class="stat-card">' +
+        '<div class="stat-icon" style="background:rgba(255,184,0,.15);color:#B8860B;"><i class="las la-hourglass-half"></i></div>' +
+        '<div class="stat-body"><p class="stat-label">طلبات معلقة</p><p class="stat-value">' + c.pending + '</p></div>' +
+      '</div>' +
+      '<div class="stat-card">' +
+        '<div class="stat-icon" style="background:rgba(0,177,79,.12);color:#00B14F;"><i class="las la-check-circle"></i></div>' +
+        '<div class="stat-body"><p class="stat-label">تمت الموافقة</p><p class="stat-value">' + c.approved + '</p></div>' +
+      '</div>' +
+      '<div class="stat-card">' +
+        '<div class="stat-icon" style="background:rgba(239,68,68,.12);color:#EF4444;"><i class="las la-times-circle"></i></div>' +
+        '<div class="stat-body"><p class="stat-label">مرفوضة</p><p class="stat-value">' + c.rejected + '</p></div>' +
+      '</div>' +
+      '<div class="stat-card">' +
+        '<div class="stat-icon" style="background:rgba(139,92,246,.12);color:#8B5CF6;"><i class="las la-coins"></i></div>' +
+        '<div class="stat-body"><p class="stat-label">إجمالي مبالغ معلقة</p><p class="stat-value">' + formatNumber(c.pendingAmount) + '</p></div>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="panel">' +
+      '<div class="customers-toolbar mb-4">' +
+        '<div class="search-box">' +
+          '<i class="las la-search"></i>' +
+          '<input type="text" id="payoutSearch" placeholder="ابحث باسم المطعم أو المالك أو المعرف...">' +
+        '</div>' +
+        '<div class="filter-tabs" id="payoutFilters">' +
+          '<button type="button" class="active" data-filter="all">الكل <span class="ft-count" id="ftAll">' + c.all + '</span></button>' +
+          '<button type="button" data-filter="pending">معلّق <span class="ft-count" id="ftPending">' + payouts.filter(function(p){ return p.status === 'pending'; }).length + '</span></button>' +
+          '<button type="button" data-filter="review">قيد المراجعة <span class="ft-count" id="ftReview">' + payouts.filter(function(p){ return p.status === 'review'; }).length + '</span></button>' +
+          '<button type="button" data-filter="approved">موافق عليه <span class="ft-count" id="ftApproved">' + c.approved + '</span></button>' +
+          '<button type="button" data-filter="rejected">مرفوض <span class="ft-count" id="ftRejected">' + c.rejected + '</span></button>' +
+        '</div>' +
+        '<span class="customers-count" id="payoutsCount">' + payouts.length + ' من ' + payouts.length + ' طلب</span>' +
+      '</div>' +
+      '<div id="payoutsListWrap">' + renderPayoutsTable() + '</div>' +
+    '</div>';
+  }
+
+  function findPayout(id){
+    for (var i = 0; i < payouts.length; i++){
+      if (payouts[i].id === id) return payouts[i];
+    }
+    return null;
+  }
+
+  function showDevToast(){
+    Swal.fire({
+      toast:true,
+      position:'top-end',
+      icon:'info',
+      title:'هذه الصفحة قيد التطوير',
+      showConfirmButton:false,
+      timer:1600
+    });
+  }
+
+  function bindDeadLinks(){
+    var els = pageContent.querySelectorAll('[data-dead]');
+    for (var i = 0; i < els.length; i++){
+      els[i].addEventListener('click', function(e){
+        e.preventDefault();
+        showDevToast();
+      });
+    }
+  }
+
+  function openPayoutDetails(id){
+    var p = findPayout(id);
+    if (!p) return;
+    var st = statusMap[p.status] || statusMap.pending;
+    var m = methodMap[p.method] || methodMap.bank;
+
+    Swal.fire({
+      title: esc(p.restaurant),
+      html:
+        '<div class="swal-details">' +
+          '<div class="row"><b>المعرف</b><span>' + esc(p.id) + '</span></div>' +
+          '<div class="row"><b>المالك</b><span>' + esc(p.owner) + '</span></div>' +
+          '<div class="row"><b>المبلغ المطلوب</b><span style="color:#FF5A00;font-weight:800;">' + formatMoney(p.amount) + ' ج.م</span></div>' +
+          '<div class="row"><b>الرصيد المتاح</b><span>' + formatMoney(p.balance) + ' ج.م</span></div>' +
+          '<div class="row"><b>طريقة السحب</b><span>' + m.label + '</span></div>' +
+          '<div class="row"><b>الجهة</b><span>' + esc(p.bankName) + '</span></div>' +
+          '<div class="row"><b>الحساب</b><span>' + esc(p.account) + '</span></div>' +
+          '<div class="row"><b>تاريخ الطلب</b><span>' + esc(p.requestDate) + '</span></div>' +
+          '<div class="row"><b>تاريخ المعالجة</b><span>' + esc(p.processedDate) + '</span></div>' +
+          '<div class="row"><b>الحالة</b><span>' + st.label + '</span></div>' +
+          (p.notes ? '<div class="row"><b>ملاحظات</b><span>' + esc(p.notes) + '</span></div>' : '') +
+        '</div>',
+      imageHtml:
+        '<span style="display:inline-flex;align-items:center;justify-content:center;width:84px;height:84px;border-radius:22px;background:' + (p.status === 'approved' ? '#00B14F' : (p.status === 'pending' ? '#FF5A00' : (p.status === 'review' ? '#3B82F6' : '#EF4444'))) + ';color:#fff;font-size:2rem;">' +
+          '<i class="las la-money-check-alt"></i>' +
+        '</span>',
+      imageWidth: 84,
+      imageHeight: 84,
+      confirmButtonColor: '#FF5A00',
+      confirmButtonText: 'إغلاق'
+    });
+  }
+
+  function approvePayout(id){
+    var p = findPayout(id);
+    if (!p) return;
+
+    Swal.fire({
+      title: 'الموافقة على طلب السحب',
+      html: '<div class="swal-details">' +
+        '<div class="row"><b>المطعم</b><span>' + esc(p.restaurant) + '</span></div>' +
+        '<div class="row"><b>المبلغ</b><span style="color:#00B14F;font-weight:800;">' + formatMoney(p.amount) + ' ج.م</span></div>' +
+        '<div class="row"><b>الطريقة</b><span>' + (methodMap[p.method] || methodMap.bank).label + '</span></div>' +
+        '</div>' +
+        '<p style="text-align:right;font-size:.8rem;color:#717171;margin-top:8px;">هل تريد تأكيد الموافقة على هذا الطلب؟</p>',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#00B14F',
+      cancelButtonColor: '#717171',
+      confirmButtonText: 'نعم، الموافقة',
+      cancelButtonText: 'إلغاء'
+    }).then(function(result){
+      if (!result.isConfirmed) return;
+
+      p.status = 'approved';
+      p.processedDate = new Date().toISOString().slice(0,10);
+      p.notes = 'تمت الموافقة والتحويل';
+
+      refreshTable();
+      updateBadges();
+
+      Swal.fire({
+        title: 'تمت الموافقة',
+        text: 'تمت الموافقة على طلب السحب بنجاح',
+        icon: 'success',
+        confirmButtonColor: '#FF5A00',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    });
+  }
+
+  function rejectPayout(id){
+    var p = findPayout(id);
+    if (!p) return;
+
+    Swal.fire({
+      title: 'رفض طلب السحب',
+      html: '<div class="swal-form">' +
+        '<label>سبب الرفض</label>' +
+        '<input id="rejReason" type="text" placeholder="مثال: الرصيد غير كافٍ" value="الرصيد غير كافٍ">' +
+        '</div>',
+      showCancelButton: true,
+      confirmButtonColor: '#EF4444',
+      cancelButtonColor: '#717171',
+      confirmButtonText: 'نعم، رفض',
+      cancelButtonText: 'إلغاء',
+      focusConfirm: false,
+      preConfirm: function(){
+        var reason = document.getElementById('rejReason').value.trim();
+        if (!reason){
+          Swal.showValidationMessage('يرجى إدخال سبب الرفض');
+          return false;
+        }
+        return reason;
+      }
+    }).then(function(result){
+      if (!result.isConfirmed || !result.value) return;
+
+      p.status = 'rejected';
+      p.processedDate = new Date().toISOString().slice(0,10);
+      p.notes = result.value;
+
+      refreshTable();
+      updateBadges();
+
+      Swal.fire({
+        title: 'تم الرفض',
+        text: 'تم رفض طلب السحب',
+        icon: 'info',
+        confirmButtonColor: '#FF5A00',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    });
+  }
+
+  function reopenPayout(id){
+    var p = findPayout(id);
+    if (!p) return;
+
+    Swal.fire({
+      title: 'إعادة فتح الطلب',
+      text: 'هل تريد إعادة فتح هذا الطلب ليصبح قيد المراجعة؟',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#FF5A00',
+      cancelButtonColor: '#717171',
+      confirmButtonText: 'نعم، إعادة',
+      cancelButtonText: 'إلغاء'
+    }).then(function(result){
+      if (!result.isConfirmed) return;
+
+      p.status = 'pending';
+      p.processedDate = '—';
+      p.notes = 'تم إعادة فتح الطلب للمراجعة';
+
+      refreshTable();
+      updateBadges();
+
+      Swal.fire({
+        title: 'تمت الإعادة',
+        text: 'تم إعادة فتح الطلب بنجاح',
+        icon: 'success',
+        confirmButtonColor: '#FF5A00',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    });
+  }
+
+  function openAddPayout(){
+    Swal.fire({
+      title: 'طلب سحب جديد',
+      html:
+        '<div class="swal-form">' +
+          '<label>اسم المطعم</label>' +
+          '<input id="npRestaurant" type="text" placeholder="مثال: مطعم ابن حميدو">' +
+          '<label>اسم المالك</label>' +
+          '<input id="npOwner" type="text" placeholder="مثال: أحمد الشريف">' +
+          '<label>المبلغ المطلوب (ج.م)</label>' +
+          '<input id="npAmount" type="number" min="1" value="1000">' +
+          '<label>الرصيد المتاح (ج.م)</label>' +
+          '<input id="npBalance" type="number" min="0" value="5000">' +
+          '<label>طريقة السحب</label>' +
+          '<select id="npMethod">' +
+            '<option value="bank">تحويل بنكي</option>' +
+            '<option value="wallet">محفظة إلكترونية</option>' +
+            '<option value="cash">تسليم نقدي</option>' +
+          '</select>' +
+          '<label>الجهة / اسم البنك</label>' +
+          '<input id="npBankName" type="text" placeholder="مثال: البنك الأهلي المصري">' +
+          '<label>رقم الحساب / الوجهة</label>' +
+          '<input id="npAccount" type="text" placeholder="مثال: 1234 **** **** 5678">' +
+          '<label>ملاحظات</label>' +
+          '<input id="npNotes" type="text" placeholder="ملاحظات اختيارية">' +
+        '</div>',
+      showCancelButton: true,
+      confirmButtonColor: '#FF5A00',
+      cancelButtonColor: '#717171',
+      confirmButtonText: 'إنشاء الطلب',
+      cancelButtonText: 'إلغاء',
+      focusConfirm: false,
+      preConfirm: function(){
+        var restaurant = document.getElementById('npRestaurant').value.trim();
+        var owner = document.getElementById('npOwner').value.trim();
+        var amount = parseInt(document.getElementById('npAmount').value, 10);
+        var balance = parseInt(document.getElementById('npBalance').value, 10);
+        var method = document.getElementById('npMethod').value;
+        var bankName = document.getElementById('npBankName').value.trim();
+        var account = document.getElementById('npAccount').value.trim();
+        var notes = document.getElementById('npNotes').value.trim();
+
+        if (!restaurant){
+          Swal.showValidationMessage('يرجى إدخال اسم المطعم');
+          return false;
+        }
+        if (!owner){
+          Swal.showValidationMessage('يرجى إدخال اسم المالك');
+          return false;
+        }
+        if (isNaN(amount) || amount < 1){
+          Swal.showValidationMessage('يرجى إدخال مبلغ صحيح');
+          return false;
+        }
+        if (amount > balance){
+          Swal.showValidationMessage('المبلغ المطلوب أكبر من الرصيد المتاح');
+          return false;
+        }
+        if (isNaN(balance) || balance < 0){
+          Swal.showValidationMessage('يرجى إدخال رصيد صحيح');
+          return false;
+        }
+        if (!bankName){
+          Swal.showValidationMessage('يرجى إدخال اسم الجهة');
+          return false;
+        }
+        if (!account){
+          Swal.showValidationMessage('يرجى إدخال رقم الحساب');
+          return false;
+        }
+
+        return { restaurant:restaurant, owner:owner, amount:amount, balance:balance, method:method, bankName:bankName, account:account, notes:notes || '' };
+      }
+    }).then(function(result){
+      if (!result.isConfirmed || !result.value) return;
+
+      var v = result.value;
+      var nextNum = payouts.length + 2400 + 1;
+      var newId = 'WD-' + nextNum;
+
+      payouts.unshift({
+        id: newId,
+        restaurant: v.restaurant,
+        owner: v.owner,
+        amount: v.amount,
+        method: v.method,
+        bankName: v.bankName,
+        account: v.account,
+        status: 'pending',
+        requestDate: new Date().toISOString().slice(0,10),
+        processedDate: '—',
+        notes: v.notes,
+        balance: v.balance
+      });
+
+      currentFilter = 'all';
+      searchQuery = '';
+      render();
+
+      Swal.fire({
+        title: 'تم الإنشاء',
+        text: 'تم إنشاء طلب السحب بنجاح',
+        icon: 'success',
+        confirmButtonColor: '#FF5A00'
+      });
+    });
+  }
+
+  function bindPageEvents(){
+    var searchInput = document.getElementById('payoutSearch');
+    if (searchInput){
+      searchInput.addEventListener('input', function(){
+        searchQuery = this.value;
+        refreshTable();
+      });
+    }
+
+    var filters = document.getElementById('payoutFilters');
+    if (filters){
+      filters.addEventListener('click', function(e){
+        var btn = e.target.closest('button[data-filter]');
+        if (!btn) return;
+        var buttons = filters.querySelectorAll('button[data-filter]');
+        for (var i = 0; i < buttons.length; i++){
+          buttons[i].classList.remove('active');
+        }
+        btn.classList.add('active');
+        currentFilter = btn.getAttribute('data-filter');
+        refreshTable();
+      });
+    }
+
+    var listWrap = document.getElementById('payoutsListWrap');
+    if (listWrap){
+      listWrap.addEventListener('click', function(e){
+        var btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        var action = btn.getAttribute('data-action');
+        var id = btn.getAttribute('data-id');
+        if (action === 'view') openPayoutDetails(id);
+        else if (action === 'approve') approvePayout(id);
+        else if (action === 'reject') rejectPayout(id);
+        else if (action === 'reopen') reopenPayout(id);
+      });
+    }
+
+    var addBtn = document.getElementById('addPayoutBtn');
+    if (addBtn){
+      addBtn.addEventListener('click', openAddPayout);
+    }
+  }
+
+  function render(){
+    pageContent.innerHTML = renderPayoutsPage();
+    updateBadges();
+    bindPageEvents();
+    bindDeadLinks();
+  }
+
+  function openSidebar(){ document.body.classList.add('sb-open'); }
+  function closeSidebar(){ document.body.classList.remove('sb-open'); }
+
+  sbPin.addEventListener('click', function(){
+    var willCollapse = !document.body.classList.contains('sb-collapsed');
+    applyCollapsed(willCollapse);
+    writeStoredCollapsed(willCollapse);
+  });
+
+  sidebarClose.addEventListener('click', closeSidebar);
+  overlay.addEventListener('click', closeSidebar);
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') closeSidebar();
+  });
+
+  var sbItems = document.querySelectorAll('.sb-item[data-page]');
+  for (var i = 0; i < sbItems.length; i++){
+    sbItems[i].addEventListener('click', function(e){
+      e.preventDefault();
+      var page = this.getAttribute('data-page');
+      if (page === 'payouts'){
+        closeSidebar();
+        window.scrollTo({ top:0, behavior:'smooth' });
+        return;
+      }
+      showDevToast();
+    });
+  }
+
+  var bnItems = document.querySelectorAll('.bottom-nav-item[data-page]');
+  for (var j = 0; j < bnItems.length; j++){
+    bnItems[j].addEventListener('click', function(e){
+      e.preventDefault();
+      var page = this.getAttribute('data-page');
+      if (page === 'payouts'){
+        window.scrollTo({ top:0, behavior:'smooth' });
+        return;
+      }
+      showDevToast();
+    });
+  }
+
+  appStatusPill.addEventListener('click', function(){
+    appOpen = !appOpen;
+    if (appOpen){
+      appStatusPill.classList.add('open');
+      appStatusPill.classList.remove('closed');
+      appStatusText.textContent = 'التطبيق يعمل';
+    } else {
+      appStatusPill.classList.add('closed');
+      appStatusPill.classList.remove('open');
+      appStatusText.textContent = 'التطبيق متوقف';
+    }
+    Swal.fire({
+      title: appOpen ? 'التطبيق يعمل الآن' : 'تم إيقاف التطبيق',
+      text: appOpen ? 'يمكن للمطاعم استقبال الطلبات من جديد' : 'لن يتم استقبال أي طلبات جديدة حتى إعادة التشغيل',
+      icon: appOpen ? 'success' : 'warning',
+      confirmButtonColor:'#FF5A00',
+      timer:1700,
+      showConfirmButton:false
+    });
+  });
+
+  notificationBtn.addEventListener('click', function(){
+    Swal.fire({
+      title:'إشعارات الإدارة',
+      html:'<div style="text-align:right;font-size:0.85rem;">' +
+        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">🔔 5 طلبات جديدة في كل المطاعم</p>' +
+        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">🏪 مطعم جديد بانتظار الموافقة: بيتزا روما</p>' +
+        '<p class="mb-2 p-2 rounded" style="background:#FFF3E8;">💸 3 طلبات سحب بانتظار المراجعة</p>' +
+        '<p class="p-2 rounded" style="background:#FFF3E8;">⚠️ شكوى جديدة على مطعم شاورما الشام</p>' +
+        '</div>',
+      icon:'info',
+      confirmButtonColor:'#FF5A00',
+      confirmButtonText:'حسناً'
+    });
+  });
+
+  headerAvatar.addEventListener('click', function(){
+    if (window.innerWidth <= 1024){
+      if (document.body.classList.contains('sb-open')) closeSidebar();
+      else openSidebar();
+      return;
+    }
+    Swal.fire({
+      title:'حساب المدير العام',
+      html:'<div style="text-align:right;font-size:0.85rem;">' +
+        '<p class="mb-2"><b>الاسم:</b> مدير التطبيق</p>' +
+        '<p class="mb-2"><b>البريد:</b> admin@shadowza.space</p>' +
+        '<p class="mb-2"><b>الصلاحية:</b> أدمن عام</p>' +
+        '<p><b>آخر دخول:</b> اليوم 09:14 ص</p>' +
+        '</div>',
+      imageUrl:'https://sys.shadowza.space/logos/1.png',
+      imageWidth:80,
+      imageHeight:80,
+      confirmButtonColor:'#FF5A00',
+      confirmButtonText:'إغلاق'
+    });
+  });
+
+  logoutBtn.addEventListener('click', function(e){
+    e.preventDefault();
+    closeSidebar();
+    Swal.fire({
+      title:'تسجيل الخروج',
+      text:'هل أنت متأكد من تسجيل الخروج من لوحة إدارة التطبيق؟',
+      icon:'warning',
+      showCancelButton:true,
+      confirmButtonColor:'#FF5A00',
+      cancelButtonColor:'#717171',
+      confirmButtonText:'نعم، خروج',
+      cancelButtonText:'إلغاء'
+    }).then(function(result){
+      if (result.isConfirmed){
+        Swal.fire({
+          title:'تم بنجاح',
+          text:'تم تسجيل الخروج بنجاح',
+          icon:'success',
+          confirmButtonColor:'#FF5A00'
+        });
+      }
+    });
+  });
+
+  var lastIsDesktop = window.innerWidth >= 1025;
+
+  window.addEventListener('resize', function(){
+    var isDesktop = window.innerWidth >= 1025;
+    if (isDesktop !== lastIsDesktop){
+      lastIsDesktop = isDesktop;
+      if (isDesktop){
+        document.body.classList.remove('sb-open');
+        applyCollapsed(readStoredCollapsed());
+      } else {
+        document.body.classList.remove('sb-collapsed');
+        document.body.classList.remove('sb-open');
+      }
+    }
+  });
+
+  function init(){
+    applyCollapsed(readStoredCollapsed());
+    render();
+  }
+
+  init();
+
+})();
+</script>
+</body>
+</html>
