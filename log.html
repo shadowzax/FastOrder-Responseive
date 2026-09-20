@@ -31,6 +31,7 @@
         }
         html {
             height: 100%;
+            overflow-x: hidden;
             -webkit-text-size-adjust: 100%;
             text-size-adjust: 100%;
         }
@@ -62,25 +63,34 @@
         }
         .page {
             width: 100%;
+            max-width: 480px;
             min-height: 100vh;
             min-height: 100dvh;
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
-            padding: 20px 18px 20px;
-            padding-top: max(20px, env(safe-area-inset-top, 20px));
-            padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
-            padding-left: max(18px, env(safe-area-inset-left, 18px));
-            padding-right: max(18px, env(safe-area-inset-right, 18px));
+            padding-top: max(16px, env(safe-area-inset-top, 16px));
+            padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+            padding-left: max(16px, env(safe-area-inset-left, 16px));
+            padding-right: max(16px, env(safe-area-inset-right, 16px));
             position: relative;
-            max-width: 540px;
-            margin: 0 auto;
+            overflow: hidden;
+        }
+        .page-inner {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            position: relative;
+            z-index: 1;
+            padding: 8px 0;
         }
         .page-top-deco {
             position: absolute;
             top: -100px;
             right: -100px;
-            width: 260px;
-            height: 260px;
+            width: 240px;
+            height: 240px;
             border-radius: 50%;
             background: radial-gradient(circle, rgba(255, 90, 0, 0.10), rgba(255, 90, 0, 0) 70%);
             pointer-events: none;
@@ -88,10 +98,10 @@
         }
         .page-top-deco2 {
             position: absolute;
-            top: 30px;
-            left: -110px;
-            width: 220px;
-            height: 220px;
+            top: 40px;
+            left: -100px;
+            width: 200px;
+            height: 200px;
             border-radius: 50%;
             background: radial-gradient(circle, rgba(255, 184, 0, 0.10), rgba(255, 184, 0, 0) 70%);
             pointer-events: none;
@@ -99,31 +109,29 @@
         }
         .brand {
             text-align: center;
-            margin-bottom: 16px;
-            position: relative;
-            z-index: 1;
+            margin-bottom: 14px;
             flex-shrink: 0;
         }
         .brand-logo {
-            width: 100px;
-            height: 100px;
+            width: 90px;
+            height: 90px;
             object-fit: contain;
             display: block;
             margin: 0 auto 4px;
             background: transparent;
             border: none;
             padding: 0;
-            filter: drop-shadow(0 6px 16px rgba(255, 90, 0, 0.15));
+            filter: drop-shadow(0 6px 14px rgba(255, 90, 0, 0.15));
         }
         .brand h1 {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: 800;
             color: var(--color-white);
             margin: 0;
             line-height: 1.3;
         }
         .brand p {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--color-muted);
             margin-top: 3px;
             line-height: 1.4;
@@ -133,9 +141,7 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
-            margin-bottom: 18px;
-            position: relative;
-            z-index: 1;
+            margin-bottom: 16px;
             flex-shrink: 0;
         }
         .dot {
@@ -159,32 +165,31 @@
             display: none;
             animation: step-in 0.35s ease;
             flex: 1;
-            position: relative;
-            z-index: 1;
+            flex-direction: column;
         }
         .step.active {
             display: flex;
-            flex-direction: column;
         }
         @keyframes step-in {
             from { opacity: 0; transform: translateX(14px); }
             to { opacity: 1; transform: translateX(0); }
         }
         .step h2 {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 800;
             color: var(--color-white);
             margin-bottom: 4px;
             line-height: 1.35;
         }
         .step .sub {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--color-muted);
             margin-bottom: 16px;
             line-height: 1.6;
         }
         .form-group {
             flex: 1;
+            min-width: 0;
         }
         .field {
             display: flex;
@@ -193,10 +198,12 @@
             background: var(--darker-bg);
             border: 1.5px solid var(--border-color);
             border-radius: 13px;
-            padding: 11px 12px;
+            padding: 8px 12px;
             margin-bottom: 10px;
-            transition: all 0.2s ease;
+            transition: border-color 0.2s, background 0.2s;
             position: relative;
+            min-height: 52px;
+            width: 100%;
         }
         .field:focus-within {
             border-color: var(--color-primary);
@@ -204,26 +211,32 @@
             box-shadow: 0 0 0 4px rgba(255, 90, 0, 0.08);
         }
         .field > i {
-            font-size: 1.15rem;
+            font-size: 1.2rem;
             color: var(--color-primary);
             flex-shrink: 0;
+            line-height: 1;
         }
         .field input {
             flex: 1;
             min-width: 0;
+            width: 100%;
             border: none;
             outline: none;
             background: transparent;
             font-family: inherit;
-            font-size: 0.92rem;
+            font-size: 16px;
             font-weight: 600;
             color: var(--color-white);
             -webkit-appearance: none;
             appearance: none;
+            line-height: 1.4;
+            padding: 4px 0;
         }
         .field input::placeholder {
             color: var(--color-muted);
             font-weight: 500;
+            font-size: 15px;
+            opacity: 0.85;
         }
         .field-hint {
             font-size: 0.68rem;
@@ -236,7 +249,11 @@
         .cc-wrapper {
             position: relative;
             flex-shrink: 0;
-            z-index: 5;
+            display: flex;
+            align-items: center;
+            border-left: 1px solid var(--border-color);
+            padding-left: 8px;
+            margin-left: 2px;
         }
         .cc-trigger {
             display: flex;
@@ -244,14 +261,13 @@
             gap: 5px;
             background: transparent;
             border: none;
-            border-left: 1px solid var(--border-color);
-            padding: 3px 4px 3px 8px;
+            padding: 4px 4px 4px 2px;
             cursor: pointer;
             font-family: inherit;
             color: var(--color-white);
             border-radius: 8px;
             transition: background 0.2s;
-            height: 30px;
+            min-height: 32px;
         }
         .cc-trigger:hover {
             background: rgba(255, 90, 0, 0.08);
@@ -274,11 +290,11 @@
             color: var(--color-primary);
             direction: ltr;
             white-space: nowrap;
-            min-width: 32px;
+            min-width: 30px;
             text-align: center;
         }
         .cc-caret {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--color-muted);
             transition: transform 0.2s;
             flex-shrink: 0;
@@ -286,41 +302,92 @@
         .cc-wrapper.open .cc-caret {
             transform: rotate(180deg);
         }
+        .cc-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 690;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            -webkit-backdrop-filter: blur(2px);
+            backdrop-filter: blur(2px);
+        }
+        .cc-backdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
         .cc-menu {
-            position: absolute;
-            top: calc(100% + 10px);
-            right: -4px;
-            width: 300px;
-            max-width: calc(100vw - 36px);
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -48%) scale(0.96);
+            width: calc(100vw - 32px);
+            max-width: 400px;
+            max-height: 72vh;
             background: #fff;
-            border-radius: 14px;
-            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.22);
+            border-radius: 18px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
             border: 1px solid var(--border-color);
             z-index: 700;
             display: none;
             flex-direction: column;
             overflow: hidden;
-            animation: menu-in 0.2s ease;
-        }
-        @keyframes menu-in {
-            from { opacity: 0; transform: translateY(-6px) scale(0.97); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease, transform 0.25s ease;
         }
         .cc-wrapper.open .cc-menu {
             display: flex;
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        .cc-menu-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px 12px;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+        .cc-menu-header h3 {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--color-white);
+            margin: 0;
+        }
+        .cc-menu-close {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: none;
+            background: var(--darker-bg);
+            color: var(--color-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .cc-menu-close:hover {
+            background: rgba(255, 90, 0, 0.1);
+            color: var(--color-primary);
         }
         .cc-search {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 9px 12px;
+            padding: 10px 14px;
             border-bottom: 1px solid var(--border-color);
             background: var(--darker-bg);
             flex-shrink: 0;
         }
         .cc-search i {
             color: var(--color-muted);
-            font-size: 1rem;
+            font-size: 1.1rem;
             flex-shrink: 0;
         }
         .cc-search input {
@@ -329,29 +396,36 @@
             outline: none;
             background: transparent;
             font-family: inherit;
-            font-size: 0.82rem;
+            font-size: 16px;
             color: var(--color-white);
             font-weight: 600;
             min-width: 0;
+            padding: 4px 0;
+            -webkit-appearance: none;
+            appearance: none;
         }
         .cc-search input::placeholder {
             color: var(--color-muted);
             font-weight: 500;
+            font-size: 14px;
         }
         .cc-list {
             overflow-y: auto;
-            max-height: 220px;
+            overflow-x: hidden;
+            flex: 1;
             padding: 4px;
             -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
         }
         .cc-item {
             display: flex;
             align-items: center;
-            gap: 9px;
-            padding: 8px 9px;
-            border-radius: 9px;
+            gap: 10px;
+            padding: 10px 10px;
+            border-radius: 10px;
             cursor: pointer;
             transition: background 0.15s;
+            min-width: 0;
         }
         .cc-item:hover {
             background: rgba(255, 90, 0, 0.07);
@@ -360,8 +434,8 @@
             background: rgba(255, 90, 0, 0.12);
         }
         .cc-item-flag {
-            width: 24px;
-            height: 16px;
+            width: 26px;
+            height: 18px;
             object-fit: cover;
             border-radius: 3px;
             flex-shrink: 0;
@@ -370,7 +444,7 @@
         .cc-item-name {
             flex: 1;
             min-width: 0;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 600;
             color: var(--color-white);
             white-space: nowrap;
@@ -378,17 +452,17 @@
             text-overflow: ellipsis;
         }
         .cc-item-dial {
-            font-size: 0.74rem;
+            font-size: 0.78rem;
             font-weight: 800;
             color: var(--color-primary);
             direction: ltr;
             flex-shrink: 0;
         }
         .cc-empty {
-            padding: 20px 14px;
+            padding: 30px 16px;
             text-align: center;
             color: var(--color-muted);
-            font-size: 0.8rem;
+            font-size: 0.82rem;
             font-weight: 600;
         }
         .error {
@@ -406,12 +480,12 @@
             color: #fff;
             border: none;
             border-radius: 13px;
-            padding: 13px;
+            padding: 14px;
             font-family: inherit;
-            font-size: 0.92rem;
+            font-size: 0.94rem;
             font-weight: 800;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: background 0.2s;
             box-shadow: 0 6px 18px rgba(255, 90, 0, 0.28);
             display: flex;
             align-items: center;
@@ -420,10 +494,10 @@
             margin-top: 4px;
             -webkit-appearance: none;
             appearance: none;
+            line-height: 1.3;
         }
         .btn:hover {
             background: #e04e00;
-            transform: translateY(-1px);
         }
         .btn:active {
             transform: scale(0.98);
@@ -431,7 +505,6 @@
         .btn:disabled {
             opacity: 0.65;
             cursor: not-allowed;
-            transform: none;
         }
         .btn.ghost {
             background: transparent;
@@ -442,7 +515,6 @@
         .btn.ghost:hover {
             background: rgba(0, 0, 0, 0.04);
             color: var(--color-primary);
-            transform: none;
         }
         .back-row {
             display: flex;
@@ -451,7 +523,8 @@
         }
         .actions {
             margin-top: auto;
-            padding-top: 14px;
+            padding-top: 12px;
+            flex-shrink: 0;
         }
         .summary {
             background: var(--darker-bg);
@@ -465,14 +538,15 @@
             align-items: center;
             justify-content: space-between;
             gap: 10px;
-            padding: 10px 12px;
+            padding: 11px 12px;
             border-bottom: 1px solid var(--border-color);
+            min-width: 0;
         }
         .summary-row:last-child {
             border-bottom: none;
         }
         .summary-row .lbl {
-            font-size: 0.74rem;
+            font-size: 0.75rem;
             color: var(--color-muted);
             font-weight: 600;
             display: flex;
@@ -482,15 +556,14 @@
         }
         .summary-row .lbl i {
             color: var(--color-primary);
-            font-size: 0.95rem;
+            font-size: 1rem;
         }
         .summary-row .val {
             font-size: 0.8rem;
             font-weight: 800;
             color: var(--color-white);
             text-align: left;
-            word-break: break-word;
-            max-width: 62%;
+            max-width: 60%;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -511,16 +584,16 @@
             flex-shrink: 0;
         }
         .success-icon {
-            width: 76px;
-            height: 76px;
+            width: 72px;
+            height: 72px;
             border-radius: 50%;
             background: rgba(0, 177, 79, 0.12);
             color: #00B14F;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.6rem;
-            margin: 8px auto 12px;
+            font-size: 2.4rem;
+            margin: 6px auto 12px;
             animation: pop-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         @keyframes pop-in {
@@ -538,42 +611,55 @@
             padding: 2px 7px;
             border-radius: 20px;
             font-weight: 700;
-            margin-right: 5px;
+            margin-left: 5px;
             display: inline-block;
             vertical-align: middle;
         }
-        @media (min-width: 400px) {
+        @media (min-width: 480px) {
             .page {
-                padding: 24px 22px 24px;
-                padding-top: max(24px, env(safe-area-inset-top, 24px));
-                padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));
+                padding-top: max(28px, env(safe-area-inset-top, 28px));
+                padding-bottom: max(28px, env(safe-area-inset-bottom, 28px));
+                padding-left: max(24px, env(safe-area-inset-left, 24px));
+                padding-right: max(24px, env(safe-area-inset-right, 24px));
+            }
+            .page-inner {
+                padding: 12px 0;
             }
             .brand-logo {
-                width: 115px;
-                height: 115px;
+                width: 105px;
+                height: 105px;
             }
             .brand h1 {
-                font-size: 1.5rem;
+                font-size: 1.45rem;
             }
             .brand p {
-                font-size: 0.84rem;
+                font-size: 0.83rem;
+            }
+            .progress {
+                margin-bottom: 20px;
             }
             .step h2 {
-                font-size: 1.18rem;
+                font-size: 1.15rem;
             }
             .step .sub {
                 font-size: 0.83rem;
+                margin-bottom: 20px;
             }
             .field {
-                padding: 12px 14px;
+                padding: 10px 14px;
+                margin-bottom: 12px;
+                min-height: 56px;
+            }
+            .field > i {
+                font-size: 1.25rem;
             }
             .field input {
-                font-size: 0.95rem;
+                font-size: 16px;
             }
             .cc-trigger {
-                padding: 4px 6px 4px 10px;
-                height: 32px;
+                padding: 5px 6px 5px 4px;
                 gap: 6px;
+                min-height: 34px;
             }
             .cc-flag {
                 width: 24px;
@@ -581,72 +667,16 @@
             }
             .cc-dial {
                 font-size: 0.82rem;
-                min-width: 36px;
+                min-width: 34px;
             }
-            .cc-menu {
-                width: 310px;
+            .cc-item {
+                padding: 11px 12px;
             }
-            .cc-list {
-                max-height: 260px;
-            }
-            .btn {
-                padding: 14px;
-                font-size: 0.94rem;
-            }
-            .summary-row {
-                padding: 11px 14px;
-            }
-            .summary-row .lbl {
-                font-size: 0.78rem;
-            }
-            .summary-row .val {
-                font-size: 0.85rem;
-            }
-            .success-icon {
-                width: 84px;
-                height: 84px;
-                font-size: 2.8rem;
-            }
-        }
-        @media (min-width: 640px) {
-            .page {
-                padding: 40px 32px 32px;
-                padding-top: max(40px, env(safe-area-inset-top, 40px));
-                padding-bottom: max(32px, env(safe-area-inset-bottom, 32px));
-            }
-            .brand {
-                margin-bottom: 22px;
-            }
-            .brand-logo {
-                width: 130px;
-                height: 130px;
-            }
-            .brand h1 {
-                font-size: 1.65rem;
-            }
-            .brand p {
+            .cc-item-name {
                 font-size: 0.88rem;
             }
-            .progress {
-                margin-bottom: 24px;
-            }
-            .step h2 {
-                font-size: 1.28rem;
-            }
-            .step .sub {
-                font-size: 0.87rem;
-                margin-bottom: 20px;
-            }
-            .field {
-                padding: 13px 16px;
-                border-radius: 14px;
-                margin-bottom: 12px;
-            }
-            .field > i {
-                font-size: 1.25rem;
-            }
-            .field input {
-                font-size: 0.98rem;
+            .cc-item-dial {
+                font-size: 0.82rem;
             }
             .btn {
                 padding: 15px;
@@ -654,58 +684,65 @@
                 border-radius: 14px;
             }
             .summary-row {
-                padding: 12px 16px;
+                padding: 12px 14px;
+            }
+            .summary-row .lbl {
+                font-size: 0.78rem;
+            }
+            .summary-row .val {
+                font-size: 0.84rem;
             }
             .success-icon {
-                width: 92px;
-                height: 92px;
-                font-size: 3rem;
+                width: 80px;
+                height: 80px;
+                font-size: 2.7rem;
             }
         }
         @media (max-width: 360px) {
             .page {
-                padding: 16px 14px 16px;
-                padding-top: max(16px, env(safe-area-inset-top, 16px));
-                padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
-            }
-            .brand {
-                margin-bottom: 12px;
+                padding-top: max(12px, env(safe-area-inset-top, 12px));
+                padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
+                padding-left: max(12px, env(safe-area-inset-left, 12px));
+                padding-right: max(12px, env(safe-area-inset-right, 12px));
             }
             .brand-logo {
-                width: 85px;
-                height: 85px;
+                width: 76px;
+                height: 76px;
             }
             .brand h1 {
-                font-size: 1.25rem;
+                font-size: 1.15rem;
             }
             .brand p {
-                font-size: 0.74rem;
+                font-size: 0.72rem;
             }
             .progress {
-                margin-bottom: 14px;
+                margin-bottom: 12px;
             }
             .step h2 {
-                font-size: 1rem;
+                font-size: 0.98rem;
             }
             .step .sub {
-                font-size: 0.75rem;
-                margin-bottom: 14px;
+                font-size: 0.74rem;
+                margin-bottom: 12px;
             }
             .field {
-                padding: 10px 10px;
+                padding: 7px 10px;
                 gap: 6px;
-                border-radius: 12px;
+                min-height: 48px;
             }
             .field > i {
                 font-size: 1.05rem;
             }
             .field input {
-                font-size: 0.86rem;
+                font-size: 16px;
+            }
+            .field input::placeholder {
+                font-size: 14px;
             }
             .cc-trigger {
-                padding: 3px 3px 3px 6px;
+                padding: 3px 3px 3px 2px;
                 gap: 4px;
-                height: 28px;
+                min-height: 30px;
             }
             .cc-flag {
                 width: 20px;
@@ -713,20 +750,16 @@
             }
             .cc-dial {
                 font-size: 0.72rem;
-                min-width: 28px;
+                min-width: 26px;
             }
             .cc-caret {
-                font-size: 0.72rem;
-            }
-            .cc-menu {
-                width: 270px;
-                right: -30px;
+                font-size: 0.68rem;
             }
             .cc-item-name {
-                font-size: 0.75rem;
+                font-size: 0.78rem;
             }
             .cc-item-dial {
-                font-size: 0.7rem;
+                font-size: 0.72rem;
             }
             .btn {
                 padding: 12px;
@@ -734,40 +767,33 @@
                 border-radius: 12px;
             }
             .error {
-                font-size: 0.68rem;
+                font-size: 0.66rem;
             }
             .summary-row {
                 padding: 9px 10px;
             }
             .summary-row .lbl {
-                font-size: 0.7rem;
+                font-size: 0.68rem;
             }
             .summary-row .val {
-                font-size: 0.75rem;
+                font-size: 0.72rem;
             }
             .success-icon {
-                width: 68px;
-                height: 68px;
-                font-size: 2.3rem;
+                width: 62px;
+                height: 62px;
+                font-size: 2rem;
             }
         }
-        @media (max-height: 600px) and (orientation: landscape) {
-            .page {
-                padding: 12px 20px;
-                padding-top: max(12px, env(safe-area-inset-top, 12px));
-                padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
-                max-width: 100%;
+        @media (max-height: 640px) {
+            .brand-logo {
+                width: 70px;
+                height: 70px;
             }
             .brand {
-                margin-bottom: 8px;
-            }
-            .brand-logo {
-                width: 60px;
-                height: 60px;
-                margin-bottom: 0;
+                margin-bottom: 10px;
             }
             .brand h1 {
-                font-size: 1.1rem;
+                font-size: 1.15rem;
             }
             .brand p {
                 font-size: 0.72rem;
@@ -775,41 +801,60 @@
             .progress {
                 margin-bottom: 10px;
             }
-            .step h2 {
-                font-size: 1rem;
-            }
             .step .sub {
-                font-size: 0.76rem;
-                margin-bottom: 10px;
-            }
-            .field {
-                padding: 9px 12px;
-                margin-bottom: 8px;
-            }
-            .btn {
-                padding: 11px;
-                font-size: 0.86rem;
+                margin-bottom: 12px;
             }
             .success-icon {
                 width: 60px;
                 height: 60px;
                 font-size: 2rem;
-                margin: 6px auto 8px;
+                margin: 4px auto 8px;
             }
         }
-        @media (max-height: 700px) {
+        @media (max-height: 550px) and (orientation: landscape) {
+            .page {
+                max-width: 720px;
+                padding-top: max(10px, env(safe-area-inset-top, 10px));
+                padding-bottom: max(10px, env(safe-area-inset-bottom, 10px));
+            }
             .brand {
-                margin-bottom: 12px;
+                margin-bottom: 6px;
             }
             .brand-logo {
-                width: 90px;
-                height: 90px;
+                width: 50px;
+                height: 50px;
+                margin-bottom: 0;
+            }
+            .brand h1 {
+                font-size: 1rem;
+            }
+            .brand p {
+                font-size: 0.68rem;
             }
             .progress {
-                margin-bottom: 14px;
+                margin-bottom: 8px;
+            }
+            .step h2 {
+                font-size: 0.95rem;
             }
             .step .sub {
-                margin-bottom: 14px;
+                font-size: 0.72rem;
+                margin-bottom: 8px;
+            }
+            .field {
+                padding: 6px 10px;
+                margin-bottom: 6px;
+                min-height: 44px;
+            }
+            .btn {
+                padding: 10px;
+                font-size: 0.84rem;
+            }
+            .success-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.7rem;
+                margin: 2px auto 6px;
             }
         }
     </style>
@@ -819,123 +864,133 @@
         <div class="page-top-deco"></div>
         <div class="page-top-deco2"></div>
 
-        <div class="brand">
-            <img class="brand-logo" src="https://i.ibb.co/LDHSxKZg/Whats-App-Image-2026-09-21-at-12-18-12-AM-removebg-preview.png" alt="FastOrder">
-            <h1>إنشاء حساب</h1>
-            <p>انضم إلى FastOrder وابدأ الطلب في دقائق</p>
-        </div>
+        <div class="page-inner">
+            <div class="brand">
+                <img class="brand-logo" src="https://i.ibb.co/LDHSxKZg/Whats-App-Image-2026-09-21-at-12-18-12-AM-removebg-preview.png" alt="FastOrder">
+                <h1>إنشاء حساب</h1>
+                <p>انضم إلى FastOrder وابدأ الطلب في دقائق</p>
+            </div>
 
-        <div class="progress">
-            <span class="dot active" data-dot="1"></span>
-            <span class="dot" data-dot="2"></span>
-            <span class="dot" data-dot="3"></span>
-        </div>
+            <div class="progress">
+                <span class="dot active" data-dot="1"></span>
+                <span class="dot" data-dot="2"></span>
+                <span class="dot" data-dot="3"></span>
+            </div>
 
-        <div class="step active" data-step="1">
-            <h2>رقم الهاتف</h2>
-            <p class="sub">اختر دولتك ثم أدخل رقم هاتفك للبدء، سنستخدمه لتأكيد طلباتك والتواصل معك.</p>
-            <div class="form-group">
-                <div class="field">
-                    <i class="las la-phone"></i>
-                    <div class="cc-wrapper" id="ccWrapper">
-                        <button type="button" class="cc-trigger" id="ccTrigger">
-                            <img class="cc-flag" id="ccFlag" src="https://flagcdn.com/w40/eg.png" alt="EG">
-                            <span class="cc-dial" id="ccDial">+20</span>
-                            <i class="las la-angle-down cc-caret"></i>
+            <div class="step active" data-step="1">
+                <h2>رقم الهاتف</h2>
+                <p class="sub">اختر دولتك ثم أدخل رقم هاتفك للبدء، سنستخدمه لتأكيد طلباتك والتواصل معك.</p>
+                <div class="form-group">
+                    <div class="field">
+                        <i class="las la-phone"></i>
+                        <div class="cc-wrapper" id="ccWrapper">
+                            <button type="button" class="cc-trigger" id="ccTrigger">
+                                <img class="cc-flag" id="ccFlag" src="https://flagcdn.com/w40/eg.png" alt="EG">
+                                <span class="cc-dial" id="ccDial">+20</span>
+                                <i class="las la-angle-down cc-caret"></i>
+                            </button>
+                        </div>
+                        <input type="tel" id="phoneInput" placeholder="أدخل رقم هاتفك" inputmode="numeric" autocomplete="tel" maxlength="15">
+                    </div>
+                    <span class="error" id="phoneError"></span>
+                </div>
+                <div class="actions">
+                    <button type="button" class="btn" id="next1">
+                        <span>متابعة</span>
+                        <i class="las la-arrow-left"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="step" data-step="2">
+                <h2>معلوماتك الشخصية</h2>
+                <p class="sub">أدخل اسمك وبريدك الإلكتروني، ويمكنك إضافة رمز التعريف إن كان لديك.</p>
+                <div class="form-group">
+                    <div class="field">
+                        <i class="las la-user"></i>
+                        <input type="text" id="nameInput" placeholder="أدخل اسمك بالكامل" autocomplete="name" maxlength="40">
+                    </div>
+                    <span class="error" id="nameError"></span>
+                    <div class="field">
+                        <i class="las la-envelope"></i>
+                        <input type="email" id="emailInput" placeholder="أدخل بريدك الإلكتروني" autocomplete="email" maxlength="60" dir="ltr" style="text-align:left;">
+                    </div>
+                    <span class="error" id="emailError"></span>
+                    <div class="field">
+                        <i class="las la-id-badge"></i>
+                        <input type="text" id="refInput" placeholder="أدخل رمز التعريف" maxlength="30" dir="ltr" style="text-align:left;">
+                    </div>
+                    <span class="field-hint"><span class="optional-badge">اختياري</span> رمز التعريف هو كود دعوة من صديق أو شريك</span>
+                </div>
+                <div class="actions">
+                    <button type="button" class="btn" id="next2">
+                        <span>متابعة</span>
+                        <i class="las la-arrow-left"></i>
+                    </button>
+                    <div class="back-row">
+                        <button type="button" class="btn ghost" data-back="1">
+                            <i class="las la-arrow-right"></i>
+                            <span>رجوع</span>
                         </button>
-                        <div class="cc-menu" id="ccMenu">
-                            <div class="cc-search">
-                                <i class="las la-search"></i>
-                                <input type="text" id="ccSearch" placeholder="ابحث عن الدولة..." autocomplete="off">
-                            </div>
-                            <div class="cc-list" id="ccList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step" data-step="3">
+                <div class="center">
+                    <div class="success-icon"><i class="las la-check"></i></div>
+                    <h2>مراجعة البيانات</h2>
+                    <p class="sub">تأكد من صحة معلوماتك قبل إنشاء الحساب.</p>
+                </div>
+                <div class="form-group">
+                    <div class="summary">
+                        <div class="summary-row">
+                            <span class="lbl"><i class="las la-phone"></i> الهاتف</span>
+                            <span class="val" id="sumPhone">--</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="lbl"><i class="las la-user"></i> الاسم</span>
+                            <span class="val" id="sumName">--</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="lbl"><i class="las la-envelope"></i> الإيميل</span>
+                            <span class="val" id="sumEmail">--</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="lbl"><i class="las la-id-badge"></i> رمز التعريف</span>
+                            <span class="val" id="sumRef">--</span>
                         </div>
                     </div>
-                    <input type="tel" id="phoneInput" placeholder="أدخل رقم هاتفك" inputmode="numeric" autocomplete="tel" maxlength="15">
                 </div>
-                <span class="error" id="phoneError"></span>
-            </div>
-            <div class="actions">
-                <button type="button" class="btn" id="next1">
-                    <span>متابعة</span>
-                    <i class="las la-arrow-left"></i>
-                </button>
-            </div>
-        </div>
-
-        <div class="step" data-step="2">
-            <h2>معلوماتك الشخصية</h2>
-            <p class="sub">أدخل اسمك وبريدك الإلكتروني، ويمكنك إضافة رمز التعريف إن كان لديك.</p>
-            <div class="form-group">
-                <div class="field">
-                    <i class="las la-user"></i>
-                    <input type="text" id="nameInput" placeholder="أدخل اسمك بالكامل" autocomplete="name" maxlength="40">
-                </div>
-                <span class="error" id="nameError"></span>
-                <div class="field">
-                    <i class="las la-envelope"></i>
-                    <input type="email" id="emailInput" placeholder="أدخل بريدك الإلكتروني" autocomplete="email" maxlength="60" dir="ltr" style="text-align:left;">
-                </div>
-                <span class="error" id="emailError"></span>
-                <div class="field">
-                    <i class="las la-id-badge"></i>
-                    <input type="text" id="refInput" placeholder="أدخل رمز التعريف" maxlength="30" dir="ltr" style="text-align:left;">
-                </div>
-                <span class="field-hint"><span class="optional-badge">اختياري</span> رمز التعريف هو كود دعوة من صديق أو شريك</span>
-            </div>
-            <div class="actions">
-                <button type="button" class="btn" id="next2">
-                    <span>متابعة</span>
-                    <i class="las la-arrow-left"></i>
-                </button>
-                <div class="back-row">
-                    <button type="button" class="btn ghost" data-back="1">
-                        <i class="las la-arrow-right"></i>
-                        <span>رجوع</span>
+                <div class="actions">
+                    <button type="button" class="btn" id="finishBtn">
+                        <i class="las la-check-circle"></i>
+                        <span>إنشاء الحساب والبدء</span>
                     </button>
+                    <div class="back-row">
+                        <button type="button" class="btn ghost" data-back="2">
+                            <i class="las la-arrow-right"></i>
+                            <span>تعديل البيانات</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="step" data-step="3">
-            <div class="center">
-                <div class="success-icon"><i class="las la-check"></i></div>
-                <h2>مراجعة البيانات</h2>
-                <p class="sub">تأكد من صحة معلوماتك قبل إنشاء الحساب.</p>
-            </div>
-            <div class="form-group">
-                <div class="summary">
-                    <div class="summary-row">
-                        <span class="lbl"><i class="las la-phone"></i> الهاتف</span>
-                        <span class="val" id="sumPhone">--</span>
-                    </div>
-                    <div class="summary-row">
-                        <span class="lbl"><i class="las la-user"></i> الاسم</span>
-                        <span class="val" id="sumName">--</span>
-                    </div>
-                    <div class="summary-row">
-                        <span class="lbl"><i class="las la-envelope"></i> الإيميل</span>
-                        <span class="val" id="sumEmail">--</span>
-                    </div>
-                    <div class="summary-row">
-                        <span class="lbl"><i class="las la-id-badge"></i> رمز التعريف</span>
-                        <span class="val" id="sumRef">--</span>
-                    </div>
-                </div>
-            </div>
-            <div class="actions">
-                <button type="button" class="btn" id="finishBtn">
-                    <i class="las la-check-circle"></i>
-                    <span>إنشاء الحساب والبدء</span>
-                </button>
-                <div class="back-row">
-                    <button type="button" class="btn ghost" data-back="2">
-                        <i class="las la-arrow-right"></i>
-                        <span>تعديل البيانات</span>
-                    </button>
-                </div>
-            </div>
+    <div class="cc-backdrop" id="ccBackdrop"></div>
+    <div class="cc-menu" id="ccMenu">
+        <div class="cc-menu-header">
+            <h3>اختر الدولة</h3>
+            <button type="button" class="cc-menu-close" id="ccMenuClose" aria-label="إغلاق">
+                <i class="las la-times"></i>
+            </button>
         </div>
+        <div class="cc-search">
+            <i class="las la-search"></i>
+            <input type="text" id="ccSearch" placeholder="ابحث بالعربي أو الروسي أو الإنجليزي..." autocomplete="off">
+        </div>
+        <div class="cc-list" id="ccList"></div>
     </div>
 
     <script>
@@ -1233,6 +1288,8 @@
             var ccFlag = document.getElementById('ccFlag');
             var ccDial = document.getElementById('ccDial');
             var ccMenu = document.getElementById('ccMenu');
+            var ccBackdrop = document.getElementById('ccBackdrop');
+            var ccMenuClose = document.getElementById('ccMenuClose');
             var ccSearch = document.getElementById('ccSearch');
             var ccList = document.getElementById('ccList');
 
@@ -1323,13 +1380,17 @@
 
             function openCcMenu() {
                 ccWrapper.classList.add('open');
+                ccBackdrop.classList.add('active');
+                document.body.style.overflow = 'hidden';
                 ccSearch.value = '';
-                setTimeout(function() { ccSearch.focus(); }, 100);
+                setTimeout(function() { ccSearch.focus(); }, 150);
                 renderCcList('');
             }
 
             function closeCcMenu() {
                 ccWrapper.classList.remove('open');
+                ccBackdrop.classList.remove('active');
+                document.body.style.overflow = '';
             }
 
             ccTrigger.addEventListener('click', function(e) {
@@ -1339,6 +1400,14 @@
                 } else {
                     openCcMenu();
                 }
+            });
+
+            ccMenuClose.addEventListener('click', function() {
+                closeCcMenu();
+            });
+
+            ccBackdrop.addEventListener('click', function() {
+                closeCcMenu();
             });
 
             ccSearch.addEventListener('input', function() {
@@ -1351,8 +1420,8 @@
                 }
             });
 
-            document.addEventListener('click', function(e) {
-                if (ccWrapper.classList.contains('open') && !ccWrapper.contains(e.target)) {
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && ccWrapper.classList.contains('open')) {
                     closeCcMenu();
                 }
             });
