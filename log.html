@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#FF5A00">
+    <title>إنشاء حساب - FastOrder</title>
+    <meta name="description" content="أنشئ حسابك في FastOrder واطلب طعامك المفضل">
+    <link rel="icon" type="image/png" href="https://i.ibb.co/LDHSxKZg/Whats-App-Image-2026-09-21-at-12-18-12-AM-removebg-preview.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --color-primary: #FF5A00;
+            --color-secondary: #FF8C38;
+            --color-accent: #FFB800;
+            --color-background: #FFFFFF;
+            --color-white: #1A1A1A;
+            --color-muted: #717171;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --darker-bg: #F0F4F3;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            width: 100%;
+        }
+        body {
+            font-family: 'Noto Sans Arabic', system-ui, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-white);
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FF8C38;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FF5A00;
+        }
+        .page {
+            width: 100%;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            padding: 30px 22px 28px;
+            padding-top: max(30px, env(safe-area-inset-top, 30px));
+            padding-bottom: max(28px, env(safe-area-inset-bottom, 28px));
+            position: relative;
+        }
+        .page-top-deco {
+            position: absolute;
+            top: -120px;
+            right: -120px;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 90, 0, 0.10), rgba(255, 90, 0, 0) 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .page-top-deco2 {
+            position: absolute;
+            top: 40px;
+            left: -140px;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 184, 0, 0.10), rgba(255, 184, 0, 0) 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .brand {
+            text-align: center;
+            margin-bottom: 22px;
+            position: relative;
+            z-index: 1;
+        }
+        .brand-logo {
+            width: 130px;
+            height: 130px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto 6px;
+            background: transparent;
+            border: none;
+            padding: 0;
+            filter: drop-shadow(0 8px 20px rgba(255, 90, 0, 0.15));
+        }
+        .brand h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--color-white);
+            margin: 0;
+        }
+        .brand p {
+            font-size: 0.86rem;
+            color: var(--color-muted);
+            margin-top: 4px;
+        }
+        .progress {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 26px;
+            position: relative;
+            z-index: 1;
+        }
+        .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.12);
+            transition: all 0.3s ease;
+        }
+        .dot.active {
+            background: var(--color-primary);
+            width: 28px;
+            border-radius: 8px;
+        }
+        .dot.done {
+            background: var(--color-primary);
+            opacity: 0.55;
+        }
+        .step {
+            display: none;
+            animation: step-in 0.35s ease;
+            flex: 1;
+            position: relative;
+            z-index: 1;
+        }
+        .step.active {
+            display: flex;
+            flex-direction: column;
+        }
+        @keyframes step-in {
+            from { opacity: 0; transform: translateX(14px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .step h2 {
+            font-size: 1.22rem;
+            font-weight: 800;
+            color: var(--color-white);
+            margin-bottom: 4px;
+        }
+        .step .sub {
+            font-size: 0.85rem;
+            color: var(--color-muted);
+            margin-bottom: 22px;
+            line-height: 1.6;
+        }
+        .form-group {
+            flex: 1;
+        }
+        .field {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--darker-bg);
+            border: 1.5px solid var(--border-color);
+            border-radius: 14px;
+            padding: 12px 14px;
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .field:focus-within {
+            border-color: var(--color-primary);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(255, 90, 0, 0.08);
+        }
+        .field > i {
+            font-size: 1.25rem;
+            color: var(--color-primary);
+            flex-shrink: 0;
+        }
+        .field input {
+            flex: 1;
+            min-width: 0;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--color-white);
+        }
+        .field input::placeholder {
+            color: var(--color-muted);
+            font-weight: 500;
+        }
+        .field-hint {
+            font-size: 0.68rem;
+            color: var(--color-muted);
+            font-weight: 600;
+            margin: -8px 4px 12px;
+            display: block;
+            line-height: 1.5;
+        }
+        .cc-wrapper {
+            position: relative;
+            flex-shrink: 0;
+            z-index: 5;
+        }
+        .cc-trigger {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            border: none;
+            border-left: 1px solid var(--border-color);
+            padding: 4px 6px 4px 10px;
+            cursor: pointer;
+            font-family: inherit;
+            color: var(--color-white);
+            -webkit-tap-highlight-color: transparent;
+            border-radius: 8px;
+            transition: background 0.2s;
+            height: 32px;
+        }
+        .cc-trigger:hover {
+            background: rgba(255, 90, 0, 0.08);
+        }
+        .cc-trigger:active {
+            transform: scale(0.97);
+        }
+        .cc-flag {
+            width: 24px;
+            height: 16px;
+            object-fit: cover;
+            border-radius: 2px;
+            display: block;
+            flex-shrink: 0;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+        }
+        .cc-dial {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: var(--color-primary);
+            direction: ltr;
+            white-space: nowrap;
+            min-width: 36px;
+            text-align: center;
+        }
+        .cc-caret {
+            font-size: 0.85rem;
+            color: var(--color-muted);
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+        .cc-wrapper.open .cc-caret {
+            transform: rotate(180deg);
+        }
+        .cc-menu {
+            position: absolute;
+            top: calc(100% + 12px);
+            right: -8px;
+            width: 310px;
+            max-width: calc(100vw - 50px);
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            z-index: 700;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            animation: menu-in 0.2s ease;
+        }
+        @keyframes menu-in {
+            from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .cc-wrapper.open .cc-menu {
+            display: flex;
+        }
+        .cc-search {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--darker-bg);
+            flex-shrink: 0;
+        }
+        .cc-search i {
+            color: var(--color-muted);
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .cc-search input {
+            flex: 1;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 0.85rem;
+            color: var(--color-white);
+            font-weight: 600;
+        }
+        .cc-search input::placeholder {
+            color: var(--color-muted);
+            font-weight: 500;
+        }
+        .cc-list {
+            overflow-y: auto;
+            max-height: 260px;
+            padding: 4px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .cc-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.15s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .cc-item:hover {
+            background: rgba(255, 90, 0, 0.07);
+        }
+        .cc-item.active {
+            background: rgba(255, 90, 0, 0.12);
+        }
+        .cc-item-flag {
+            width: 26px;
+            height: 18px;
+            object-fit: cover;
+            border-radius: 3px;
+            flex-shrink: 0;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+        }
+        .cc-item-name {
+            flex: 1;
+            min-width: 0;
+            font-size: 0.83rem;
+            font-weight: 600;
+            color: var(--color-white);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .cc-item-dial {
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: var(--color-primary);
+            direction: ltr;
+            flex-shrink: 0;
+        }
+        .cc-empty {
+            padding: 24px 16px;
+            text-align: center;
+            color: var(--color-muted);
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+        .error {
+            font-size: 0.74rem;
+            color: #EF4444;
+            font-weight: 600;
+            margin: -4px 4px 12px;
+            min-height: 16px;
+            display: block;
+        }
+        .btn {
+            width: 100%;
+            background: var(--color-primary);
+            color: #fff;
+            border: none;
+            border-radius: 14px;
+            padding: 15px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 18px rgba(255, 90, 0, 0.28);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            -webkit-tap-highlight-color: transparent;
+            margin-top: 6px;
+        }
+        .btn:hover {
+            background: #e04e00;
+            transform: translateY(-1px);
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+        .btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn.ghost {
+            background: transparent;
+            color: var(--color-muted);
+            box-shadow: none;
+            font-weight: 700;
+        }
+        .btn.ghost:hover {
+            background: rgba(0, 0, 0, 0.04);
+            color: var(--color-primary);
+            transform: none;
+        }
+        .back-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .actions {
+            margin-top: auto;
+            padding-top: 20px;
+        }
+        .summary {
+            background: var(--darker-bg);
+            border-radius: 16px;
+            padding: 6px 4px;
+            margin-bottom: 18px;
+            border: 1px solid var(--border-color);
+        }
+        .summary-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .summary-row:last-child {
+            border-bottom: none;
+        }
+        .summary-row .lbl {
+            font-size: 0.78rem;
+            color: var(--color-muted);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .summary-row .lbl i {
+            color: var(--color-primary);
+            font-size: 1rem;
+        }
+        .summary-row .val {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--color-white);
+            text-align: left;
+            word-break: break-word;
+            max-width: 60%;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .summary-row .val img {
+            width: 22px;
+            height: 15px;
+            object-fit: cover;
+            border-radius: 2px;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+        }
+        .success-icon {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            background: rgba(0, 177, 79, 0.12);
+            color: #00B14F;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 20px auto 16px;
+            animation: pop-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes pop-in {
+            0% { transform: scale(0); }
+            70% { transform: scale(1.12); }
+            100% { transform: scale(1); }
+        }
+        .center {
+            text-align: center;
+        }
+        .optional-badge {
+            font-size: 0.62rem;
+            color: var(--color-primary);
+            background: rgba(255, 90, 0, 0.1);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 700;
+            margin-right: 6px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        @media (min-width: 640px) {
+            .page {
+                max-width: 520px;
+                margin: 0 auto;
+                padding: 44px 34px 36px;
+                padding-top: max(44px, env(safe-area-inset-top, 44px));
+                padding-bottom: max(36px, env(safe-area-inset-bottom, 36px));
+            }
+        }
+        @media (max-width: 480px) {
+            .page {
+                padding: 24px 18px 22px;
+                padding-top: max(24px, env(safe-area-inset-top, 24px));
+                padding-bottom: max(22px, env(safe-area-inset-bottom, 22px));
+            }
+            .brand-logo {
+                width: 110px;
+                height: 110px;
+            }
+            .brand h1 {
+                font-size: 1.35rem;
+            }
+            .brand p {
+                font-size: 0.8rem;
+            }
+            .cc-menu {
+                width: 280px;
+                right: -60px;
+            }
+            .cc-trigger {
+                padding: 4px 4px 4px 8px;
+                gap: 5px;
+            }
+            .cc-dial {
+                font-size: 0.76rem;
+                min-width: 30px;
+            }
+            .cc-flag {
+                width: 22px;
+                height: 15px;
+            }
+            .step h2 {
+                font-size: 1.12rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="page-top-deco"></div>
+        <div class="page-top-deco2"></div>
+
+        <div class="brand">
+            <img class="brand-logo" src="https://i.ibb.co/LDHSxKZg/Whats-App-Image-2026-09-21-at-12-18-12-AM-removebg-preview.png" alt="FastOrder">
+            <h1>إنشاء حساب</h1>
+            <p>انضم إلى FastOrder وابدأ الطلب في دقائق</p>
+        </div>
+
+        <div class="progress">
+            <span class="dot active" data-dot="1"></span>
+            <span class="dot" data-dot="2"></span>
+            <span class="dot" data-dot="3"></span>
+        </div>
+
+        <div class="step active" data-step="1">
+            <h2>رقم الهاتف</h2>
+            <p class="sub">اختر دولتك ثم أدخل رقم هاتفك للبدء، سنستخدمه لتأكيد طلباتك والتواصل معك.</p>
+            <div class="form-group">
+                <div class="field">
+                    <i class="las la-phone"></i>
+                    <div class="cc-wrapper" id="ccWrapper">
+                        <button type="button" class="cc-trigger" id="ccTrigger">
+                            <img class="cc-flag" id="ccFlag" src="https://flagcdn.com/w40/eg.png" alt="EG">
+                            <span class="cc-dial" id="ccDial">+20</span>
+                            <i class="las la-angle-down cc-caret"></i>
+                        </button>
+                        <div class="cc-menu" id="ccMenu">
+                            <div class="cc-search">
+                                <i class="las la-search"></i>
+                                <input type="text" id="ccSearch" placeholder="ابحث عن الدولة بالعربي أو الروسي أو الإنجليزي..." autocomplete="off">
+                            </div>
+                            <div class="cc-list" id="ccList"></div>
+                        </div>
+                    </div>
+                    <input type="tel" id="phoneInput" placeholder="أدخل رقم هاتفك" inputmode="numeric" autocomplete="tel" maxlength="15">
+                </div>
+                <span class="error" id="phoneError"></span>
+            </div>
+            <div class="actions">
+                <button type="button" class="btn" id="next1">
+                    <span>متابعة</span>
+                    <i class="las la-arrow-left"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="step" data-step="2">
+            <h2>معلوماتك الشخصية</h2>
+            <p class="sub">أدخل اسمك وبريدك الإلكتروني، ويمكنك إضافة رمز التعريف إن كان لديك.</p>
+            <div class="form-group">
+                <div class="field">
+                    <i class="las la-user"></i>
+                    <input type="text" id="nameInput" placeholder="أدخل اسمك بالكامل" autocomplete="name" maxlength="40">
+                </div>
+                <span class="error" id="nameError"></span>
+                <div class="field">
+                    <i class="las la-envelope"></i>
+                    <input type="email" id="emailInput" placeholder="أدخل بريدك الإلكتروني" autocomplete="email" maxlength="60" dir="ltr" style="text-align:left;">
+                </div>
+                <span class="error" id="emailError"></span>
+                <div class="field">
+                    <i class="las la-id-badge"></i>
+                    <input type="text" id="refInput" placeholder="أدخل رمز التعريف" maxlength="30" dir="ltr" style="text-align:left;">
+                </div>
+                <span class="field-hint"><span class="optional-badge">اختياري</span> رمز التعريف هو كود دعوة من صديق أو شريك</span>
+            </div>
+            <div class="actions">
+                <button type="button" class="btn" id="next2">
+                    <span>متابعة</span>
+                    <i class="las la-arrow-left"></i>
+                </button>
+                <div class="back-row">
+                    <button type="button" class="btn ghost" data-back="1">
+                        <i class="las la-arrow-right"></i>
+                        <span>رجوع</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="step" data-step="3">
+            <div class="center">
+                <div class="success-icon"><i class="las la-check"></i></div>
+                <h2>مراجعة البيانات</h2>
+                <p class="sub">تأكد من صحة معلوماتك قبل إنشاء الحساب.</p>
+            </div>
+            <div class="form-group">
+                <div class="summary">
+                    <div class="summary-row">
+                        <span class="lbl"><i class="las la-phone"></i> الهاتف</span>
+                        <span class="val" id="sumPhone">--</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="lbl"><i class="las la-user"></i> الاسم</span>
+                        <span class="val" id="sumName">--</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="lbl"><i class="las la-envelope"></i> الإيميل</span>
+                        <span class="val" id="sumEmail">--</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="lbl"><i class="las la-id-badge"></i> رمز التعريف</span>
+                        <span class="val" id="sumRef">--</span>
+                    </div>
+                </div>
+            </div>
+            <div class="actions">
+                <button type="button" class="btn" id="finishBtn">
+                    <i class="las la-check-circle"></i>
+                    <span>إنشاء الحساب والبدء</span>
+                </button>
+                <div class="back-row">
+                    <button type="button" class="btn ghost" data-back="2">
+                        <i class="las la-arrow-right"></i>
+                        <span>تعديل البيانات</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            var COUNTRIES = [
+                {name: "Afghanistan", code: "AF", dial: "+93", ar: "أفغانستان", ru: "Афганистан"},
+                {name: "Åland Islands", code: "AX", dial: "+358", ar: "جزر أولاند", ru: "Аландские острова"},
+                {name: "Albania", code: "AL", dial: "+355", ar: "ألبانيا", ru: "Албания"},
+                {name: "Algeria", code: "DZ", dial: "+213", ar: "الجزائر", ru: "Алжир"},
+                {name: "American Samoa", code: "AS", dial: "+1684", ar: "ساموا الأمريكية", ru: "Американское Самоа"},
+                {name: "AndorrA", code: "AD", dial: "+376", ar: "أندورا", ru: "Андорра"},
+                {name: "Angola", code: "AO", dial: "+244", ar: "أنغولا", ru: "Ангола"},
+                {name: "Anguilla", code: "AI", dial: "+1264", ar: "أنغيلا", ru: "Ангилья"},
+                {name: "Antarctica", code: "AQ", dial: "+672", ar: "أنتاركتيكا", ru: "Антарктида"},
+                {name: "Antigua and Barbuda", code: "AG", dial: "+1268", ar: "أنتيغوا وبربودا", ru: "Антигуа и Барбуда"},
+                {name: "Argentina", code: "AR", dial: "+54", ar: "الأرجنتين", ru: "Аргентина"},
+                {name: "Armenia", code: "AM", dial: "+374", ar: "أرمينيا", ru: "Армения"},
+                {name: "Aruba", code: "AW", dial: "+297", ar: "أروبا", ru: "Аруба"},
+                {name: "Australia", code: "AU", dial: "+61", ar: "أستراليا", ru: "Австралия"},
+                {name: "Austria", code: "AT", dial: "+43", ar: "النمسا", ru: "Австрия"},
+                {name: "Azerbaijan", code: "AZ", dial: "+994", ar: "أذربيجان", ru: "Азербайджан"},
+                {name: "Bahamas", code: "BS", dial: "+1242", ar: "الباهاما", ru: "Багамы"},
+                {name: "Bahrain", code: "BH", dial: "+973", ar: "البحرين", ru: "Бахрейн"},
+                {name: "Bangladesh", code: "BD", dial: "+880", ar: "بنغلاديش", ru: "Бангладеш"},
+                {name: "Barbados", code: "BB", dial: "+1246", ar: "بربادوس", ru: "Барбадос"},
+                {name: "Belarus", code: "BY", dial: "+375", ar: "بيلاروسيا", ru: "Беларусь"},
+                {name: "Belgium", code: "BE", dial: "+32", ar: "بلجيكا", ru: "Бельгия"},
+                {name: "Belize", code: "BZ", dial: "+501", ar: "بليز", ru: "Белиз"},
+                {name: "Benin", code: "BJ", dial: "+229", ar: "بنين", ru: "Бенин"},
+                {name: "Bermuda", code: "BM", dial: "+1441", ar: "برمودا", ru: "Бермуды"},
+                {name: "Bhutan", code: "BT", dial: "+975", ar: "بوتان", ru: "Бутан"},
+                {name: "Bolivia", code: "BO", dial: "+591", ar: "بوليفيا", ru: "Боливия"},
+                {name: "Bosnia and Herzegovina", code: "BA", dial: "+387", ar: "البوسنة والهرسك", ru: "Босния и Герцеговина"},
+                {name: "Botswana", code: "BW", dial: "+267", ar: "بوتسوانا", ru: "Ботсвана"},
+                {name: "Bouvet Island", code: "BV", dial: "+47", ar: "جزيرة بوفيه", ru: "Остров Буве"},
+                {name: "Brazil", code: "BR", dial: "+55", ar: "البرازيل", ru: "Бразилия"},
+                {name: "British Indian Ocean Territory", code: "IO", dial: "+246", ar: "إقليم المحيط الهندي البريطاني", ru: "Британская территория Индийского океана"},
+                {name: "Brunei Darussalam", code: "BN", dial: "+673", ar: "بروناي", ru: "Бруней"},
+                {name: "Bulgaria", code: "BG", dial: "+359", ar: "بلغاريا", ru: "Болгария"},
+                {name: "Burkina Faso", code: "BF", dial: "+226", ar: "بوركينا فاسو", ru: "Буркина-Фасо"},
+                {name: "Burundi", code: "BI", dial: "+257", ar: "بوروندي", ru: "Бурунди"},
+                {name: "Cambodia", code: "KH", dial: "+855", ar: "كمبوديا", ru: "Камбоджа"},
+                {name: "Cameroon", code: "CM", dial: "+237", ar: "الكاميرون", ru: "Камерун"},
+                {name: "Canada", code: "CA", dial: "+1", ar: "كندا", ru: "Канада"},
+                {name: "Cape Verde", code: "CV", dial: "+238", ar: "الرأس الأخضر", ru: "Кабо-Верде"},
+                {name: "Cayman Islands", code: "KY", dial: "+1345", ar: "جزر كايمان", ru: "Каймановы острова"},
+                {name: "Central African Republic", code: "CF", dial: "+236", ar: "جمهورية أفريقيا الوسطى", ru: "Центральноафриканская Республика"},
+                {name: "Chad", code: "TD", dial: "+235", ar: "تشاد", ru: "Чад"},
+                {name: "Chile", code: "CL", dial: "+56", ar: "تشيلي", ru: "Чили"},
+                {name: "China", code: "CN", dial: "+86", ar: "الصين", ru: "Китай"},
+                {name: "Christmas Island", code: "CX", dial: "+61", ar: "جزيرة الكريسماس", ru: "Остров Рождества"},
+                {name: "Cocos (Keeling) Islands", code: "CC", dial: "+61", ar: "جزر كوكوس", ru: "Кокосовые острова"},
+                {name: "Colombia", code: "CO", dial: "+57", ar: "كولومبيا", ru: "Колумбия"},
+                {name: "Comoros", code: "KM", dial: "+269", ar: "جزر القمر", ru: "Коморы"},
+                {name: "Congo", code: "CG", dial: "+242", ar: "الكونغو", ru: "Конго"},
+                {name: "Congo, The Democratic Republic of the", code: "CD", dial: "+243", ar: "جمهورية الكونغو الديمقراطية", ru: "Демократическая Республика Конго"},
+                {name: "Cook Islands", code: "CK", dial: "+682", ar: "جزر كوك", ru: "Острова Кука"},
+                {name: "Costa Rica", code: "CR", dial: "+506", ar: "كوستاريكا", ru: "Коста-Рика"},
+                {name: "Cote D'Ivoire", code: "CI", dial: "+225", ar: "ساحل العاج", ru: "Кот-д'Ивуар"},
+                {name: "Croatia", code: "HR", dial: "+385", ar: "كرواتيا", ru: "Хорватия"},
+                {name: "Cuba", code: "CU", dial: "+53", ar: "كوبا", ru: "Куба"},
+                {name: "Cyprus", code: "CY", dial: "+357", ar: "قبرص", ru: "Кипр"},
+                {name: "Czech Republic", code: "CZ", dial: "+420", ar: "التشيك", ru: "Чехия"},
+                {name: "Denmark", code: "DK", dial: "+45", ar: "الدنمارك", ru: "Дания"},
+                {name: "Djibouti", code: "DJ", dial: "+253", ar: "جيبوتي", ru: "Джибути"},
+                {name: "Dominica", code: "DM", dial: "+1767", ar: "دومينيكا", ru: "Доминика"},
+                {name: "Dominican Republic", code: "DO", dial: "+1809", ar: "جمهورية الدومينيكان", ru: "Доминиканская Республика"},
+                {name: "Ecuador", code: "EC", dial: "+593", ar: "الإكوادور", ru: "Эквадор"},
+                {name: "Egypt", code: "EG", dial: "+20", ar: "مصر", ru: "Египет"},
+                {name: "El Salvador", code: "SV", dial: "+503", ar: "السلفادور", ru: "Сальвадор"},
+                {name: "Equatorial Guinea", code: "GQ", dial: "+240", ar: "غينيا الاستوائية", ru: "Экваториальная Гвинея"},
+                {name: "Eritrea", code: "ER", dial: "+291", ar: "إريتريا", ru: "Эритрея"},
+                {name: "Estonia", code: "EE", dial: "+372", ar: "إستونيا", ru: "Эстония"},
+                {name: "Ethiopia", code: "ET", dial: "+251", ar: "إثيوبيا", ru: "Эфиопия"},
+                {name: "Falkland Islands (Malvinas)", code: "FK", dial: "+500", ar: "جزر فوكلاند", ru: "Фолклендские острова"},
+                {name: "Faroe Islands", code: "FO", dial: "+298", ar: "جزر فارو", ru: "Фарерские острова"},
+                {name: "Fiji", code: "FJ", dial: "+679", ar: "فيجي", ru: "Фиджи"},
+                {name: "Finland", code: "FI", dial: "+358", ar: "فنلندا", ru: "Финляндия"},
+                {name: "France", code: "FR", dial: "+33", ar: "فرنسا", ru: "Франция"},
+                {name: "French Guiana", code: "GF", dial: "+594", ar: "غيانا الفرنسية", ru: "Французская Гвиана"},
+                {name: "French Polynesia", code: "PF", dial: "+689", ar: "بولينيزيا الفرنسية", ru: "Французская Полинезия"},
+                {name: "French Southern Territories", code: "TF", dial: "+262", ar: "الأراضي الفرنسية الجنوبية", ru: "Французские Южные территории"},
+                {name: "Gabon", code: "GA", dial: "+241", ar: "الغابون", ru: "Габон"},
+                {name: "Gambia", code: "GM", dial: "+220", ar: "غامبيا", ru: "Гамбия"},
+                {name: "Georgia", code: "GE", dial: "+995", ar: "جورجيا", ru: "Грузия"},
+                {name: "Germany", code: "DE", dial: "+49", ar: "ألمانيا", ru: "Германия"},
+                {name: "Ghana", code: "GH", dial: "+233", ar: "غانا", ru: "Гана"},
+                {name: "Gibraltar", code: "GI", dial: "+350", ar: "جبل طارق", ru: "Гибралтар"},
+                {name: "Greece", code: "GR", dial: "+30", ar: "اليونان", ru: "Греция"},
+                {name: "Greenland", code: "GL", dial: "+299", ar: "غرينلاند", ru: "Гренландия"},
+                {name: "Grenada", code: "GD", dial: "+1473", ar: "غرينادا", ru: "Гренада"},
+                {name: "Guadeloupe", code: "GP", dial: "+590", ar: "غوادلوب", ru: "Гваделупа"},
+                {name: "Guam", code: "GU", dial: "+1671", ar: "غوام", ru: "Гуам"},
+                {name: "Guatemala", code: "GT", dial: "+502", ar: "غواتيمالا", ru: "Гватемала"},
+                {name: "Guernsey", code: "GG", dial: "+44", ar: "غيرنزي", ru: "Гернси"},
+                {name: "Guinea", code: "GN", dial: "+224", ar: "غينيا", ru: "Гвинея"},
+                {name: "Guinea-Bissau", code: "GW", dial: "+245", ar: "غينيا بيساو", ru: "Гвинея-Бисау"},
+                {name: "Guyana", code: "GY", dial: "+592", ar: "غيانا", ru: "Гайана"},
+                {name: "Haiti", code: "HT", dial: "+509", ar: "هايتي", ru: "Гаити"},
+                {name: "Heard Island and Mcdonald Islands", code: "HM", dial: "+672", ar: "جزيرة هيرد وجزر ماكدونالد", ru: "Остров Херд и острова Макдональд"},
+                {name: "Holy See (Vatican City State)", code: "VA", dial: "+379", ar: "الفاتيكان", ru: "Ватикан"},
+                {name: "Honduras", code: "HN", dial: "+504", ar: "هندوراس", ru: "Гондурас"},
+                {name: "Hong Kong", code: "HK", dial: "+852", ar: "هونغ كونغ", ru: "Гонконг"},
+                {name: "Hungary", code: "HU", dial: "+36", ar: "هنغاريا", ru: "Венгрия"},
+                {name: "Iceland", code: "IS", dial: "+354", ar: "آيسلندا", ru: "Исландия"},
+                {name: "India", code: "IN", dial: "+91", ar: "الهند", ru: "Индия"},
+                {name: "Indonesia", code: "ID", dial: "+62", ar: "إندونيسيا", ru: "Индонезия"},
+                {name: "Iran, Islamic Republic Of", code: "IR", dial: "+98", ar: "إيران", ru: "Иран"},
+                {name: "Iraq", code: "IQ", dial: "+964", ar: "العراق", ru: "Ирак"},
+                {name: "Ireland", code: "IE", dial: "+353", ar: "أيرلندا", ru: "Ирландия"},
+                {name: "Isle of Man", code: "IM", dial: "+44", ar: "جزيرة مان", ru: "Остров Мэн"},
+                {name: "Israel", code: "IL", dial: "+972", ar: "إسرائيل", ru: "Израиль"},
+                {name: "Italy", code: "IT", dial: "+39", ar: "إيطاليا", ru: "Италия"},
+                {name: "Jamaica", code: "JM", dial: "+1876", ar: "جامايكا", ru: "Ямайка"},
+                {name: "Japan", code: "JP", dial: "+81", ar: "اليابان", ru: "Япония"},
+                {name: "Jersey", code: "JE", dial: "+44", ar: "جيرزي", ru: "Джерси"},
+                {name: "Jordan", code: "JO", dial: "+962", ar: "الأردن", ru: "Иордания"},
+                {name: "Kazakhstan", code: "KZ", dial: "+7", ar: "كازاخستان", ru: "Казахстан"},
+                {name: "Kenya", code: "KE", dial: "+254", ar: "كينيا", ru: "Кения"},
+                {name: "Kiribati", code: "KI", dial: "+686", ar: "كيريباتي", ru: "Кирибати"},
+                {name: "Korea, Democratic People'S Republic of", code: "KP", dial: "+850", ar: "كوريا الشمالية", ru: "Северная Корея"},
+                {name: "Korea, Republic of", code: "KR", dial: "+82", ar: "كوريا الجنوبية", ru: "Южная Корея"},
+                {name: "Kuwait", code: "KW", dial: "+965", ar: "الكويت", ru: "Кувейт"},
+                {name: "Kyrgyzstan", code: "KG", dial: "+996", ar: "قيرغيزستان", ru: "Кыргызстан"},
+                {name: "Lao People'S Democratic Republic", code: "LA", dial: "+856", ar: "لاوس", ru: "Лаос"},
+                {name: "Latvia", code: "LV", dial: "+371", ar: "لاتفيا", ru: "Латвия"},
+                {name: "Lebanon", code: "LB", dial: "+961", ar: "لبنان", ru: "Ливан"},
+                {name: "Lesotho", code: "LS", dial: "+266", ar: "ليسوتو", ru: "Лесото"},
+                {name: "Liberia", code: "LR", dial: "+231", ar: "ليبيريا", ru: "Либерия"},
+                {name: "Libyan Arab Jamahiriya", code: "LY", dial: "+218", ar: "ليبيا", ru: "Ливия"},
+                {name: "Liechtenstein", code: "LI", dial: "+423", ar: "ليختنشتاين", ru: "Лихтенштейн"},
+                {name: "Lithuania", code: "LT", dial: "+370", ar: "ليتوانيا", ru: "Литва"},
+                {name: "Luxembourg", code: "LU", dial: "+352", ar: "لوكسمبورغ", ru: "Люксембург"},
+                {name: "Macao", code: "MO", dial: "+853", ar: "ماكاو", ru: "Макао"},
+                {name: "Macedonia, The Former Yugoslav Republic of", code: "MK", dial: "+389", ar: "مقدونيا", ru: "Македония"},
+                {name: "Madagascar", code: "MG", dial: "+261", ar: "مدغشقر", ru: "Мадагаскар"},
+                {name: "Malawi", code: "MW", dial: "+265", ar: "مالاوي", ru: "Малави"},
+                {name: "Malaysia", code: "MY", dial: "+60", ar: "ماليزيا", ru: "Малайзия"},
+                {name: "Maldives", code: "MV", dial: "+960", ar: "المالديف", ru: "Мальдивы"},
+                {name: "Mali", code: "ML", dial: "+223", ar: "مالي", ru: "Мали"},
+                {name: "Malta", code: "MT", dial: "+356", ar: "مالطا", ru: "Мальта"},
+                {name: "Marshall Islands", code: "MH", dial: "+692", ar: "جزر مارشال", ru: "Маршалловы Острова"},
+                {name: "Martinique", code: "MQ", dial: "+596", ar: "مارتينيك", ru: "Мартиника"},
+                {name: "Mauritania", code: "MR", dial: "+222", ar: "موريتانيا", ru: "Мавритания"},
+                {name: "Mauritius", code: "MU", dial: "+230", ar: "موريشيوس", ru: "Маврикий"},
+                {name: "Mayotte", code: "YT", dial: "+262", ar: "مايوت", ru: "Майотта"},
+                {name: "Mexico", code: "MX", dial: "+52", ar: "المكسيك", ru: "Мексика"},
+                {name: "Micronesia, Federated States of", code: "FM", dial: "+691", ar: "ميكرونيزيا", ru: "Микронезия"},
+                {name: "Moldova, Republic of", code: "MD", dial: "+373", ar: "مولدوفا", ru: "Молдова"},
+                {name: "Monaco", code: "MC", dial: "+377", ar: "موناكو", ru: "Монако"},
+                {name: "Mongolia", code: "MN", dial: "+976", ar: "منغوليا", ru: "Монголия"},
+                {name: "Montserrat", code: "MS", dial: "+1664", ar: "مونتسرات", ru: "Монтсеррат"},
+                {name: "Morocco", code: "MA", dial: "+212", ar: "المغرب", ru: "Марокко"},
+                {name: "Mozambique", code: "MZ", dial: "+258", ar: "موزمبيق", ru: "Мозамбик"},
+                {name: "Myanmar", code: "MM", dial: "+95", ar: "ميانمار", ru: "Мьянма"},
+                {name: "Namibia", code: "NA", dial: "+264", ar: "ناميبيا", ru: "Намибия"},
+                {name: "Nauru", code: "NR", dial: "+674", ar: "ناورو", ru: "Науру"},
+                {name: "Nepal", code: "NP", dial: "+977", ar: "نيبال", ru: "Непал"},
+                {name: "Netherlands", code: "NL", dial: "+31", ar: "هولندا", ru: "Нидерланды"},
+                {name: "Netherlands Antilles", code: "AN", dial: "+599", ar: "جزر الأنتيل الهولندية", ru: "Нидерландские Антильские острова"},
+                {name: "New Caledonia", code: "NC", dial: "+687", ar: "كاليدونيا الجديدة", ru: "Новая Каледония"},
+                {name: "New Zealand", code: "NZ", dial: "+64", ar: "نيوزيلندا", ru: "Новая Зеландия"},
+                {name: "Nicaragua", code: "NI", dial: "+505", ar: "نيكاراغوا", ru: "Никарагуа"},
+                {name: "Niger", code: "NE", dial: "+227", ar: "النيجر", ru: "Нигер"},
+                {name: "Nigeria", code: "NG", dial: "+234", ar: "نيجيريا", ru: "Нигерия"},
+                {name: "Niue", code: "NU", dial: "+683", ar: "نييوي", ru: "Ниуэ"},
+                {name: "Norfolk Island", code: "NF", dial: "+672", ar: "جزيرة نورفولك", ru: "Остров Норфолк"},
+                {name: "Northern Mariana Islands", code: "MP", dial: "+1670", ar: "جزر ماريانا الشمالية", ru: "Северные Марианские острова"},
+                {name: "Norway", code: "NO", dial: "+47", ar: "النرويج", ru: "Норвегия"},
+                {name: "Oman", code: "OM", dial: "+968", ar: "عمان", ru: "Оман"},
+                {name: "Pakistan", code: "PK", dial: "+92", ar: "باكستان", ru: "Пакистан"},
+                {name: "Palau", code: "PW", dial: "+680", ar: "بالاو", ru: "Палау"},
+                {name: "Palestinian Territory, Occupied", code: "PS", dial: "+970", ar: "فلسطين", ru: "Палестина"},
+                {name: "Panama", code: "PA", dial: "+507", ar: "بنما", ru: "Панама"},
+                {name: "Papua New Guinea", code: "PG", dial: "+675", ar: "بابوا غينيا الجديدة", ru: "Папуа — Новая Гвинея"},
+                {name: "Paraguay", code: "PY", dial: "+595", ar: "باراغواي", ru: "Парагвай"},
+                {name: "Peru", code: "PE", dial: "+51", ar: "بيرو", ru: "Перу"},
+                {name: "Philippines", code: "PH", dial: "+63", ar: "الفلبين", ru: "Филиппины"},
+                {name: "Pitcairn", code: "PN", dial: "+872", ar: "بيتكيرن", ru: "Питкэрн"},
+                {name: "Poland", code: "PL", dial: "+48", ar: "بولندا", ru: "Польша"},
+                {name: "Portugal", code: "PT", dial: "+351", ar: "البرتغال", ru: "Португалия"},
+                {name: "Puerto Rico", code: "PR", dial: "+1787", ar: "بورتوريكو", ru: "Пуэрто-Рико"},
+                {name: "Qatar", code: "QA", dial: "+974", ar: "قطر", ru: "Катар"},
+                {name: "Reunion", code: "RE", dial: "+262", ar: "ريونيون", ru: "Реюньон"},
+                {name: "Romania", code: "RO", dial: "+40", ar: "رومانيا", ru: "Румыния"},
+                {name: "Russian Federation", code: "RU", dial: "+7", ar: "روسيا", ru: "Россия"},
+                {name: "RWANDA", code: "RW", dial: "+250", ar: "رواندا", ru: "Руанда"},
+                {name: "Saint Helena", code: "SH", dial: "+290", ar: "سانت هيلينا", ru: "Остров Святой Елены"},
+                {name: "Saint Kitts and Nevis", code: "KN", dial: "+1869", ar: "سانت كيتس ونيفيس", ru: "Сент-Китс и Невис"},
+                {name: "Saint Lucia", code: "LC", dial: "+1758", ar: "سانت لوسيا", ru: "Сент-Люсия"},
+                {name: "Saint Pierre and Miquelon", code: "PM", dial: "+508", ar: "سان بيير وميكلون", ru: "Сен-Пьер и Микелон"},
+                {name: "Saint Vincent and the Grenadines", code: "VC", dial: "+1784", ar: "سانت فينسنت والغرينادين", ru: "Сент-Винсент и Гренадины"},
+                {name: "Samoa", code: "WS", dial: "+685", ar: "ساموا", ru: "Самоа"},
+                {name: "San Marino", code: "SM", dial: "+378", ar: "سان مارينو", ru: "Сан-Марино"},
+                {name: "Sao Tome and Principe", code: "ST", dial: "+239", ar: "ساو تومي وبرينسيبي", ru: "Сан-Томе и Принсипи"},
+                {name: "Saudi Arabia", code: "SA", dial: "+966", ar: "السعودية", ru: "Саудовская Аравия"},
+                {name: "Senegal", code: "SN", dial: "+221", ar: "السنغال", ru: "Сенегал"},
+                {name: "Serbia and Montenegro", code: "CS", dial: "+381", ar: "صربيا والجبل الأسود", ru: "Сербия и Черногория"},
+                {name: "Seychelles", code: "SC", dial: "+248", ar: "سيشل", ru: "Сейшелы"},
+                {name: "Sierra Leone", code: "SL", dial: "+232", ar: "سيراليون", ru: "Сьерра-Леоне"},
+                {name: "Singapore", code: "SG", dial: "+65", ar: "سنغافورة", ru: "Сингапур"},
+                {name: "Slovakia", code: "SK", dial: "+421", ar: "سلوفاكيا", ru: "Словакия"},
+                {name: "Slovenia", code: "SI", dial: "+386", ar: "سلوفينيا", ru: "Словения"},
+                {name: "Solomon Islands", code: "SB", dial: "+677", ar: "جزر سليمان", ru: "Соломоновы Острова"},
+                {name: "Somalia", code: "SO", dial: "+252", ar: "الصومال", ru: "Сомали"},
+                {name: "South Africa", code: "ZA", dial: "+27", ar: "جنوب أفريقيا", ru: "Южная Африка"},
+                {name: "South Georgia and the South Sandwich Islands", code: "GS", dial: "+500", ar: "جورجيا الجنوبية وجزر ساندويتش الجنوبية", ru: "Южная Георгия и Южные Сандвичевы острова"},
+                {name: "Spain", code: "ES", dial: "+34", ar: "إسبانيا", ru: "Испания"},
+                {name: "Sri Lanka", code: "LK", dial: "+94", ar: "سريلانكا", ru: "Шри-Ланка"},
+                {name: "Sudan", code: "SD", dial: "+249", ar: "السودان", ru: "Судан"},
+                {name: "Suriname", code: "SR", dial: "+597", ar: "سورينام", ru: "Суринам"},
+                {name: "Svalbard and Jan Mayen", code: "SJ", dial: "+47", ar: "سفالبارد وجان ماين", ru: "Шпицберген и Ян-Майен"},
+                {name: "Swaziland", code: "SZ", dial: "+268", ar: "سوازيلاند", ru: "Свазиленд"},
+                {name: "Sweden", code: "SE", dial: "+46", ar: "السويد", ru: "Швеция"},
+                {name: "Switzerland", code: "CH", dial: "+41", ar: "سويسرا", ru: "Швейцария"},
+                {name: "Syrian Arab Republic", code: "SY", dial: "+963", ar: "سوريا", ru: "Сирия"},
+                {name: "Taiwan, Province of China", code: "TW", dial: "+886", ar: "تايوان", ru: "Тайвань"},
+                {name: "Tajikistan", code: "TJ", dial: "+992", ar: "طاجيكستان", ru: "Таджикистан"},
+                {name: "Tanzania, United Republic of", code: "TZ", dial: "+255", ar: "تنزانيا", ru: "Танзания"},
+                {name: "Thailand", code: "TH", dial: "+66", ar: "تايلاند", ru: "Таиланд"},
+                {name: "Timor-Leste", code: "TL", dial: "+670", ar: "تيمور الشرقية", ru: "Восточный Тимор"},
+                {name: "Togo", code: "TG", dial: "+228", ar: "توغو", ru: "Того"},
+                {name: "Tokelau", code: "TK", dial: "+690", ar: "توكيلاو", ru: "Токелау"},
+                {name: "Tonga", code: "TO", dial: "+676", ar: "تونغا", ru: "Тонга"},
+                {name: "Trinidad and Tobago", code: "TT", dial: "+1868", ar: "ترينيداد وتوباغو", ru: "Тринидад и Тобаго"},
+                {name: "Tunisia", code: "TN", dial: "+216", ar: "تونس", ru: "Тунис"},
+                {name: "Turkey", code: "TR", dial: "+90", ar: "تركيا", ru: "Турция"},
+                {name: "Turkmenistan", code: "TM", dial: "+993", ar: "تركمانستان", ru: "Туркменистан"},
+                {name: "Turks and Caicos Islands", code: "TC", dial: "+1649", ar: "جزر تركس وكايكوس", ru: "Тёркс и Кайкос"},
+                {name: "Tuvalu", code: "TV", dial: "+688", ar: "توفالو", ru: "Тувалу"},
+                {name: "Uganda", code: "UG", dial: "+256", ar: "أوغندا", ru: "Уганда"},
+                {name: "Ukraine", code: "UA", dial: "+380", ar: "أوكرانيا", ru: "Украина"},
+                {name: "United Arab Emirates", code: "AE", dial: "+971", ar: "الإمارات", ru: "ОАЭ"},
+                {name: "United Kingdom", code: "GB", dial: "+44", ar: "المملكة المتحدة", ru: "Великобритания"},
+                {name: "United States", code: "US", dial: "+1", ar: "الولايات المتحدة", ru: "США"},
+                {name: "United States Minor Outlying Islands", code: "UM", dial: "+1", ar: "الجزر النائية الصغيرة للولايات المتحدة", ru: "Внешние малые острова США"},
+                {name: "Uruguay", code: "UY", dial: "+598", ar: "أوروغواي", ru: "Уругвай"},
+                {name: "Uzbekistan", code: "UZ", dial: "+998", ar: "أوزبكستان", ru: "Узбекистан"},
+                {name: "Vanuatu", code: "VU", dial: "+678", ar: "فانواتو", ru: "Вануату"},
+                {name: "Venezuela", code: "VE", dial: "+58", ar: "فنزويلا", ru: "Венесуэла"},
+                {name: "Viet Nam", code: "VN", dial: "+84", ar: "فيتنام", ru: "Вьетнам"},
+                {name: "Virgin Islands, British", code: "VG", dial: "+1284", ar: "جزر العذراء البريطانية", ru: "Британские Виргинские острова"},
+                {name: "Virgin Islands, U.S.", code: "VI", dial: "+1340", ar: "جزر العذراء الأمريكية", ru: "Виргинские острова США"},
+                {name: "Wallis and Futuna", code: "WF", dial: "+681", ar: "واليس وفوتونا", ru: "Уоллис и Футуна"},
+                {name: "Western Sahara", code: "EH", dial: "+212", ar: "الصحراء الغربية", ru: "Западная Сахара"},
+                {name: "Yemen", code: "YE", dial: "+967", ar: "اليمن", ru: "Йемен"},
+                {name: "Zambia", code: "ZM", dial: "+260", ar: "زامبيا", ru: "Замбия"},
+                {name: "Zimbabwe", code: "ZW", dial: "+263", ar: "زيمبابوي", ru: "Зимбабве"}
+            ];
+
+            var PRIORITY_CODES = ["EG", "SA", "AE", "KW", "QA", "BH", "OM", "JO", "LB", "IQ", "SY", "YE", "PS", "SD", "LY", "TN", "DZ", "MA", "MR", "TR", "US", "GB", "DE", "FR", "RU"];
+
+            var priorityList = [];
+            var otherList = [];
+            COUNTRIES.forEach(function(c) {
+                if (PRIORITY_CODES.indexOf(c.code) !== -1) {
+                    priorityList.push(c);
+                } else {
+                    otherList.push(c);
+                }
+            });
+            priorityList.sort(function(a, b) {
+                return PRIORITY_CODES.indexOf(a.code) - PRIORITY_CODES.indexOf(b.code);
+            });
+            otherList.sort(function(a, b) {
+                return a.name.localeCompare(b.name);
+            });
+            var SORTED_COUNTRIES = priorityList.concat(otherList);
+
+            function getFlagUrl(code) {
+                return "https://flagcdn.com/w80/" + code.toLowerCase() + ".png";
+            }
+
+            var PROFILE_KEY = 'fastorder_user_profile';
+            var stepEls = document.querySelectorAll('.step');
+            var dotEls = document.querySelectorAll('.dot');
+            var currentStep = 1;
+
+            var phoneInput = document.getElementById('phoneInput');
+            var nameInput = document.getElementById('nameInput');
+            var emailInput = document.getElementById('emailInput');
+            var refInput = document.getElementById('refInput');
+
+            var phoneError = document.getElementById('phoneError');
+            var nameError = document.getElementById('nameError');
+            var emailError = document.getElementById('emailError');
+
+            var sumPhone = document.getElementById('sumPhone');
+            var sumName = document.getElementById('sumName');
+            var sumEmail = document.getElementById('sumEmail');
+            var sumRef = document.getElementById('sumRef');
+
+            var ccWrapper = document.getElementById('ccWrapper');
+            var ccTrigger = document.getElementById('ccTrigger');
+            var ccFlag = document.getElementById('ccFlag');
+            var ccDial = document.getElementById('ccDial');
+            var ccMenu = document.getElementById('ccMenu');
+            var ccSearch = document.getElementById('ccSearch');
+            var ccList = document.getElementById('ccList');
+
+            var data = {
+                countryCode: '+20',
+                countryISO: 'EG',
+                countryName: 'Egypt',
+                phone: '',
+                name: '',
+                email: '',
+                ref: ''
+            };
+
+            function setStep(n) {
+                currentStep = n;
+                stepEls.forEach(function(step) {
+                    step.classList.toggle('active', parseInt(step.getAttribute('data-step'), 10) === n);
+                });
+                dotEls.forEach(function(dot) {
+                    var idx = parseInt(dot.getAttribute('data-dot'), 10);
+                    dot.classList.toggle('active', idx === n);
+                    dot.classList.toggle('done', idx < n);
+                });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            function clearErrors() {
+                phoneError.textContent = '';
+                nameError.textContent = '';
+                emailError.textContent = '';
+            }
+
+            function setSelectedCountry(country) {
+                data.countryCode = country.dial;
+                data.countryISO = country.code;
+                data.countryName = country.name;
+                ccFlag.src = getFlagUrl(country.code);
+                ccFlag.alt = country.code;
+                ccDial.textContent = country.dial;
+            }
+
+            function matchesCountry(c, q) {
+                if (c.name.toLowerCase().indexOf(q) !== -1) return true;
+                if (c.code.toLowerCase().indexOf(q) !== -1) return true;
+                if (c.dial.indexOf(q) !== -1) return true;
+                if (c.ar && c.ar.indexOf(q) !== -1) return true;
+                if (c.ru && c.ru.toLowerCase().indexOf(q) !== -1) return true;
+                return false;
+            }
+
+            function renderCcList(filterText) {
+                var q = (filterText || '').trim().toLowerCase();
+                var filtered;
+                if (q === '') {
+                    filtered = SORTED_COUNTRIES;
+                } else {
+                    filtered = SORTED_COUNTRIES.filter(function(c) {
+                        return matchesCountry(c, q);
+                    });
+                }
+                if (filtered.length === 0) {
+                    ccList.innerHTML = '<div class="cc-empty">لا توجد نتائج مطابقة</div>';
+                    return;
+                }
+                var html = '';
+                for (var i = 0; i < filtered.length; i++) {
+                    var c = filtered[i];
+                    var isActive = (c.code === data.countryISO) ? ' active' : '';
+                    html += '<div class="cc-item' + isActive + '" data-code="' + c.code + '" data-dial="' + c.dial + '" data-name="' + c.name.replace(/"/g, '&quot;') + '">' +
+                        '<img class="cc-item-flag" loading="lazy" src="' + getFlagUrl(c.code) + '" alt="' + c.code + '">' +
+                        '<span class="cc-item-name">' + c.name + '</span>' +
+                        '<span class="cc-item-dial">' + c.dial + '</span>' +
+                        '</div>';
+                }
+                ccList.innerHTML = html;
+                var items = ccList.querySelectorAll('.cc-item');
+                items.forEach(function(item) {
+                    item.addEventListener('click', function() {
+                        var code = this.getAttribute('data-code');
+                        var dial = this.getAttribute('data-dial');
+                        var name = this.getAttribute('data-name');
+                        setSelectedCountry({ code: code, dial: dial, name: name });
+                        closeCcMenu();
+                        phoneError.textContent = '';
+                    });
+                });
+            }
+
+            function openCcMenu() {
+                ccWrapper.classList.add('open');
+                ccSearch.value = '';
+                setTimeout(function() { ccSearch.focus(); }, 100);
+                renderCcList('');
+            }
+
+            function closeCcMenu() {
+                ccWrapper.classList.remove('open');
+            }
+
+            ccTrigger.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (ccWrapper.classList.contains('open')) {
+                    closeCcMenu();
+                } else {
+                    openCcMenu();
+                }
+            });
+
+            ccSearch.addEventListener('input', function() {
+                renderCcList(this.value);
+            });
+
+            ccSearch.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeCcMenu();
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                if (ccWrapper.classList.contains('open') && !ccWrapper.contains(e.target)) {
+                    closeCcMenu();
+                }
+            });
+
+            function validatePhone() {
+                var v = (phoneInput.value || '').replace(/[^0-9]/g, '');
+                if (v.length < 7) {
+                    phoneError.textContent = 'من فضلك أدخل رقم هاتف صحيح (7 أرقام على الأقل)';
+                    return false;
+                }
+                if (v.length > 15) {
+                    phoneError.textContent = 'رقم الهاتف طويل جداً';
+                    return false;
+                }
+                phoneError.textContent = '';
+                data.phone = data.countryCode + ' ' + v;
+                return true;
+            }
+
+            function validateName() {
+                var v = (nameInput.value || '').trim();
+                if (v.length < 2) {
+                    nameError.textContent = 'من فضلك أدخل الاسم (حرفين على الأقل)';
+                    return false;
+                }
+                nameError.textContent = '';
+                data.name = v;
+                return true;
+            }
+
+            function validateEmail() {
+                var v = (emailInput.value || '').trim();
+                var re = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+                if (!re.test(v)) {
+                    emailError.textContent = 'من فضلك أدخل بريد إلكتروني صحيح';
+                    return false;
+                }
+                emailError.textContent = '';
+                data.email = v;
+                return true;
+            }
+
+            function fillSummary() {
+                var flagImg = '<img src="' + getFlagUrl(data.countryISO) + '" alt="' + data.countryISO + '">';
+                sumPhone.innerHTML = flagImg + '<span>' + (data.phone || '--') + '</span>';
+                sumName.textContent = data.name || '--';
+                sumEmail.textContent = data.email || '--';
+                sumRef.textContent = data.ref || 'لم يتم الإدخال';
+            }
+
+            document.getElementById('next1').addEventListener('click', function() {
+                clearErrors();
+                if (!validatePhone()) return;
+                closeCcMenu();
+                setStep(2);
+                setTimeout(function() { nameInput.focus(); }, 250);
+            });
+
+            document.getElementById('next2').addEventListener('click', function() {
+                clearErrors();
+                var okName = validateName();
+                var okEmail = validateEmail();
+                if (!okName || !okEmail) return;
+                data.ref = (refInput.value || '').trim();
+                fillSummary();
+                setStep(3);
+            });
+
+            document.querySelectorAll('[data-back]').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var target = parseInt(this.getAttribute('data-back'), 10);
+                    clearErrors();
+                    closeCcMenu();
+                    setStep(target);
+                });
+            });
+
+            phoneInput.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+                if (phoneError.textContent) phoneError.textContent = '';
+            });
+
+            nameInput.addEventListener('input', function() {
+                if (nameError.textContent) nameError.textContent = '';
+            });
+
+            emailInput.addEventListener('input', function() {
+                if (emailError.textContent) emailError.textContent = '';
+            });
+
+            [phoneInput, nameInput, emailInput].forEach(function(input) {
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (currentStep === 1) document.getElementById('next1').click();
+                        else if (currentStep === 2) document.getElementById('next2').click();
+                    }
+                });
+            });
+
+            document.getElementById('finishBtn').addEventListener('click', function() {
+                var profile = {
+                    phone: data.phone,
+                    countryCode: data.countryCode,
+                    countryISO: data.countryISO,
+                    countryName: data.countryName,
+                    name: data.name,
+                    email: data.email,
+                    ref: data.ref,
+                    createdAt: new Date().toISOString()
+                };
+                try {
+                    localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+                } catch (e) {}
+                Swal.fire({
+                    title: 'أهلاً بك في FastOrder',
+                    text: 'تم إنشاء حسابك بنجاح يا ' + profile.name,
+                    icon: 'success',
+                    confirmButtonColor: '#FF5A00',
+                    confirmButtonText: 'تم',
+                    timer: 4000,
+                    timerProgressBar: true
+                });
+            });
+
+            setSelectedCountry({ code: 'EG', dial: '+20', name: 'Egypt' });
+        })();
+    </script>
+</body>
+</html>
