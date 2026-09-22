@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#FF5A00">
+    <title>EasyOrder - تطبيق توصيل الطعام الأسرع في شرم الشيخ</title>
+    <meta name="description" content="EasyOrder منصة توصيل ذكية في مدينة شرم الشيخ تربطك بأفضل المطاعم والمتاجر. اطلب في ثواني واستلم طلبك على بابك في 25 دقيقة.">
+    <link rel="icon" type="image/png" href="https://i.ibb.co/kVrycRZS/Gemini-Generated-Image-pxp5zlpxp5zlpxp5-removebg-preview.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF5A00',
+                        secondary: '#FF8C38',
+                        accent: '#FFB800',
+                        dark: '#1A1A1A',
+                        muted: '#717171',
+                        success: '#00B14F',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --color-primary: #FF5A00;
+            --color-secondary: #FF8C38;
+            --color-accent: #FFB800;
+            --color-background: #F7F9F8;
+            --color-card: #FFFFFF;
+            --color-darker: #F0F4F3;
+            --color-white: #1A1A1A;
+            --color-muted: #717171;
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --card-bg: #FFFFFF;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --darker-bg: #F0F4F3;
+            --header-height: 70px;
+            --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06);
+            --shell-max: 1600px;
+            --shell-pad: 40px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; width: 100%; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Noto Sans Arabic', system-ui, sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-white);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--color-background); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #FF8C38; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FF5A00; }
+
+        #mainHeader {
+            position: fixed; top: 0; left: 0; right: 0; height: var(--header-height);
+            display: flex; align-items: center; padding: 0 12px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: rgba(247,249,248,.88);
+            backdrop-filter: saturate(180%) blur(14px);
+            -webkit-backdrop-filter: saturate(180%) blur(14px);
+            z-index: 110; transition: box-shadow .3s, background-color .3s;
+        }
+        #mainHeader.scrolled { box-shadow: 0 4px 20px rgba(0,0,0,.06); }
+        .header-inner {
+            display: flex; align-items: center; justify-content: space-between;
+            width: 100%; gap: 12px;
+        }
+        .brand {
+            display: flex; align-items: center; text-decoration: none; flex-shrink: 0;
+        }
+        .brand img {
+            height: 50px; width: auto; display: block; object-fit: contain;
+        }
+
+        .desktop-nav-item {
+            display: flex; align-items: center; gap: 6px; padding: 8px 16px;
+            border-radius: 40px; font-size: .85rem; font-weight: 600;
+            color: var(--color-muted); text-decoration: none; transition: all .2s ease;
+            -webkit-tap-highlight-color: transparent; white-space: nowrap;
+        }
+        .desktop-nav-item i { font-size: 1.2rem; }
+        .desktop-nav-item:hover { background: rgba(255,90,0,.08); color: var(--color-primary); }
+        .desktop-nav-item.active { background: rgba(255,90,0,.12); color: var(--color-primary); font-weight: 700; }
+
+        .header-cta {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: linear-gradient(135deg, #FF5A00, #FF8C38);
+            color: #fff; font-weight: 800; font-size: .82rem;
+            padding: 10px 18px; border-radius: 40px; text-decoration: none;
+            box-shadow: 0 6px 16px rgba(255,90,0,.28); transition: all .25s ease;
+            -webkit-tap-highlight-color: transparent; white-space: nowrap;
+        }
+        .header-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(255,90,0,.38); }
+        .header-cta i { font-size: 1.05rem; }
+
+        main { padding-top: var(--header-height); }
+
+        .hero {
+            position: relative; overflow: hidden;
+            background: linear-gradient(135deg, #FF5A00 0%, #FF8C38 55%, #FFB800 100%);
+            border-radius: 28px; padding: 44px 28px; color: #fff;
+            box-shadow: 0 18px 50px rgba(255,90,0,.25);
+        }
+        .hero::before, .hero::after {
+            content: ''; position: absolute; border-radius: 50%;
+            background: rgba(255,255,255,.12); pointer-events: none;
+        }
+        .hero::before { width: 340px; height: 340px; top: -140px; left: -100px; }
+        .hero::after { width: 240px; height: 240px; bottom: -120px; right: -60px; }
+
+        .hero-grid {
+            position: relative; z-index: 2;
+            display: grid; grid-template-columns: 1fr;
+            gap: 32px; align-items: center;
+        }
+        .hero-content { position: relative; z-index: 2; }
+
+        .hero-media {
+            display: flex; align-items: center; justify-content: center;
+            position: relative; z-index: 2;
+        }
+        .hero-media img {
+            width: 100%; max-width: 320px; height: auto; display: block;
+            border: none; outline: none; background: transparent;
+            border-radius: 0; box-shadow: none;
+            animation: heroFloat 6s ease-in-out infinite;
+        }
+        @keyframes heroFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.28);
+            padding: 7px 16px; border-radius: 40px; font-size: .78rem;
+            font-weight: 700; backdrop-filter: blur(6px); margin-bottom: 18px;
+        }
+        .hero h1 {
+            font-size: clamp(1.9rem, 5vw, 3.1rem); font-weight: 900;
+            line-height: 1.25; margin-bottom: 16px; letter-spacing: -.5px;
+        }
+        .hero h1 .hl {
+            background: #fff; color: #FF5A00; padding: 0 12px;
+            border-radius: 14px; display: inline-block; transform: rotate(-1.5deg);
+        }
+        .hero p.lead {
+            font-size: clamp(.92rem, 2.2vw, 1.1rem); color: rgba(255,255,255,.92);
+            line-height: 1.9; max-width: 620px; margin-bottom: 26px; font-weight: 500;
+        }
+        .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; position: relative; z-index: 2; }
+        .btn-white {
+            background: #fff; color: #FF5A00; font-weight: 800; padding: 13px 26px;
+            border-radius: 40px; font-size: .9rem; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 8px;
+            transition: all .25s ease; border: none; cursor: pointer;
+            box-shadow: 0 8px 22px rgba(0,0,0,.14);
+        }
+        .btn-white:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(0,0,0,.2); }
+        .btn-ghost {
+            background: rgba(255,255,255,.14); color: #fff; font-weight: 700;
+            padding: 13px 26px; border-radius: 40px; font-size: .9rem;
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+            border: 1.5px solid rgba(255,255,255,.5); transition: all .25s ease; cursor: pointer;
+        }
+        .btn-ghost:hover { background: rgba(255,255,255,.26); transform: translateY(-3px); }
+        .hero-deco {
+            position: absolute; color: #fff; opacity: .32;
+            filter: drop-shadow(0 8px 16px rgba(0,0,0,.15));
+            animation: float 5s ease-in-out infinite;
+            pointer-events: none;
+        }
+        @keyframes float {
+            0%,100% { transform: translateY(0) rotate(-6deg); }
+            50% { transform: translateY(-16px) rotate(6deg); }
+        }
+
+        .stat-card {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 20px; padding: 22px 16px; text-align: center;
+            box-shadow: var(--shadow-card); transition: all .3s ease;
+        }
+        .stat-card:hover { transform: translateY(-6px); border-color: var(--color-primary); box-shadow: 0 14px 34px rgba(255,90,0,.12); }
+        .stat-num {
+            font-size: clamp(1.5rem, 4vw, 2.1rem); font-weight: 900;
+            background: linear-gradient(135deg, #FF5A00, #FFB800);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+            line-height: 1.2; direction: ltr;
+        }
+        .stat-label { font-size: .78rem; color: var(--color-muted); font-weight: 700; margin-top: 6px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+
+        .section-title {
+            font-size: clamp(1.25rem, 3.4vw, 1.7rem); font-weight: 900;
+            color: var(--color-white); margin-bottom: 8px;
+            display: flex; align-items: center; gap: 10px; letter-spacing: -.3px;
+        }
+        .section-title i { color: #FF5A00; }
+        .section-sub { color: var(--color-muted); font-size: .88rem; line-height: 1.8; max-width: 620px; margin-bottom: 26px; }
+
+        .feature-card {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 22px; padding: 26px 22px; height: 100%;
+            transition: all .35s cubic-bezier(.22,1,.36,1); position: relative; overflow: hidden;
+        }
+        .feature-card::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,90,0,.05), transparent 60%);
+            opacity: 0; transition: opacity .35s ease;
+        }
+        .feature-card:hover { transform: translateY(-8px); border-color: rgba(255,90,0,.35); box-shadow: 0 20px 44px rgba(255,90,0,.13); }
+        .feature-card:hover::after { opacity: 1; }
+        .feature-icon {
+            width: 60px; height: 60px; border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.7rem; margin-bottom: 16px; position: relative; z-index: 1;
+            background: linear-gradient(135deg, rgba(255,90,0,.12), rgba(255,184,0,.14));
+            color: #FF5A00; transition: all .35s ease;
+        }
+        .feature-card:hover .feature-icon {
+            background: linear-gradient(135deg, #FF5A00, #FFB800); color: #fff;
+            transform: rotate(-6deg) scale(1.06);
+        }
+        .feature-card h3 { font-size: 1.02rem; font-weight: 800; margin-bottom: 8px; position: relative; z-index: 1; }
+        .feature-card p { font-size: .82rem; color: var(--color-muted); line-height: 1.85; position: relative; z-index: 1; }
+
+        .step-item { position: relative; padding-right: 62px; }
+        .step-num {
+            position: absolute; right: 0; top: 0; width: 46px; height: 46px;
+            border-radius: 15px; background: linear-gradient(135deg, #FF5A00, #FFB800);
+            color: #fff; font-weight: 900; font-size: 1.15rem;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 20px rgba(255,90,0,.28);
+        }
+        .step-item h3 { font-size: 1rem; font-weight: 800; margin-bottom: 6px; }
+        .step-item p { font-size: .82rem; color: var(--color-muted); line-height: 1.85; }
+        .step-line {
+            position: absolute; right: 22px; top: 54px; bottom: -22px;
+            width: 2px; background: linear-gradient(to bottom, rgba(255,90,0,.4), rgba(255,90,0,.05));
+        }
+        .step-item:last-child .step-line { display: none; }
+
+        .why-item {
+            display: flex; gap: 14px; align-items: flex-start;
+            padding: 16px 18px; border-radius: 18px;
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            transition: all .28s ease;
+        }
+        .why-item:hover { border-color: rgba(255,90,0,.3); transform: translateX(-6px); box-shadow: 0 10px 26px rgba(255,90,0,.1); }
+        .why-item .why-ico {
+            width: 42px; height: 42px; border-radius: 13px; flex-shrink: 0;
+            background: rgba(0,177,79,.1); color: #00B14F;
+            display: flex; align-items: center; justify-content: center; font-size: 1.25rem;
+        }
+        .why-item h4 { font-size: .92rem; font-weight: 800; margin-bottom: 3px; }
+        .why-item p { font-size: .78rem; color: var(--color-muted); line-height: 1.8; }
+
+        .value-card {
+            border-radius: 22px; padding: 26px 22px; color: #fff;
+            position: relative; overflow: hidden; height: 100%;
+            transition: transform .35s cubic-bezier(.22,1,.36,1);
+        }
+        .value-card:hover { transform: translateY(-8px); }
+        .value-card i.big { font-size: 2.2rem; margin-bottom: 14px; display: block; opacity: .95; }
+        .value-card h3 { font-size: 1.05rem; font-weight: 900; margin-bottom: 8px; }
+        .value-card p { font-size: .8rem; line-height: 1.85; color: rgba(255,255,255,.88); }
+
+        .faq-item {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 18px; overflow: hidden; transition: all .3s ease;
+        }
+        .faq-item.open { border-color: rgba(255,90,0,.35); box-shadow: 0 12px 30px rgba(255,90,0,.1); }
+        .faq-q {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 14px; padding: 18px 20px; cursor: pointer; font-weight: 800;
+            font-size: .9rem; -webkit-tap-highlight-color: transparent; user-select: none;
+        }
+        .faq-q i.chev { color: #FF5A00; font-size: 1.3rem; transition: transform .3s ease; flex-shrink: 0; }
+        .faq-item.open .faq-q i.chev { transform: rotate(180deg); }
+        .faq-a {
+            max-height: 0; overflow: hidden;
+            transition: max-height .38s cubic-bezier(.4,0,.2,1);
+        }
+        .faq-a p {
+            padding: 14px 20px 20px; font-size: .82rem; color: var(--color-muted);
+            line-height: 1.95; border-top: 1px dashed var(--border-color); margin: 0;
+        }
+
+        .faq-side-visual {
+            position: relative; border-radius: 22px; overflow: hidden;
+            border: 1px solid var(--border-color); background: var(--card-bg);
+            box-shadow: var(--shadow-card);
+            max-width: 340px; margin: 0 auto;
+            min-height: 260px;
+        }
+        .faq-side-visual img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+            min-height: 260px;
+        }
+        .faq-side-visual .faq-visual-cap {
+            position: absolute; inset: auto 0 0 0;
+            background: linear-gradient(to top, rgba(0,0,0,.78), rgba(0,0,0,.15) 65%, transparent);
+            color: #fff; padding: 18px 18px 16px;
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        .faq-side-visual .faq-visual-cap b {
+            font-size: .92rem; font-weight: 900; line-height: 1.4;
+        }
+        .faq-side-visual .faq-visual-cap span {
+            font-size: .72rem; opacity: .9; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .faq-side-visual .faq-visual-badge {
+            position: absolute; top: 12px; right: 12px;
+            background: rgba(255,90,0,.95); color: #fff;
+            font-size: .65rem; font-weight: 800; padding: 5px 11px;
+            border-radius: 40px; backdrop-filter: blur(6px);
+            display: inline-flex; align-items: center; gap: 5px;
+            box-shadow: 0 8px 20px rgba(255,90,0,.35);
+        }
+
+        .download-section {
+            background: linear-gradient(135deg, #1A1A1A 0%, #2B2B2B 60%, #3A2A1E 100%);
+            border-radius: 30px; padding: 44px 28px; color: #fff;
+            position: relative; overflow: hidden;
+        }
+        .download-section::before {
+            content: ''; position: absolute; width: 380px; height: 380px;
+            background: radial-gradient(circle, rgba(255,90,0,.4), transparent 70%);
+            top: -160px; left: -100px; border-radius: 50%;
+        }
+        .download-section::after {
+            content: ''; position: absolute; width: 280px; height: 280px;
+            background: radial-gradient(circle, rgba(255,184,0,.25), transparent 70%);
+            bottom: -140px; right: -60px; border-radius: 50%;
+        }
+        .download-section > * { position: relative; z-index: 1; }
+        .dl-logo {
+            height: 130px; width: auto; display: block; margin-bottom: 20px;
+        }
+        .store-btn {
+            display: inline-flex; align-items: center; gap: 12px;
+            background: #000; color: #fff; text-decoration: none;
+            padding: 12px 22px; border-radius: 16px;
+            border: 1px solid rgba(255,255,255,.14);
+            transition: all .28s ease; min-width: 190px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .store-btn:hover { transform: translateY(-4px); border-color: #FF5A00; box-shadow: 0 14px 30px rgba(255,90,0,.3); }
+        .store-btn i { font-size: 2rem; flex-shrink: 0; }
+        .store-btn .store-text { display: flex; flex-direction: column; line-height: 1.15; text-align: right; }
+        .store-btn .store-text small { font-size: .65rem; opacity: .75; font-weight: 600; }
+        .store-btn .store-text b { font-size: .92rem; font-weight: 800; }
+        .store-btn.play i { color: #00D2FF; }
+        .store-btn.apple i { color: #fff; }
+
+        .qr-box {
+            background: #fff; padding: 12px; border-radius: 20px;
+            box-shadow: 0 12px 34px rgba(0,0,0,.35); display: inline-block;
+        }
+        .qr-box img { width: 132px; height: 132px; display: block; border-radius: 10px; }
+
+        .media-frame {
+            position: relative; overflow: hidden; border-radius: 26px;
+            border: 1px solid var(--border-color); background: var(--card-bg);
+            box-shadow: var(--shadow-card);
+        }
+        .media-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .media-frame .media-cap {
+            position: absolute; inset: auto 0 0 0;
+            background: linear-gradient(to top, rgba(0,0,0,.72), transparent);
+            color: #fff; padding: 18px 20px 14px;
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        }
+        .media-frame .media-cap b { font-size: .9rem; font-weight: 800; }
+        .media-frame .media-cap span { font-size: .72rem; opacity: .85; display: inline-flex; align-items: center; gap: 6px; }
+
+        .ad-strip {
+            position: relative; overflow: hidden; border-radius: 22px;
+            height: 190px; border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-card);
+        }
+        .ad-strip img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .ad-strip .ad-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(to left, rgba(255,90,0,.85), rgba(255,90,0,.15));
+            color: #fff; display: flex; flex-direction: column; justify-content: center;
+            padding: 0 28px; gap: 6px;
+        }
+        .ad-strip .ad-overlay b { font-size: 1.15rem; font-weight: 900; }
+        .ad-strip .ad-overlay small { font-size: .78rem; opacity: .95; }
+        .ad-strip .ad-tag {
+            position: absolute; top: 14px; right: 14px;
+            background: #fff; color: #FF5A00; font-size: .65rem; font-weight: 800;
+            padding: 5px 11px; border-radius: 40px; letter-spacing: .3px;
+        }
+
+        .site-footer {
+            background: var(--card-bg); border-top: 1px solid var(--border-color);
+            margin-top: 48px; padding: 36px 0 24px;
+        }
+        .footer-link {
+            color: var(--color-muted); text-decoration: none; font-size: .82rem;
+            font-weight: 600; transition: all .2s; display: inline-flex;
+            align-items: center; gap: 6px;
+        }
+        .footer-link:hover { color: var(--color-primary); transform: translateX(-4px); }
+
+        .social-icon {
+            color: var(--color-muted);
+            font-size: 1.6rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .25s ease;
+            text-decoration: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .social-icon:hover {
+            color: var(--color-primary);
+            transform: translateY(-3px);
+        }
+
+        .footer-logo {
+            height: 55px; width: auto; display: block; margin-bottom: 14px;
+        }
+
+        .reveal { opacity: 0; transform: translateY(28px); transition: opacity .75s ease, transform .75s cubic-bezier(.22,1,.36,1); }
+        .reveal.visible { opacity: 1; transform: none; }
+        @media (prefers-reduced-motion: reduce) {
+            .reveal { opacity: 1; transform: none; transition: none; }
+            .hero-deco { animation: none; }
+            .hero-media img { animation: none; }
+        }
+
+        @media (min-width: 1024px) {
+            :root { --header-height: 76px; }
+            #mainHeader { padding: 0 24px; }
+            .header-inner { max-width: calc(var(--shell-max) - (var(--shell-pad) * 2)); margin: 0 auto; gap: 20px; }
+            .app-shell { max-width: 1200px; padding-left: var(--shell-pad); padding-right: var(--shell-pad); }
+            .hero { padding: 56px 48px; border-radius: 34px; }
+            .hero-grid { grid-template-columns: 1.05fr .95fr; gap: 40px; }
+            .hero-media img { max-width: 560px; }
+            .download-section { padding: 60px 56px; border-radius: 34px; }
+            .ad-strip { height: 220px; }
+            .brand img { height: 56px; }
+            .dl-logo { height: 150px; }
+            .faq-side-visual { max-width: 360px; min-height: 360px; }
+            .faq-side-visual img { min-height: 360px; }
+            .qr-box img { width: 180px; height: 180px; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <header id="mainHeader">
+            <div class="header-inner">
+                <a href="#" class="brand">
+                    <img src="https://i.ibb.co/kVrycRZS/Gemini-Generated-Image-pxp5zlpxp5zlpxp5-removebg-preview.png" alt="EasyOrder">
+                </a>
+
+                <nav class="hidden lg:flex items-center gap-1">
+                    <a href="#features" class="desktop-nav-item"><i class="las la-star-of-life"></i><span>المميزات</span></a>
+                    <a href="#how" class="desktop-nav-item"><i class="las la-route"></i><span>كيف يعمل</span></a>
+                    <a href="#values" class="desktop-nav-item"><i class="las la-heart"></i><span>قيمنا</span></a>
+                    <a href="#faq" class="desktop-nav-item"><i class="las la-question-circle"></i><span>الأسئلة</span></a>
+                    <a href="#download" class="desktop-nav-item active"><i class="las la-download"></i><span>تحميل</span></a>
+                </nav>
+
+                <a href="#download" class="header-cta">
+                    <i class="las la-download"></i>
+                    <span>حمّل التطبيق</span>
+                </a>
+            </div>
+        </header>
+
+        <div class="container app-shell mx-auto px-4 py-6">
+
+            <section class="hero reveal mb-10">
+                <i class="las la-hamburger hero-deco" style="top: 30px; left: 30px; font-size: 3rem;"></i>
+                <i class="las la-motorcycle hero-deco" style="bottom: 34px; left: 96px; font-size: 2.6rem; animation-delay: 1.2s;"></i>
+                <i class="las la-utensils hero-deco" style="top: 58%; left: 46%; font-size: 2.2rem; animation-delay: 2.4s;"></i>
+
+                <div class="hero-grid">
+                    <div class="hero-content">
+                        <div class="hero-badge"><i class="las la-map-marker-alt"></i> بنوصّل داخل مدينة شرم الشيخ فقط</div>
+                        <h1>إحنا مش بس بنوصّل أكل..<br>إحنا بنوصّل <span class="hl">لحظة سعادة</span></h1>
+                        <p class="lead">
+                            EasyOrder منصة توصيل ذكية شغّالة في مدينة شرم الشيخ بس، بتربطك بأفضل المطاعم والكافيهات والصيدليات ومحلات السوبر ماركت في كل مناطق المدينة.
+                            اطلب في ثواني، تابع طلبك لحظة بلحظة على الخريطة، واستلمه على بابك وهو لسه سخن.
+                            أسعار واضحة، مفيش مفاجآت، ومفيش انتظار طويل.
+                        </p>
+                        <div class="hero-actions">
+                            <a href="#download" class="btn-white"><i class="las la-download"></i> حمّل التطبيق الآن</a>
+                            <a href="https://wa.me/201063720595" target="_blank" rel="noopener noreferrer" class="btn-ghost">
+                                <i class="lab la-whatsapp"></i> تواصل معنا
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="hero-media">
+                        <img src="https://i.ibb.co/kVrycRZS/Gemini-Generated-Image-pxp5zlpxp5zlpxp5-removebg-preview.png" alt="EasyOrder - تطبيق توصيل الطعام في شرم الشيخ">
+                    </div>
+                </div>
+            </section>
+
+            <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+                <div class="stat-card reveal">
+                    <div class="stat-num" data-count="520" data-suffix="+">0</div>
+                    <div class="stat-label"><i class="las la-store-alt" style="color:#FF5A00;"></i> متجر ومطعم شريك</div>
+                </div>
+                <div class="stat-card reveal" style="transition-delay:.08s">
+                    <div class="stat-num" data-count="250" data-suffix="K+">0</div>
+                    <div class="stat-label"><i class="las la-shopping-bag" style="color:#FF5A00;"></i> طلب شهرياً</div>
+                </div>
+                <div class="stat-card reveal" style="transition-delay:.16s">
+                    <div class="stat-num" data-count="25" data-suffix=" د">0</div>
+                    <div class="stat-label"><i class="las la-clock" style="color:#FF5A00;"></i> متوسط زمن التوصيل</div>
+                </div>
+                <div class="stat-card reveal" style="transition-delay:.24s">
+                    <div class="stat-num" data-count="4.9" data-decimal="1">0</div>
+                    <div class="stat-label"><i class="las la-star" style="color:#FFB800;"></i> تقييم المستخدمين</div>
+                </div>
+            </section>
+
+            <section id="features" class="mb-12">
+                <div class="reveal">
+                    <h2 class="section-title"><i class="las la-star-of-life"></i> ليه تختار EasyOrder؟</h2>
+                    <p class="section-sub">بنينا التطبيق من أول يوم على أساس إن العميل في شرم الشيخ يستحق تجربة سهلة، سريعة، وآمنة من أول ضغطة لحد ما الطلب يوصلك.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div class="feature-card reveal">
+                        <div class="feature-icon"><i class="las la-map-marked-alt"></i></div>
+                        <h3>تتبّع مباشر على الخريطة</h3>
+                        <p>شوف الكابتن لحظة بلحظة وهو في السكة، واعرف طلبك فاضل له كام دقيقة بالظبط قبل ما يوصل لبابك.</p>
+                    </div>
+                    <div class="feature-card reveal" style="transition-delay:.08s">
+                        <div class="feature-icon"><i class="las la-shield-alt"></i></div>
+                        <h3>دفع آمن ومتنوع</h3>
+                        <p>ادفع كاش، بالفيزا، بالمحفظة الإلكترونية، أو بأي طريقة تناسبك. كل العمليات مشفّرة ومحمية بالكامل.</p>
+                    </div>
+                    <div class="feature-card reveal" style="transition-delay:.16s">
+                        <div class="feature-icon"><i class="las la-tags"></i></div>
+                        <h3>عروض وخصومات حقيقية</h3>
+                        <p>كوبونات أسبوعية، خصم أول طلب، وعروض حصرية لأعضاء EasyOrder+ بتوصل لـ 60% على مطاعم مختارة في شرم الشيخ.</p>
+                    </div>
+                    <div class="feature-card reveal" style="transition-delay:.24s">
+                        <div class="feature-icon"><i class="las la-headset"></i></div>
+                        <h3>دعم فني 24/7</h3>
+                        <p>فريق دعم مصري بيفهمك وبيرد عليك في أقل من دقيقتين، سواء في الشات أو على الواتساب أو بالتليفون.</p>
+                    </div>
+                    <div class="feature-card reveal" style="transition-delay:.32s">
+                        <div class="feature-icon"><i class="las la-motorcycle"></i></div>
+                        <h3>أسطول توصيل سريع</h3>
+                        <p>مئات الكباتن الموزعين على كل مناطق شرم الشيخ، بيعملوا توصيل في متوسط 25 دقيقة وأكتر من 95% من الطلبات في وقتها.</p>
+                    </div>
+                    <div class="feature-card reveal" style="transition-delay:.4s">
+                        <div class="feature-icon"><i class="las la-store-alt"></i></div>
+                        <h3>تنوع يغطي كل احتياجك</h3>
+                        <p>مطاعم، حلويات، مشروبات، صيدليات، سوبر ماركت، مستلزمات حيوانات، وتُسالي — كل حاجة في تطبيق واحد.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="how" class="mb-12">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+                    <div class="reveal">
+                        <h2 class="section-title"><i class="las la-route"></i> إزاي تطلب في 4 خطوات؟</h2>
+                        <p class="section-sub">العملية كلها مش بتاخد أكتر من دقيقة واحدة. جربها وهتحس بالفرق بنفسك.</p>
+
+                        <div class="space-y-7">
+                            <div class="step-item">
+                                <div class="step-num">1</div>
+                                <div class="step-line"></div>
+                                <h3>حدّد موقعك</h3>
+                                <p>افتح التطبيق واسمح بالوصول لموقعك، أو اختار عنوانك من الخريطة بالظبط — عشان نعرضلك أقرب المتاجر ليك جوه شرم الشيخ.</p>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-num">2</div>
+                                <div class="step-line"></div>
+                                <h3>اختار متجرك وأكلك</h3>
+                                <p>اتفرج على المنيو، أضف الأصناف اللي نفسك فيها للسلة، وعدّل الكمية والملاحظات زي ما تحب.</p>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-num">3</div>
+                                <div class="step-line"></div>
+                                <h3>أكّد الطلب وادفع</h3>
+                                <p>اختار طريقة الدفع المناسبة، طبّق كوبون الخصم لو عندك، وضغط "تأكيد الطلب" وخلاص.</p>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-num">4</div>
+                                <h3>تابع لحد باب البيت</h3>
+                                <p>هتشوف الكابتن على الخريطة، وهتوصلك إشعارات بكل مرحلة، ولحد ما الطلب يوصل وتقيّمه.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="reveal" style="transition-delay:.12s">
+                        <div class="media-frame mb-5" style="aspect-ratio: 16/11;">
+                            <img src="https://images.unsplash.com/photo-1580674684081-7617fbf3d745?w=900&h=620&fit=crop" alt="كابتن توصيل EasyOrder - طلبك في الطريق">
+                            <div class="media-cap">
+                                <b>طلبك في الطريق</b>
+                                <span><i class="las la-clock"></i> متوسط الوصول 25 دقيقة</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="why-item" style="flex-direction: column; text-align: center; align-items: center;">
+                                <div class="why-ico"><i class="las la-clock"></i></div>
+                                <h4>سرعة حقيقية</h4>
+                                <p>مش بس كلام إعلانات</p>
+                            </div>
+                            <div class="why-item" style="flex-direction: column; text-align: center; align-items: center;">
+                                <div class="why-ico"><i class="las la-hand-holding-heart"></i></div>
+                                <h4>خدمة بتحترمك</h4>
+                                <p>دعم بيرد عليك فوراً</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="mb-12">
+                <div class="reveal">
+                    <div class="ad-strip">
+                        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1400&h=440&fit=crop" alt="عروض EasyOrder">
+                        <span class="ad-tag">إعلان</span>
+                        <div class="ad-overlay">
+                            <b>خصم يصل إلى 60% على أول 3 طلبات</b>
+                            <small>لفترة محدودة داخل شرم الشيخ — استخدم كود WELCOME60 عند الدفع</small>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="values" class="mb-12">
+                <div class="reveal text-center flex flex-col items-center">
+                    <h2 class="section-title justify-center"><i class="las la-heart"></i> قيمنا اللي بنمشي عليها</h2>
+                    <p class="section-sub text-center">مش شعارات على ورق — دي مبادئ بتتحكم في كل قرار بناخده جوه الشركة.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <div class="value-card reveal" style="background: linear-gradient(140deg, #FF5A00, #FF8C38);">
+                        <i class="las la-bolt big"></i>
+                        <h3>السرعة</h3>
+                        <p>الوقت أغلى حاجة عند العميل، وعشان كده بنحسّن كل خطوة في رحلة الطلب ثانية بثانية.</p>
+                    </div>
+                    <div class="value-card reveal" style="background: linear-gradient(140deg, #1A1A1A, #3A3A3A); transition-delay:.08s">
+                        <i class="las la-handshake big"></i>
+                        <h3>الثقة</h3>
+                        <p>أسعار واضحة، صور حقيقية للأكل، وتقييمات صادقة — مفيش مفاجآت ولا رسوم مخفية.</p>
+                    </div>
+                    <div class="value-card reveal" style="background: linear-gradient(140deg, #FFB800, #FF8C38); transition-delay:.16s">
+                        <i class="las la-award big"></i>
+                        <h3>الجودة</h3>
+                        <p>بنختار شركاءنا بعناية، وبنراقب تقييماتهم باستمرار عشان مستوى الخدمة يفضل عالي.</p>
+                    </div>
+                    <div class="value-card reveal" style="background: linear-gradient(140deg, #00B14F, #00D463); transition-delay:.24s">
+                        <i class="las la-users big"></i>
+                        <h3>العميل أولاً</h3>
+                        <p>كل قرار بناخده بنسأل نفسنا الأول: ده هيخلي تجربة العميل أحسن ولا لأ؟ لو لأ، مش بنعمله.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="faq" class="mb-12">
+                <div class="reveal">
+                    <h2 class="section-title"><i class="las la-question-circle"></i> أسئلة بتتكرر كتير</h2>
+                    <p class="section-sub">جمعنالك أكتر الأسئلة اللي بتيجي لينا من العملاء، وإجاباتها المختصرة.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                    <div class="space-y-3">
+                        <div class="faq-item reveal">
+                            <div class="faq-q">إيه المناطق اللي بتوصّلوا فيها؟ <i class="las la-chevron-down chev"></i></div>
+                            <div class="faq-a"><p>خدمة EasyOrder متاحة حصرياً داخل مدينة شرم الشيخ، وبنغطي كل مناطقها ومنتجعاتها. لو عنوانك خارج المدينة، مش هتقدر تكمل الطلب حالياً، وبنشتغل على التوسع قريب.</p></div>
+                        </div>
+                        <div class="faq-item reveal" style="transition-delay:.06s">
+                            <div class="faq-q">كام بتاخد مدة التوصيل؟ <i class="las la-chevron-down chev"></i></div>
+                            <div class="faq-a"><p>متوسط مدة التوصيل عندنا 25 دقيقة جوه شرم الشيخ، وبتختلف حسب بُعد المطعم عنك والزحمة. بتظهرلك المدة المتوقعة بالدقيقة قبل ما تأكد الطلب، وتقدر تتابعها لحظة بلحظة.</p></div>
+                        </div>
+                        <div class="faq-item reveal" style="transition-delay:.12s">
+                            <div class="faq-q">إيه طرق الدفع المتاحة؟ <i class="las la-chevron-down chev"></i></div>
+                            <div class="faq-a"><p>تقدر تدفع كاش عند الاستلام، أو بالفيزا/الماستركارد، أو من خلال المحافظ الإلكترونية. كل المعاملات مؤمّنة ومشفّرة بالكامل.</p></div>
+                        </div>
+                        <div class="faq-item reveal" style="transition-delay:.18s">
+                            <div class="faq-q">أقدر ألغي الطلب؟ <i class="las la-chevron-down chev"></i></div>
+                            <div class="faq-a"><p>أيوه، تقدر تلغي الطلب مجاناً طول ما المطعم لسه ما بدأش التحضير. بعد ما التحضير يبدأ، تواصل مع الدعم وهنساعدك في أسرع وقت.</p></div>
+                        </div>
+                        <div class="faq-item reveal" style="transition-delay:.24s">
+                            <div class="faq-q">رسوم التوصيل بتتحسب إزاي؟ <i class="las la-chevron-down chev"></i></div>
+                            <div class="faq-a"><p>الرسوم بتتحدد حسب المسافة بينك وبين المتجر داخل شرم الشيخ، وبتظهرلك بوضوح في صفحة السلة قبل الدفع. أعضاء EasyOrder+ بيحصلوا على توصيل مجاني غير محدود.</p></div>
+                        </div>
+                        <div class="faq-item reveal" style="transition-delay:.3s">
+                            <div class="faq-q">إزاي أشتكي أو أقترح تحسين؟ <i class="las la-chevron-down chev"></i></div>
+                            <div class="faq-a"><p>من خلال مركز المساعدة أو مباشرة على الواتساب. كل شكوى بتتسجل وبيتم الرد عليها خلال 24 ساعة، واقتراحاتك فعلاً بتتنفذ.</p></div>
+                        </div>
+                    </div>
+
+                    <div class="faq-side-visual reveal" style="transition-delay:.12s">
+                        <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=700&h=800&fit=crop" alt="خدمة عملاء EasyOrder - دعم فني على مدار الساعة">
+                        <span class="faq-visual-badge"><i class="las la-headset"></i> دعم 24/7</span>
+                        <div class="faq-visual-cap">
+                            <b>لسه عندك سؤال؟ إحنا معاك في أي وقت</b>
+                            <span><i class="las la-clock"></i> بنرد عليك في أقل من دقيقتين</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="download" class="download-section reveal mb-4">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+                    <div>
+                        <img src="https://i.ibb.co/kVrycRZS/Gemini-Generated-Image-pxp5zlpxp5zlpxp5-removebg-preview.png" alt="EasyOrder" class="dl-logo">
+                        <h2 style="font-size: clamp(1.5rem,4vw,2.3rem); font-weight:900; margin-bottom: 12px; line-height:1.3;">
+                            حمّل تطبيق EasyOrder<br>واطلب في ثواني في شرم الشيخ
+                        </h2>
+                        <p style="color: rgba(255,255,255,.82); font-size: .9rem; line-height: 1.95; margin-bottom: 26px; max-width: 520px;">
+                            التطبيق متاح مجاناً على Google Play و App Store، وبيخدم مدينة شرم الشيخ بالكامل. حمّله دلوقتي واستمتع بخصم 50% على أول طلب بكود
+                            <strong style="color:#FFB800;">WELCOME50</strong>
+                        </p>
+
+                        <div class="flex flex-wrap gap-3 mb-6">
+                            <a href="https://play.google.com/store" target="_blank" rel="noopener noreferrer" class="store-btn play">
+                                <i class="lab la-google-play"></i>
+                                <div class="store-text">
+                                    <small>احصل عليه من</small>
+                                    <b>Google Play</b>
+                                </div>
+                            </a>
+                            <a href="https://apps.apple.com" target="_blank" rel="noopener noreferrer" class="store-btn apple">
+                                <i class="lab la-apple"></i>
+                                <div class="store-text">
+                                    <small>حمّله من</small>
+                                    <b>App Store</b>
+                                </div>
+                            </a>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-5">
+                            <div class="flex items-center gap-3">
+                                <i class="las la-star" style="color:#FFB800; font-size:1.6rem;"></i>
+                                <div>
+                                    <b style="font-size:1rem; font-weight:900; display:block;">4.9 / 5</b>
+                                    <span style="font-size:.72rem; opacity:.75;">أكتر من 12,000 تقييم</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <i class="las la-download" style="color:#00D2FF; font-size:1.6rem;"></i>
+                                <div>
+                                    <b style="font-size:1rem; font-weight:900; display:block;">250K+</b>
+                                    <span style="font-size:.72rem; opacity:.75;">عملية تحميل</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center justify-center gap-5">
+                        <div class="qr-box">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://easyorder.app/download&color=FF5A00&bgcolor=FFFFFF&margin=0" alt="QR Code لتحميل تطبيق EasyOrder">
+                        </div>
+                        <p style="font-size:.8rem; opacity:.8; text-align:center; max-width:260px; line-height:1.8;">
+                            <i class="las la-qrcode"></i> امسح الكود بكاميرا الموبايل للتحميل الفوري
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <footer class="site-footer">
+            <div class="container app-shell mx-auto px-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+                    <div>
+                        <img src="https://i.ibb.co/kVrycRZS/Gemini-Generated-Image-pxp5zlpxp5zlpxp5-removebg-preview.png" alt="EasyOrder" class="footer-logo">
+                        <p style="font-size:.8rem; color:var(--color-muted); line-height:1.9;">
+                            منصة توصيل ذكية متخصصة في مدينة شرم الشيخ، بتربطك بأفضل المطاعم والمتاجر وتوصّلك طلبك في أسرع وقت وبأقل مجهود.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 style="font-weight:800; font-size:.9rem; margin-bottom:14px;">روابط سريعة</h4>
+                        <div class="flex flex-col gap-3">
+                            <a href="#features" class="footer-link"><i class="las la-angle-left"></i> المميزات</a>
+                            <a href="#how" class="footer-link"><i class="las la-angle-left"></i> كيف يعمل</a>
+                            <a href="#values" class="footer-link"><i class="las la-angle-left"></i> قيمنا</a>
+                            <a href="#faq" class="footer-link"><i class="las la-angle-left"></i> الأسئلة الشائعة</a>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="font-weight:800; font-size:.9rem; margin-bottom:14px;">الدعم</h4>
+                        <div class="flex flex-col gap-3">
+                            <a href="#" class="footer-link"><i class="las la-angle-left"></i> مركز المساعدة</a>
+                            <a href="#" class="footer-link"><i class="las la-angle-left"></i> سياسة الاستبدال</a>
+                            <a href="#" class="footer-link"><i class="las la-angle-left"></i> الشروط والأحكام</a>
+                            <a href="#" class="footer-link"><i class="las la-angle-left"></i> سياسة الخصوصية</a>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 style="font-weight:800; font-size:.9rem; margin-bottom:14px;">تواصل معنا</h4>
+                        <div class="flex flex-col gap-3 mb-4">
+                            <a href="tel:+201063720595" class="footer-link"><i class="las la-phone"></i> 01063720595</a>
+                            <a href="mailto:support@easyorder.com" class="footer-link"><i class="las la-envelope"></i> support@easyorder.com</a>
+                            <span class="footer-link"><i class="las la-map-marker-alt"></i> شرم الشيخ، مصر</span>
+                        </div>
+                        <div class="flex gap-4">
+                            <a href="#" class="social-icon" aria-label="فيسبوك"><i class="lab la-facebook-f"></i></a>
+                            <a href="#" class="social-icon" aria-label="انستجرام"><i class="lab la-instagram"></i></a>
+                            <a href="https://wa.me/201063720595" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="واتساب"><i class="lab la-whatsapp"></i></a>
+                            <a href="#" class="social-icon" aria-label="تيك توك"><i class="lab la-tiktok"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="border-top:1px solid var(--border-color); padding-top:18px; display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between; align-items:center;">
+                    <p style="font-size:.75rem; color:var(--color-muted);">
+                        © <span id="year"></span> EasyOrder. جميع الحقوق محفوظة.
+                    </p>
+                    <p style="font-size:.75rem; color:var(--color-muted); display:flex; align-items:center; gap:6px;">
+                        صُنع بـ <i class="las la-heart" style="color:#FF5A00;"></i> في شرم الشيخ
+                    </p>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        (function () {
+            'use strict';
+
+            var yearEl = document.getElementById('year');
+            if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+            var header = document.getElementById('mainHeader');
+            function onScroll() {
+                if (!header) return;
+                header.classList.toggle('scrolled', window.scrollY > 8);
+            }
+            window.addEventListener('scroll', onScroll, { passive: true });
+            onScroll();
+
+            var revealEls = document.querySelectorAll('.reveal');
+            if ('IntersectionObserver' in window) {
+                var revealObserver = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                            revealObserver.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+                revealEls.forEach(function (el) { revealObserver.observe(el); });
+            } else {
+                revealEls.forEach(function (el) { el.classList.add('visible'); });
+            }
+
+            function animateCounter(el) {
+                var target = parseFloat(el.getAttribute('data-count')) || 0;
+                var suffix = el.getAttribute('data-suffix') || '';
+                var decimals = parseInt(el.getAttribute('data-decimal') || '0', 10);
+                var duration = 1600;
+                var start = null;
+
+                function step(ts) {
+                    if (!start) start = ts;
+                    var progress = Math.min((ts - start) / duration, 1);
+                    var eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+                    var value = target * eased;
+                    el.textContent = (decimals ? value.toFixed(decimals) : Math.floor(value).toLocaleString('en-US')) + suffix;
+                    if (progress < 1) requestAnimationFrame(step);
+                }
+                requestAnimationFrame(step);
+            }
+
+            var counters = document.querySelectorAll('[data-count]');
+            if ('IntersectionObserver' in window) {
+                var counterObserver = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                            animateCounter(entry.target);
+                            counterObserver.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.5 });
+                counters.forEach(function (c) { counterObserver.observe(c); });
+            } else {
+                counters.forEach(function (c) {
+                    c.textContent = c.getAttribute('data-count') + (c.getAttribute('data-suffix') || '');
+                });
+            }
+
+            document.querySelectorAll('.faq-item').forEach(function (item) {
+                var question = item.querySelector('.faq-q');
+                var answer = item.querySelector('.faq-a');
+                if (!question || !answer) return;
+
+                question.addEventListener('click', function () {
+                    var isOpen = item.classList.contains('open');
+
+                    document.querySelectorAll('.faq-item.open').forEach(function (other) {
+                        if (other !== item) {
+                            other.classList.remove('open');
+                            var a = other.querySelector('.faq-a');
+                            if (a) a.style.maxHeight = '0px';
+                        }
+                    });
+
+                    if (isOpen) {
+                        item.classList.remove('open');
+                        answer.style.maxHeight = '0px';
+                    } else {
+                        item.classList.add('open');
+                        answer.style.maxHeight = answer.scrollHeight + 'px';
+                    }
+                });
+            });
+
+            window.addEventListener('resize', function () {
+                document.querySelectorAll('.faq-item.open .faq-a').forEach(function (a) {
+                    a.style.maxHeight = a.scrollHeight + 'px';
+                });
+            });
+
+            document.querySelectorAll('a[href^="#"]').forEach(function (link) {
+                var href = link.getAttribute('href');
+                if (!href || href === '#') return;
+                link.addEventListener('click', function (e) {
+                    var target = document.querySelector(href);
+                    if (target) {
+                        e.preventDefault();
+                        var top = target.getBoundingClientRect().top + window.pageYOffset - 90;
+                        window.scrollTo({ top: top, behavior: 'smooth' });
+                    }
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
